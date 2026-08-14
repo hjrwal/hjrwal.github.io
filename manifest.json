@@ -3,13 +3,19 @@
   "short_name": "英语小探险家",
   "description": "五年级英语单词与听说读写闯关练习",
   "lang": "zh-CN",
-  "start_url": "english5-helper.html",
+  "start_url": ".",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#eafaff",
   "theme_color": "#3ec6ff",
   "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "icon.svg",
       "sizes": "any",
