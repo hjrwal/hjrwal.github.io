@@ -1330,7 +1330,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 5;
+const APP_VERSION = 6;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1478,7 +1478,7 @@ function speak(text){
   webSpeak(text);
 }
 function webSpeak(text){
-  if(!('speechSynthesis' in window)){ toast('🔇 本设备暂不支持朗读（离线音频版正在准备）'); return; }
+  if(!('speechSynthesis' in window)){ toast('🔇 当前浏览器不支持语音合成，请用 Chrome / Edge / 鸿蒙浏览器重试'); return; }
   if(typeof navigator!=='undefined' && navigator.onLine===false){ toast('📴 离线模式：若没声音，连网后重试'); }
   primeSpeech();
   const r = (STATE.settings&&STATE.settings.rate) || 0.9;
@@ -1607,7 +1607,8 @@ function spellWord(w){
   const sp=document.getElementById('cardSpell');
   if(sp) sp.innerHTML = w.split('').map(c=>`<span class="ltr">${c.toUpperCase()}</span>`).join('<span class="dot">·</span>');
   try{ speechSynthesis.cancel(); }catch(_){}
-  speak(w.split('').join(' '), 0.8);
+  // 念完整单词走本地音频（字母级 mp3 不存在，不要传 split 后的字符串）
+  speak(w, 0.85);
 }
 function flipCard(){
   flipped=!flipped;
