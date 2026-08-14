@@ -181,6 +181,8 @@
   input.type:focus{border-color:var(--sky);}
   /* sentence builder */
   .basket{display:flex; flex-wrap:wrap; gap:8px; min-height:54px; padding:10px; background:var(--soft); border-radius:16px; border:2px dashed var(--grape);}
+  .basket.wrong{border-style:solid; border-color:#d33; background:#fff0f0;}
+  .basket.ok{border-style:solid; border-color:var(--grass); background:#eafff0;}
   .pool{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
   .token{background:#fff; border:2px solid var(--grape); border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; font-size:16px;}
   .token.used{opacity:.35; pointer-events:none;}
@@ -360,6 +362,10 @@
   .lt.used{opacity:.25; pointer-events:none;}
   .lt.in{background:var(--soft); border-color:var(--grape); color:var(--grape-d);}
   .build-slot{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; min-height:56px; margin:8px 0; padding:8px; border:2px dashed var(--line); border-radius:14px;}
+  .build-slot.wrong{border-color:#d33; background:#fff0f0;}
+  .build-slot.wrong .lt.in{background:#ffd9d9; border-color:#d33; color:#a00;}
+  .lt.shake{animation:shakeX .4s ease;}
+  @keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
   .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
   .mem-card{aspect-ratio:1/1; border-radius:14px; background:var(--card); border:2px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800; cursor:pointer; box-shadow:var(--shadow); user-select:none; text-align:center; padding:2px; overflow:hidden;}
   .mem-card .en{font-size:13px; line-height:1.1;} .mem-card .zh{font-size:11px; color:var(--muted); font-weight:600;}
@@ -491,7 +497,6 @@
         <div class="row">
           <button class="btn ghost" onclick="flipCard()">翻面</button>
           <button class="btn sky" id="speakCard" onclick="listenWord()">🔊 听</button>
-          <button class="btn grape" id="readCard" onclick="spellWord(curWord.en)">🔤 读单词</button>
         </div>
       </div>
       <div class="flash">
@@ -508,7 +513,6 @@
           </div>
         </div>
       </div>
-      <div class="spell" id="cardSpell"></div>
       <div class="row" style="margin-top:14px;">
         <button class="btn coral lg" style="flex:1" onclick="cardResult(false)">😅 还不熟</button>
         <button class="btn grass lg" style="flex:1" onclick="cardResult(true)">😎 我会了</button>
@@ -550,7 +554,7 @@
       <div class="basket" id="scBasket"></div>
       <div class="pool" id="scPool"></div>
       <div class="row" style="margin-top:12px;">
-        <button class="btn grass" onclick="checkSentence()">✔ 检查</button>
+        <button class="btn grass" onclick="gradeSentence()">✔ 检查</button>
         <button class="btn ghost" onclick="buildSentence()">🔄 换一题</button>
       </div>
     </div>
@@ -654,7 +658,7 @@
     <div class="panel">
       <h2 class="sec">📅 今日复习 <span class="muted" id="wbReviewCount" style="font-size:13px"></span></h2>
       <p class="muted" style="margin:0">按艾宾浩斯遗忘曲线，把容易忘的错题安排到今天复习。</p>
-      <button class="btn grass lg" style="margin-top:8px" id="wbReviewBtn" onclick="startReview()">🔁 开始今日复习</button>
+      <button class="btn grass lg" style="margin-top:8px" id="wbReviewBtn" onclick="reviewWrong()">🔁 开始错词复习</button>
     </div>
     <div class="panel">
       <h2 class="sec">📋 全部错题 <span class="muted" id="wbAllCount" style="font-size:13px"></span></h2>
@@ -1330,7 +1334,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 6;
+const APP_VERSION = 7;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1597,18 +1601,9 @@ function showCard(){
   const exWrap=document.getElementById('cardExWrap'); const exEl=document.getElementById('cardEx');
   if(curWord.ex){ exEl.textContent='📖 '+curWord.ex; exWrap.classList.remove('hidden'); }
   else { exWrap.classList.add('hidden'); }
-  const sp=document.getElementById('cardSpell'); if(sp) sp.innerHTML='';
 }
 function listenWord(){
-  const sp=document.getElementById('cardSpell'); if(sp) sp.innerHTML='';
   speak(curWord.en);
-}
-function spellWord(w){
-  const sp=document.getElementById('cardSpell');
-  if(sp) sp.innerHTML = w.split('').map(c=>`<span class="ltr">${c.toUpperCase()}</span>`).join('<span class="dot">·</span>');
-  try{ speechSynthesis.cancel(); }catch(_){}
-  // 念完整单词走本地音频（字母级 mp3 不存在，不要传 split 后的字符串）
-  speak(w, 0.85);
 }
 function flipCard(){
   flipped=!flipped;
@@ -1650,7 +1645,7 @@ function startVocabQuiz(mode){
     box.innerHTML=toolbar+`<div class="qprompt">⌨️ 听音拼写：“${q.zh}”</div>
       <button class="btn sky lg" onclick="speak('${q.en.replace(/'/g,"\\'")}')">🔊 听发音</button>
       <input class="type" id="spellIn" placeholder="在这里输入英文" style="margin-top:10px">
-      <button class="btn grass lg" style="margin-top:10px" onclick="checkSpell('${q.en.replace(/'/g,"\\'")}')">✔ 提交</button>`;
+      <button class="btn grass lg" style="margin-top:10px" onclick="gradeVocabSpell('${q.en.replace(/'/g,"\\'")}')">✔ 提交</button>`;
   }
 }
 function exitQuiz(){
@@ -1676,16 +1671,23 @@ function renderOpts(opts, answer, getVal){
     box.appendChild(el);
   });
 }
-function checkSpell(ans){
-  const v=document.getElementById('spellIn').value;
+// 词汇拼写测验：判对→加分+自动下一题；判错→标红+禁用提交，直到点「换一题」
+function gradeVocabSpell(ans){
+  const input=document.getElementById('spellIn');
+  const btn=document.querySelector('#vocabQuiz button.btn.grass[onclick^="gradeVocabSpell"]');
+  const v=input?input.value:'';
   const ok=norm(v)===norm(ans);
   recordWord(curUnitId, ans, ok);
-  toast(ok?'🎉 拼对啦！+2⭐':'😅 正确拼写：'+ans);
-  if(ok) awardStars(2);
-  const box=document.getElementById('vocabQuiz');
-  const again=document.createElement('button'); again.className='btn sky lg'; again.style.marginTop='10px';
-  again.textContent='下一题 →'; again.onclick=()=>startVocabQuiz('spell');
-  box.appendChild(again);
+  if(ok){
+    awardStars(2); toast('🎉 拼对啦！+2⭐');
+    if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
+    if(input){ input.disabled=true; input.style.borderColor='var(--grass)'; }
+    setTimeout(()=>startVocabQuiz('spell'), 800);
+  } else {
+    toast('😅 正确拼写：'+ans);
+    if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
+    if(input){ input.style.borderColor='#d33'; input.style.background='#fff0f0'; }
+  }
 }
 
 /* =========================================================
@@ -1709,7 +1711,7 @@ function buildSentence(){
   if(!curSent) return;
   const words=curSent.en.split(/\s+/);
   const pool=shuffle(words.slice());
-  const basket=document.getElementById('scBasket'); basket.innerHTML='';
+  const basket=document.getElementById('scBasket'); basket.innerHTML=''; basket.classList.remove('wrong','ok');
   const poolEl=document.getElementById('scPool'); poolEl.innerHTML='';
   pool.forEach((w,i)=>{
     const t=document.createElement('div'); t.className='token'; t.textContent=w; t.dataset.w=w;
@@ -1724,13 +1726,24 @@ function buildSentence(){
   });
   document.getElementById('scTip').textContent='点击下方单词，按顺序组成：'+curSent.zh;
 }
-function checkSentence(){
+// 句型练习-连词成句：判对→加分+自动下一句；判错→标红+禁用检查，直到点「换一题」
+function gradeSentence(){
   const parts=[...document.querySelectorAll('#scBasket .in')].map(e=>e.textContent);
   const got=parts.join(' ');
   const ok=norm(got)===norm(curSent.en);
   recordWord(curUnitId, curSent.en, ok);
-  toast(ok?'🎉 句子正确！+2⭐':'💡 正确顺序：'+curSent.en);
-  if(ok) awardStars(2);
+  const btn=document.querySelector('#sentences button.btn.grass[onclick^="gradeSentence"]');
+  const basket=document.getElementById('scBasket');
+  if(ok){
+    awardStars(2); toast('🎉 句子正确！+2⭐');
+    if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
+    if(basket) basket.classList.add('ok');
+    setTimeout(()=>{ if(curSent) nextSent(); }, 800);
+  } else {
+    toast('💡 正确顺序：'+curSent.en);
+    if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
+    if(basket) basket.classList.add('wrong');
+  }
 }
 
 /* =========================================================
@@ -1904,6 +1917,7 @@ function renderTestQ(){
   if(!area) return;
   if(testIdx>=testQs.length){ finishTest(); return; }
   const q=testQs[testIdx];
+  testLocked=false;
   const U=UNITS.find(x=>x.id===curUnitId);
   const prog=Math.round(testIdx/testQs.length*100);
   let html=`<div class="test-prog"><i style="width:${prog}%"></i></div><p class="muted">第 ${testIdx+1} / ${testQs.length} 题</p>`;
@@ -1935,14 +1949,14 @@ function renderTestQ(){
     html+=`<div class="test-q">拼写：“${q.w.zh}”</div>
       <div class="row" style="justify-content:center"><button class="btn sky" onclick="speak('${q.w.en.replace(/'/g,"\\'")}')">🔊 听发音</button></div>
       <input class="type" id="tSpell" placeholder="写出英文" style="margin-top:10px">
-      <button class="btn grass lg" style="margin-top:10px;width:100%" onclick="ansSpell()">✔ 提交</button>`;
+      <button class="btn grass lg" style="margin-top:10px;width:100%" onclick="gradeTestSpell()">✔ 提交</button>`;
     area.innerHTML=html;
   } else if(q.type==='sent'){
     const pool=shuffle(q.s.en.split(/\s+/).slice());
     html+=`<div class="test-q" style="font-size:16px">连词成句：“${q.s.zh}”</div>
       <div class="build-slot" id="tSlot"></div>
       <div class="letter-pool" id="tPool"></div>
-      <button class="btn grass lg" style="width:100%" onclick="ansSent()">✔ 检查</button>`;
+      <button class="btn grass lg" style="width:100%" onclick="gradeTestSentence()">✔ 检查</button>`;
     area.innerHTML=html;
     pool.forEach(w=>{ const t=document.createElement('div'); t.className='lt'; t.textContent=w;
       t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
@@ -1952,13 +1966,17 @@ function renderTestQ(){
       document.getElementById('tPool').appendChild(t); });
   }
 }
-function ansSpell(){
+// 单元测试-拼写：防连点（testLocked 在 renderTestQ 渲染新题时统一重置）；判错标红由 commitTest 后 toast 提示
+function gradeTestSpell(){
+  if(testLocked) return; testLocked=true;
   const q=testQs[testIdx]; const v=document.getElementById('tSpell').value;
   const ok=norm(v)===norm(q.w.en);
   if(!ok) toast('💡 正确拼写：'+q.w.en);
   commitTest(ok, q.w.en);
 }
-function ansSent(){
+// 单元测试-连词成句：句子答错不纳入错题本（句子非孤立单词，重做意义低；单词/选择/拼写错题才收集）
+function gradeTestSentence(){
+  if(testLocked) return; testLocked=true;
   const q=testQs[testIdx];
   const got=[...document.querySelectorAll('#tSlot .in')].map(e=>e.textContent).join(' ');
   const ok=norm(got)===norm(q.s.en);
@@ -2027,7 +2045,7 @@ function startSpell(){
   const u=UNITS.find(x=>x.id===gameUnitId);
   const singles=u.words.filter(w=>!w.en.includes(' '));
   const w=singles[Math.floor(Math.random()*singles.length)];
-  spellState={w, pool:shuffle(w.en.split('').map(ch=>({ch,used:false}))), chosen:[]};
+  spellState={w, pool:shuffle(w.en.split('').map(ch=>({ch,used:false}))), chosen:[], errored:false};
   renderSpell();
 }
 function renderSpell(){
@@ -2037,7 +2055,7 @@ function renderSpell(){
     <div class="build-slot" id="spChosen"></div>
     <div class="letter-pool" id="spPool"></div>
     <div class="row" style="justify-content:center;margin-top:10px">
-      <button class="btn grass" onclick="spellCheck()">✔ 检查</button>
+      <button class="btn grass" onclick="gradeSpellGame()">✔ 检查</button>
       <button class="btn ghost" onclick="startSpell()">🔄 换一个</button>
     </div>`;
   const pool=document.getElementById('spPool');
@@ -2049,14 +2067,24 @@ function renderSpell(){
     t.onclick=()=>{ it.used=false; s.chosen=s.chosen.filter(x=>x!==it); renderSpell(); };
     ch.appendChild(t); });
 }
-function spellCheck(){
-  const s=spellState; const got=s.chosen.map(x=>x.ch).join('');
+function gradeSpellGame(){
+  const s=spellState; if(!s) return;
+  const got=s.chosen.map(x=>x.ch).join('');
   const ok=got.toLowerCase()===s.w.en.toLowerCase();
+  const area=document.getElementById('gameArea');
+  const btnCheck=area.querySelector('button.btn.grass');
   if(ok){
     STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(2);
     confetti(); foxSay('🎉 拼对啦，你真棒！');
-    document.getElementById('gameArea').insertAdjacentHTML('beforeend','<p class="center" style="color:var(--grass-d);font-weight:800;margin-top:10px">✅ 正确！+2⭐</p>');
-  } else { toast('💡 正确拼写：'+s.w.en); }
+    area.insertAdjacentHTML('beforeend','<p class="center" style="color:var(--grass-d);font-weight:800;margin-top:10px">✅ 正确！+2⭐　下一题来啦…</p>');
+    if(btnCheck){ btnCheck.disabled=true; btnCheck.style.opacity='.45'; btnCheck.style.pointerEvents='none'; }
+    setTimeout(()=>{ if(spellState===s) startSpell(); }, 900);
+  } else {
+    s.errored=true;
+    const ch=document.getElementById('spChosen'); if(ch) ch.classList.add('wrong');
+    if(btnCheck){ btnCheck.disabled=true; btnCheck.style.opacity='.45'; btnCheck.style.pointerEvents='none'; }
+    area.insertAdjacentHTML('beforeend',`<p class="center" style="color:#d33;font-weight:800;margin-top:10px">❌ 不对哦，正确拼写：<b style="letter-spacing:2px">${s.w.en}</b>　点「换一个」再来</p>`);
+  }
 }
 function startMatch(){
   const u=UNITS.find(x=>x.id===gameUnitId);
@@ -2667,7 +2695,7 @@ function chNext(){
       const ok=norm(o)===norm(q.en);
       if(ok){
         chScore++;
-        recordWord(curUnitId, q.en, true);
+        recordWord(EN2UNIT[q.en]||curUnitId, q.en, true);
         const s=document.getElementById('chScore'); if(s) s.textContent='答对 '+chScore+' 题';
       } else {
         el.classList.add('wrong');
