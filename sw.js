@@ -1,7 +1,7 @@
 // Service Worker for 五年级英语小探险家
 // 缓存策略：cache-first（离线可用）+ 后台更新
 // 发布新版本时，只需把 CACHE 名称的版本号 +1（如 eng5-v2），SW 会自动刷新缓存
-const CACHE = 'eng5-v5';
+const CACHE = 'eng5-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -31,6 +31,24 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
+  // 音频：cache-first（首次联网加载后永久离线可用）
+  if (url.pathname.indexOf('/audio/') !== -1) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(resp => {
+          if (resp && resp.status === 200) {
+            const copy = resp.clone();
+            caches.open(CACHE).then(cache => cache.put(event.request, copy));
+          }
+          return resp;
+        });
+      })
+    );
+    return;
+  }
+  // 其他资源：cache-first + 后台更新
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
@@ -40,7 +58,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE).then(cache => cache.put(event.request, copy));
         }
         return resp;
-      }).catch(() => caches.match('./english5-helper.html'));
+      }).catch(() => caches.match('./index.html'));
     })
   );
 });
