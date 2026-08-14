@@ -260,6 +260,122 @@
   .set-row > b{display:block; margin-bottom:2px;}
   .nav{flex-wrap:wrap;}
   .nav .ver{flex-basis:100%; text-align:center; font-size:9px; color:var(--muted); margin-top:3px; pointer-events:none;}
+
+  /* ============ 界面美化升级（v3） ============ */
+  .tile{position:relative; overflow:hidden; padding:20px 14px;}
+  .tile::before{content:""; position:absolute; left:0; top:0; right:0; height:6px; opacity:.9;}
+  .c-sky::before{background:linear-gradient(90deg,#5ed2ff,#1f9fe0);}
+  .c-sun::before{background:linear-gradient(90deg,#ffe07a,#f5b400);}
+  .c-grass::before{background:linear-gradient(90deg,#8de897,#36b24a);}
+  .c-coral::before{background:linear-gradient(90deg,#ff9d8f,#ef5648);}
+  .c-grape::before{background:linear-gradient(90deg,#c3a2ff,#8554e8);}
+  .tile .ic{transition:transform .18s ease;}
+  .tile:hover .ic, .tile:active .ic{transform:scale(1.18) rotate(-8deg);}
+  .tile h3{transition:color .15s;}
+  .tile:hover h3{color:var(--sky-d);}
+  .tile .count-dot{
+    position:absolute; top:10px; right:10px; background:var(--coral); color:#fff;
+    min-width:22px; height:22px; border-radius:999px; font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; padding:0 6px;
+    box-shadow:0 3px 8px rgba(239,86,72,.4); animation:pop .3s ease;
+  }
+  .btn.sky{background:linear-gradient(180deg,#5ed2ff,#1f9fe0);}
+  .btn.sun{background:linear-gradient(180deg,#ffe07a,#f5b400);}
+  .btn.grass{background:linear-gradient(180deg,#8de897,#36b24a);}
+  .btn.coral{background:linear-gradient(180deg,#ff9d8f,#ef5648);}
+  .btn.grape{background:linear-gradient(180deg,#c3a2ff,#8554e8);}
+  .flash{position:relative; background:
+    radial-gradient(circle at 8% 12%, rgba(62,198,255,.10) 0 40px, transparent 41px),
+    radial-gradient(circle at 92% 88%, rgba(169,123,255,.10) 0 40px, transparent 41px),
+    var(--card);}
+  h2.sec .emo{animation:wob 3s ease-in-out infinite; display:inline-block;}
+  .panel{border:2px solid transparent; border-image:linear-gradient(135deg, rgba(62,198,255,.35), rgba(169,123,255,.35)) 1; border-radius:var(--r);}
+  /* 错题本 */
+  .wb-row{display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px dashed var(--line);}
+  .wb-row:last-child{border-bottom:none;}
+  .wb-en{font-weight:800; font-size:17px;}
+  .wb-zh{color:var(--muted); font-size:13px; margin-left:6px;}
+  .wb-tag{flex:0 0 auto; font-size:11px; font-weight:700; color:var(--grape-d); background:var(--soft);
+    border:1px solid var(--line); border-radius:999px; padding:2px 8px;}
+  .wb-times{flex:0 0 auto; font-size:11px; color:var(--coral-d); font-weight:800;}
+  .wb-actions{margin-left:auto; display:flex; gap:6px;}
+  .wb-empty{text-align:center; padding:26px 10px; color:var(--muted);}
+  .wb-empty .e{font-size:52px; display:block; margin-bottom:8px; animation:wob 3s ease-in-out infinite;}
+  .redo-card{text-align:center; padding:10px 4px;}
+  .redo-card .word{font-size:38px; font-weight:800; margin:8px 0;}
+  .redo-prog{height:8px; background:var(--line); border-radius:999px; overflow:hidden; margin-bottom:12px;}
+  .redo-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--sky),var(--grape)); border-radius:999px; transition:width .3s;}
+  /* 语法小课堂 */
+  .gram-card{border:2px solid var(--line); border-radius:18px; padding:16px; margin-bottom:12px; background:var(--soft);}
+  .gram-card h3{margin:0 0 8px; font-size:17px; display:flex; align-items:center; gap:8px;}
+  .gram-tip{background:var(--sun); color:#6b4e00; border-radius:14px; padding:10px 14px; font-weight:700; margin:10px 0;}
+  .gram-point{padding:7px 0 7px 22px; position:relative; font-size:15px; line-height:1.6;}
+  .gram-point::before{content:"✦"; position:absolute; left:4px; color:var(--grape); font-weight:800;}
+  .gram-ex{border-left:4px solid var(--sky); background:var(--card); border-radius:0 14px 14px 0; padding:8px 14px; margin:8px 0; font-size:15px;}
+  .gram-ex .zh{color:var(--muted); font-size:13px;}
+  /* 限时挑战 */
+  .challenge-top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;}
+  .ch-timer{font-size:34px; font-weight:800; color:var(--coral-d); font-variant-numeric:tabular-nums;}
+  .ch-score{font-size:18px; font-weight:800; color:var(--grape-d);}
+  .ch-banner{background:linear-gradient(135deg,var(--sun),#ffb400); color:#6b4e00; border-radius:20px;
+    padding:18px; text-align:center; font-weight:800; margin-bottom:12px; box-shadow:var(--shadow);}
+  .ch-banner .big{font-size:34px; display:block;}
+  /* 每日目标 */
+  .goal-wrap{margin-top:10px;}
+  .goal-bar{height:16px; background:var(--line); border-radius:999px; overflow:hidden; position:relative;}
+  .goal-bar i{display:block; height:100%; background:linear-gradient(90deg,var(--grass),#8de897); border-radius:999px; transition:width .4s;}
+  .goal-bar.done i{background:linear-gradient(90deg,var(--sun),#ff9d3f); animation:pulse 1s ease infinite;}
+  .goal-text{font-size:13px; font-weight:700; color:var(--muted); margin-top:6px; display:flex; justify-content:space-between;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.75}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .floaty{animation:floaty 2.5s ease-in-out infinite;}
+  /* 发音动画条 */
+  .speak-fx{position:fixed; left:50%; transform:translateX(-50%); bottom:104px; z-index:60; display:none; gap:4px; align-items:center; height:34px; padding:6px 14px; background:rgba(255,255,255,.94); border-radius:999px; box-shadow:var(--shadow); font-size:12px; font-weight:800; color:var(--grape-d);}
+  .speak-fx.show{display:flex;}
+  .speak-fx b{display:inline-block; width:5px; height:10px; background:linear-gradient(var(--sky),var(--grape)); border-radius:3px; animation:fx .6s ease-in-out infinite;}
+  .speak-fx b:nth-child(2){animation-delay:.1s} .speak-fx b:nth-child(3){animation-delay:.2s} .speak-fx b:nth-child(4){animation-delay:.3s} .speak-fx b:nth-child(5){animation-delay:.15s}
+  @keyframes fx{0%,100%{height:8px}50%{height:28px}}
+  /* 狐狸鼓励气泡 */
+  .fox-bubble{position:fixed; left:12px; top:62px; z-index:55; max-width:210px; background:var(--card); border:2px solid var(--line); border-radius:16px; padding:8px 12px; font-size:13px; font-weight:700; line-height:1.4; box-shadow:var(--shadow); opacity:0; transform:translateY(-6px); transition:.25s; pointer-events:none;}
+  .fox-bubble.show{opacity:1; transform:translateY(0);}
+  .fox-bubble::after{content:""; position:absolute; left:20px; top:-9px; border:8px solid transparent; border-bottom-color:var(--card);}
+  /* 彩带 */
+  .confetti{position:fixed; top:-12px; width:10px; height:14px; z-index:80; pointer-events:none; border-radius:2px; animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg); opacity:.85}}
+  /* 掌握度环 */
+  .ring{position:relative; width:52px; height:52px; border-radius:50%; background:conic-gradient(var(--grass) calc(var(--p,0)*1%), var(--line) 0); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .ring::before{content:""; position:absolute; width:38px; height:38px; background:var(--card); border-radius:50%;}
+  .ring span{position:relative; z-index:1; font-weight:800; font-size:12px;}
+  .mastery-list{display:flex; flex-direction:column; gap:7px; margin:10px 0;}
+  .mastery-row{display:flex; align-items:center; gap:10px;}
+  .mastery-row .nm{width:92px; font-size:13px; font-weight:700; flex:0 0 auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* 单元测试 */
+  .test-q{font-size:20px; font-weight:800; text-align:center; margin:12px 0;}
+  .test-prog{height:8px; background:var(--line); border-radius:999px; overflow:hidden; margin-bottom:10px;}
+  .test-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--grape),var(--sky)); transition:width .3s;}
+  .test-score{text-align:center; font-size:46px; font-weight:800; color:var(--grape-d);}
+  /* 游戏 */
+  .letter-pool{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0;}
+  .lt{width:42px; height:50px; border-radius:12px; background:var(--card); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; cursor:pointer; box-shadow:var(--shadow);}
+  .lt.used{opacity:.25; pointer-events:none;}
+  .lt.in{background:var(--soft); border-color:var(--grape); color:var(--grape-d);}
+  .build-slot{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; min-height:56px; margin:8px 0; padding:8px; border:2px dashed var(--line); border-radius:14px;}
+  .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
+  .mem-card{aspect-ratio:1/1; border-radius:14px; background:var(--card); border:2px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:800; cursor:pointer; box-shadow:var(--shadow); user-select:none; text-align:center; padding:2px; overflow:hidden;}
+  .mem-card .en{font-size:13px; line-height:1.1;} .mem-card .zh{font-size:11px; color:var(--muted); font-weight:600;}
+  .mem-card.flip{background:var(--soft); border-color:var(--sky);}
+  .mem-card.matched{background:var(--grass); color:#fff; border-color:var(--grass-d);}
+  .mem-card.matched .zh{color:#eafff0;}
+  .mem-card.bad{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  /* 成就墙 */
+  .ach-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px; margin-top:10px;}
+  .ach{background:var(--card); border:2px solid var(--line); border-radius:16px; padding:12px 6px; text-align:center; box-shadow:var(--shadow);}
+  .ach .ico{font-size:32px; display:block;}
+  .ach.locked{filter:grayscale(1); opacity:.45;}
+  .ach .nm{font-size:12px; font-weight:800; margin-top:4px;}
+  .ach .ds{font-size:10px; color:var(--muted); margin-top:2px;}
+  .chips .chip.on{background:var(--grape); color:#fff; border-color:var(--grape-d);}
 </style>
 </head>
 <body>
@@ -279,14 +395,70 @@
     <div class="grid">
       <div class="tile c-sky" onclick="go('vocab')"><span class="ic">📚</span><h3>词汇练习</h3><p>闪卡 + 听写测验</p></div>
       <div class="tile c-grape" onclick="go('sentences')"><span class="ic">💬</span><h3>句型练习</h3><p>核心句型跟读</p></div>
+      <div class="tile c-sun" onclick="go('grammar')"><span class="ic">🧩</span><h3>语法小课堂</h3><p>讲解 + 小练习</p></div>
       <div class="tile c-grass" onclick="go('skills')"><span class="ic">🎧</span><h3>听说读写</h3><p>四项技能训练</p></div>
       <div class="tile c-coral" onclick="go('adventure')"><span class="ic">🏝️</span><h3>趣味闯关</h3><p>关卡地图 + 星星</p></div>
-      <div class="tile c-sun" onclick="go('progress')"><span class="ic">📈</span><h3>我的进度</h3><p>报告 + 导出</p></div>
+      <div class="tile c-grape" onclick="go('test')"><span class="ic">📝</span><h3>单元测试</h3><p>正式测验 + 计分</p></div>
+      <div class="tile c-sun" onclick="go('games')"><span class="ic">🎮</span><h3>单词游戏</h3><p>拼词 + 连连看</p></div>
+      <div class="tile c-coral" onclick="go('challenge')"><span class="ic">⏱️</span><h3>限时挑战</h3><p>60 秒闯纪录</p></div>
+      <div class="tile c-grape" onclick="go('wrongbook')"><span class="ic">📒</span><h3>错题本</h3><p>错题重做</p><span class="count-dot hidden" id="wrongDot">0</span></div>
+      <div class="tile c-sun" onclick="go('achievements')"><span class="ic">🏆</span><h3>成就墙</h3><p>我的勋章</p></div>
+      <div class="tile c-grass" onclick="go('progress')"><span class="ic">📈</span><h3>我的进度</h3><p>报告 + 导出</p></div>
       <div class="tile" style="border-color:#cfd6e6" onclick="speak('Hello! Let us learn English together!')"><span class="ic">🔊</span><h3>点我听英语</h3><p>试试发音</p></div>
     </div>
     <div class="panel" style="margin-top:14px;">
-      <div class="row spread"><b>🎯 今日建议</b><span class="muted" id="dailyTip"></span></div>
+      <div class="row spread"><b>🎯 今日目标</b><span class="muted" id="dailyTip"></span></div>
+      <div class="goal-wrap">
+        <div class="goal-bar" id="goalBar"><i id="goalFill" style="width:0%"></i></div>
+        <div class="goal-text"><span id="goalDone">今天已答对 0 题</span><span id="goalLabel">0 / 20 题</span></div>
+      </div>
       <p class="muted" style="margin:8px 0 0">每天 15 分钟：先学一个单元词汇，再做 1 关闯关，坚持就能集满 ⭐！</p>
+    </div>
+  </section>
+
+  <!-- UNIT TEST 单元测试 -->
+  <section class="screen" id="test">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">← 返回</button>
+      <span class="muted">单元测试</span>
+    </div>
+    <div class="panel">
+      <h2 class="sec">📝 单元掌握度</h2>
+      <div class="mastery-list" id="masteryList"></div>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h2 class="sec">🧪 开始测验</h2>
+      <p class="muted">选一个单元，做 10 道题（听音/选词/拼写/连词），完成后给分并自动收集错题。</p>
+      <div class="chips" id="testUnits"></div>
+      <button class="btn grape lg" style="margin-top:10px; width:100%" onclick="startTest()">▶ 开始单元测试</button>
+    </div>
+    <div id="testArea"></div>
+  </section>
+
+  <!-- GAMES 单词游戏 -->
+  <section class="screen" id="games">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">← 返回</button>
+      <span class="muted">单词游戏</span>
+    </div>
+    <div class="chips" id="gameMode">
+      <button class="chip on" data-m="spell" onclick="setGameMode('spell')">🔤 拼词</button>
+      <button class="chip" data-m="match" onclick="setGameMode('match')">🃏 连连看</button>
+    </div>
+    <div class="chips" id="gameUnits"></div>
+    <div id="gameArea" class="panel" style="margin-top:12px;"></div>
+  </section>
+
+  <!-- ACHIEVEMENTS 成就墙 -->
+  <section class="screen" id="achievements">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">← 返回</button>
+      <span class="muted">成就墙</span>
+    </div>
+    <div class="panel">
+      <h2 class="sec">🏆 我的勋章</h2>
+      <p class="muted" id="achSummary"></p>
+      <div class="ach-grid" id="achGrid"></div>
     </div>
   </section>
 
@@ -443,9 +615,71 @@
       <button class="btn sun lg" style="margin-top:10px" onclick="showReport()">📋 生成家长/老师报告</button>
     </div>
   </section>
+
+  <!-- WRONGBOOK 错题本 -->
+  <section class="screen" id="wrongbook">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">← 返回</button>
+      <span class="muted">错题本</span>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;">
+      <div class="stat-card"><div class="n" id="wbTotal">0</div><div class="l">📒 错题总数</div></div>
+      <div class="stat-card"><div class="n" id="wbDue">0</div><div class="l">📅 今日待复习</div></div>
+      <div class="stat-card"><div class="n" id="wbMaster">0</div><div class="l">🎉 已消灭</div></div>
+    </div>
+    <div class="panel">
+      <div class="row spread">
+        <h2 class="sec">🔄 错题重做</h2>
+        <button class="btn grape" id="redoBtn" onclick="startRedo()">▶ 开始重做</button>
+      </div>
+      <p class="muted" style="margin:0">听音、看义、拼写轮流出题，答对自动移出错题本。</p>
+      <div id="redoArea" class="redo-card"></div>
+    </div>
+    <div class="panel">
+      <h2 class="sec">📅 今日复习 <span class="muted" id="wbReviewCount" style="font-size:13px"></span></h2>
+      <p class="muted" style="margin:0">按艾宾浩斯遗忘曲线，把容易忘的错题安排到今天复习。</p>
+      <button class="btn grass lg" style="margin-top:8px" id="wbReviewBtn" onclick="startReview()">🔁 开始今日复习</button>
+    </div>
+    <div class="panel">
+      <h2 class="sec">📋 全部错题 <span class="muted" id="wbAllCount" style="font-size:13px"></span></h2>
+      <div id="wbList"></div>
+    </div>
+  </section>
+
+  <!-- GRAMMAR 语法小课堂 -->
+  <section class="screen" id="grammar">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">← 返回</button>
+      <span class="muted">语法小课堂</span>
+    </div>
+    <div class="chips" id="gramUnits"></div>
+    <div class="panel" id="gramBody"></div>
+    <div class="panel">
+      <h2 class="sec">✏️ 语法小练</h2>
+      <div id="gramQuiz"></div>
+    </div>
+  </section>
+
+  <!-- CHALLENGE 限时挑战 -->
+  <section class="screen" id="challenge">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">← 返回</button>
+      <span class="muted">限时挑战</span>
+    </div>
+    <div class="panel">
+      <div class="ch-banner">
+        <span class="big">⏱️ 60 秒单词挑战</span>
+        看中文选英文，越快越好！个人纪录：<b id="chBest">0</b> 题
+      </div>
+      <button class="btn coral lg" onclick="startChallenge()">🚀 开始挑战</button>
+      <div id="chArea" style="margin-top:14px;"></div>
+    </div>
+  </section>
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="speak-fx" id="speakFx">🔊 发音中<b></b><b></b><b></b><b></b><b></b></div>
+<div class="fox-bubble" id="foxBubble"></div>
 
 <!-- 设置弹窗 -->
 <div class="modal-mask" id="settingsModal" onclick="if(event.target===this)closeSettings()">
@@ -469,6 +703,13 @@
         <button data-r="0.75" onclick="setRate(0.75)">🐢 慢</button>
         <button data-r="0.9" onclick="setRate(0.9)">🚶 中</button>
         <button data-r="1.05" onclick="setRate(1.05)">🐇 快</button>
+      </div>
+    </div>
+    <div class="set-row"><b>🔠 字号</b>
+      <div class="seg" id="fontSeg">
+        <button data-f="1" onclick="setFont(1)">标准</button>
+        <button data-f="1.15" onclick="setFont(1.15)">大</button>
+        <button data-f="1.3" onclick="setFont(1.3)">特大</button>
       </div>
     </div>
   </div>
@@ -496,18 +737,29 @@ const BOOK_SHANG = [
   {
     id:'u1', title:'Unit 1 人物性格', emoji:'🧑‍🏫', color:'var(--sky)',
     words:[
-      {en:'old', zh:'年老的；年纪大的', ph:'oʊld', pos:'adj.', ex:'My grandpa is old but strong.'},
+      {en:'old', zh:'老的；年纪大的', ph:'oʊld', pos:'adj.', ex:'My grandpa is old but strong.'},
       {en:'young', zh:'年轻的', ph:'jʌŋ', pos:'adj.', ex:'She is young and happy.'},
       {en:'funny', zh:'滑稽的；可笑的', ph:'ˈfʌni', pos:'adj.', ex:'The clown is very funny.'},
-      {en:'kind', zh:'体贴的；慈祥的', ph:'kaɪnd', pos:'adj.', ex:'My teacher is kind to us.'},
+      {en:'kind', zh:'体贴的；慈祥的；宽容的', ph:'kaɪnd', pos:'adj.', ex:'My teacher is kind to us.'},
       {en:'strict', zh:'要求严格的；严厉的', ph:'strɪkt', pos:'adj.', ex:'Our math teacher is strict.'},
-      {en:'polite', zh:'有礼貌的', ph:'pəˈlaɪt', pos:'adj.', ex:'He is polite to everyone.'},
-      {en:'hard-working', zh:'工作努力的', ph:'ˌhɑːrd ˈwɜːrkɪŋ', pos:'adj.', ex:'She is a hard-working student.'},
-      {en:'helpful', zh:'有用的；愿意帮忙的', ph:'ˈhelpfl', pos:'adj.', ex:'My brother is very helpful.'},
-      {en:'clever', zh:'聪明的；聪颖的', ph:'ˈklevər', pos:'adj.', ex:'The clever boy solves puzzles.'},
-      {en:'shy', zh:'羞怯的；腼腆的', ph:'ʃaɪ', pos:'adj.', ex:'The shy girl hides behind me.'},
+      {en:'polite', zh:'有礼貌的；客气的', ph:'pəˈlaɪt', pos:'adj.', ex:'He is polite to everyone.'},
+      {en:'hard-working', zh:'工作努力的；辛勤的', ph:'ˌhɑːrd ˈwɜːrkɪŋ', pos:'adj.', ex:'She is a hard-working student.'},
+      {en:'helpful', zh:'有用的；愿意帮忙的', ph:'ˈhɛlpfəl', pos:'adj.', ex:'My brother is very helpful.'},
+      {en:'clever', zh:'聪明的；聪颖的', ph:'ˈklɛvər', pos:'adj.', ex:'The clever boy solves puzzles.'},
+      {en:'shy', zh:'羞怯的；腼腆的；怕生的', ph:'ʃaɪ', pos:'adj.', ex:'The shy girl hides behind me.'},
+      {en:'know', zh:'知道；了解', ph:'noʊ', pos:'v.', ex:'I know your name.'},
+      {en:'our', zh:'我们的', ph:'ˈaʊər', pos:'pron.', ex:'This is our classroom.'},
+      {en:'Ms', zh:'女士（不指明婚否）', ph:'mɪz', pos:'n.', ex:'Ms Wang is our English teacher.'},
+      {en:'will', zh:'（谈及将来）将要', ph:'wɪl', pos:'modal v.', ex:'I will help you.'},
+      {en:'sometimes', zh:'有时；间或', ph:'ˈsʌmtaɪmz', pos:'adv.', ex:'I sometimes read books.'},
       {en:'robot', zh:'机器人', ph:'ˈroʊbɑːt', pos:'n.', ex:'The robot can clean the room.'},
-      {en:'speak', zh:'会说；会讲（语言）', ph:'spiːk', pos:'v.', ex:'Please speak in English.'}
+      {en:'him', zh:'（he 的宾格）他', ph:'hɪm', pos:'pron.', ex:'I help him with homework.'},
+      {en:'speak', zh:'会说；会讲（某种语言）', ph:'spiːk', pos:'v.', ex:'Please speak in English.'},
+      {en:'finish', zh:'完成；做好', ph:'ˈfɪnɪʃ', pos:'v.', ex:'We finish homework at eight.'},
+      {en:'friendly', zh:'友好的', ph:'ˈfrɛndli', pos:'adj.', ex:'The dog is friendly to kids.'},
+      {en:'quiet', zh:'安静的', ph:'ˈkwaɪət', pos:'adj.', ex:'She is a quiet girl.'},
+      {en:'patient', zh:'有耐心的', ph:'ˈpeɪʃnt', pos:'adj.', ex:'My teacher is very patient.'},
+      {en:'active', zh:'活跃的', ph:'ˈæktɪv', pos:'adj.', ex:'The boy is very active.'},
     ],
     sentences:[
       {en:"Who's your English teacher?", zh:'谁是你们的英语老师？'},
@@ -520,13 +772,39 @@ const BOOK_SHANG = [
   {
     id:'u2', title:'Unit 2 我的星期', emoji:'📅', color:'var(--grape)',
     words:[
-      {en:'Monday', zh:'星期一', ph:'ˈmʌndeɪ', pos:'n.', ex:'We have PE on Monday.'}, {en:'Tuesday', zh:'星期二', ph:'ˈtuːzdeɪ', pos:'n.', ex:'Tuesday is a busy day.'},
-      {en:'Wednesday', zh:'星期三', ph:'ˈwenzdeɪ', pos:'n.', ex:'We play sports on Wednesday.'}, {en:'Thursday', zh:'星期四', ph:'ˈθɜːrzdeɪ', pos:'n.', ex:'Thursday comes after Wednesday.'},
-      {en:'Friday', zh:'星期五', ph:'ˈfraɪdeɪ', pos:'n.', ex:'I like Friday best.'}, {en:'Saturday', zh:'星期六', ph:'ˈsætərdeɪ', pos:'n.', ex:'I sleep late on Saturday.'},
-      {en:'Sunday', zh:'星期日', ph:'ˈsʌndeɪ', pos:'n.', ex:'Sunday is a rest day.'}, {en:'weekend', zh:'周末', ph:'ˈwiːkend', pos:'n.', ex:'We visit grandma on the weekend.'},
-      {en:'wash', zh:'洗', ph:'wɑːʃ', pos:'v.', ex:'I wash my hands before meals.'}, {en:'watch', zh:'看；注视', ph:'wɑːtʃ', pos:'v.', ex:'I watch TV after school.'},
-      {en:'read', zh:'读；阅读', ph:'riːd', pos:'v.', ex:'I read a book every night.'}, {en:'play', zh:'玩；踢（球）', ph:'pleɪ', pos:'v.', ex:'Let us play in the park.'},
-      {en:'do homework', zh:'做作业', ph:'duː ˈhoʊmwɜːrk', pos:'phr.', ex:'I do homework after dinner.'}
+      {en:'Monday', zh:'星期一', ph:'ˈmʌndeɪ', pos:'n.', ex:'We have PE on Monday.'},
+      {en:'Tuesday', zh:'星期二', ph:'ˈtuːzdeɪ', pos:'n.', ex:'Tuesday is a busy day.'},
+      {en:'Wednesday', zh:'星期三', ph:'ˈwenzdeɪ', pos:'n.', ex:'We play sports on Wednesday.'},
+      {en:'Thursday', zh:'星期四', ph:'ˈθɜːrzdeɪ', pos:'n.', ex:'Thursday comes after Wednesday.'},
+      {en:'Friday', zh:'星期五', ph:'ˈfraɪdeɪ', pos:'n.', ex:'I like Friday best.'},
+      {en:'Saturday', zh:'星期六', ph:'ˈsætərdeɪ', pos:'n.', ex:'I sleep late on Saturday.'},
+      {en:'Sunday', zh:'星期日', ph:'ˈsʌndeɪ', pos:'n.', ex:'Sunday is a rest day.'},
+      {en:'weekend', zh:'周末', ph:'ˈwiːkend', pos:'n.', ex:'We visit grandma on the weekend.'},
+      {en:'wash', zh:'洗', ph:'wɑːʃ', pos:'v.', ex:'I wash my hands before meals.'},
+      {en:'wash my clothes', zh:'洗我的衣服', ph:'wɑːʃ maɪ kloʊðz', pos:'phr.', ex:'I wash my clothes on Sunday.'},
+      {en:'watch', zh:'看；注视', ph:'wɑːtʃ', pos:'v.', ex:'I watch TV after school.'},
+      {en:'watch TV', zh:'看电视', ph:'wɑːtʃ ˈtiː ˈviː', pos:'phr.', ex:'I watch TV in the evening.'},
+      {en:'do', zh:'做；干', ph:'duː', pos:'v.', ex:'I do my homework.'},
+      {en:'do homework', zh:'做作业', ph:'duː ˈhoʊmwɜːrk', pos:'phr.', ex:'I do homework after dinner.'},
+      {en:'read', zh:'读；阅读', ph:'riːd', pos:'v.', ex:'I read a book every night.'},
+      {en:'read books', zh:'看书', ph:'riːd bʊks', pos:'phr.', ex:'I read books before bed.'},
+      {en:'play', zh:'玩；踢（球）', ph:'pleɪ', pos:'v.', ex:'Let us play in the park.'},
+      {en:'play football', zh:'踢足球', ph:'pleɪ ˈfʊtbɔːl', pos:'phr.', ex:'We play football on the weekend.'},
+      {en:'cooking', zh:'烹饪；烹调', ph:'ˈkʊkɪŋ', pos:'n.', ex:'My mom likes cooking.'},
+      {en:'often', zh:'时常；常常', ph:'ˈɔːfn', pos:'adv.', ex:'I often read books.'},
+      {en:'park', zh:'公园', ph:'pɑːrk', pos:'n.', ex:'We play in the park.'},
+      {en:'tired', zh:'疲倦的', ph:'ˈtaɪərd', pos:'adj.', ex:'I am tired after school.'},
+      {en:'sport', zh:'体育运动', ph:'spɔːrt', pos:'n.', ex:'I like sport.'},
+      {en:'play sports', zh:'做体育运动', ph:'pleɪ spɔːrts', pos:'phr.', ex:'I play sports every day.'},
+      {en:'should', zh:'（常用于纠正别人）应该；应当', ph:'ʃʊd', pos:'modal v.', ex:'You should eat vegetables.'},
+      {en:'every', zh:'每个；每一个', ph:'ˈevri', pos:'adj.', ex:'I read every day.'},
+      {en:'day', zh:'一天；一日', ph:'deɪ', pos:'n.', ex:'Have a nice day!'},
+      {en:'schedule', zh:'工作计划；日程安排', ph:'ˈskedʒuːl', pos:'n.', ex:'My schedule is full.'},
+      {en:'today', zh:'今天', ph:'təˈdeɪ', pos:'adv.', ex:'What day is it today?'},
+      {en:'tomorrow', zh:'明天', ph:'təˈmɑːroʊ', pos:'adv.', ex:'See you tomorrow.'},
+      {en:'yesterday', zh:'昨天', ph:'ˈjɛstərdeɪ', pos:'adv.', ex:'I played football yesterday.'},
+      {en:'calendar', zh:'日历', ph:'ˈkælɪndər', pos:'n.', ex:'My calendar is full.'},
+      {en:'date', zh:'日期', ph:'deɪt', pos:'n.', ex:'What is the date today?'},
     ],
     sentences:[
       {en:"What do you have on Thursdays?", zh:'星期四你们有什么课？'},
@@ -539,13 +817,28 @@ const BOOK_SHANG = [
   {
     id:'u3', title:'Unit 3 食物饮料', emoji:'🍔', color:'var(--coral)',
     words:[
-      {en:'sandwich', zh:'三明治', ph:'ˈsænwɪtʃ', pos:'n.', ex:'I eat a sandwich for lunch.'}, {en:'salad', zh:'蔬菜沙拉', ph:'ˈsæləd', pos:'n.', ex:'The salad is fresh and green.'},
-      {en:'hamburger', zh:'汉堡包', ph:'ˈhæmbɜːrɡər', pos:'n.', ex:'He eats a hamburger quickly.'}, {en:'ice cream', zh:'冰激凌', ph:'aɪs kriːm', pos:'n.', ex:'I love ice cream in summer.'},
-      {en:'tea', zh:'茶；茶水', ph:'tiː', pos:'n.', ex:'Would you like some tea?'}, {en:'fresh', zh:'新鲜的', ph:'freʃ', pos:'adj.', ex:'The air is fresh in the morning.'},
-      {en:'healthy', zh:'健康的', ph:'ˈhelθi', pos:'adj.', ex:'Apples are healthy food.'}, {en:'delicious', zh:'美味的', ph:'dɪˈlɪʃəs', pos:'adj.', ex:'The soup is delicious.'},
-      {en:'hot', zh:'辣的；辛辣的', ph:'hɑːt', pos:'adj.', ex:'The soup is too hot.'}, {en:'sweet', zh:'甜的', ph:'swiːt', pos:'adj.', ex:'The cake is sweet and yummy.'},
-      {en:'drink', zh:'喝；饮', ph:'drɪŋk', pos:'v.', ex:'Drink some water, please.'}, {en:'thirsty', zh:'口渴的', ph:'ˈθɜːrsti', pos:'adj.', ex:'I am thirsty after running.'},
-      {en:'favourite', zh:'特别喜爱的', ph:'ˈfeɪvərɪt', pos:'adj.', ex:'Blue is my favourite colour.'}
+      {en:'sandwich', zh:'三明治', ph:'ˈsænwɪtʃ', pos:'n.', ex:'I eat a sandwich for lunch.'},
+      {en:'salad', zh:'蔬菜沙拉；混合沙拉', ph:'ˈsæləd', pos:'n.', ex:'The salad is fresh and green.'},
+      {en:'hamburger', zh:'汉堡包', ph:'ˈhæmbɜːrɡər', pos:'n.', ex:'He eats a hamburger quickly.'},
+      {en:'ice cream', zh:'冰激凌', ph:'aɪs kriːm', pos:'n.', ex:'I love ice cream in summer.'},
+      {en:'tea', zh:'茶；茶水', ph:'tiː', pos:'n.', ex:'Would you like some tea?'},
+      {en:'fresh', zh:'新鲜的；刚摘的', ph:'freʃ', pos:'adj.', ex:'The air is fresh in the morning.'},
+      {en:'healthy', zh:'健康的；有益健康的', ph:'ˈhelθi', pos:'adj.', ex:'Apples are healthy food.'},
+      {en:'delicious', zh:'美味的；可口的', ph:'dɪˈlɪʃəs', pos:'adj.', ex:'The soup is delicious.'},
+      {en:'hot', zh:'辣的；辛辣的', ph:'hɑːt', pos:'adj.', ex:'The soup is too hot.'},
+      {en:'sweet', zh:'甜的', ph:'swiːt', pos:'adj.', ex:'The cake is sweet and yummy.'},
+      {en:'drink', zh:'喝；饮', ph:'drɪŋk', pos:'v.', ex:'Drink some water, please.'},
+      {en:'thirsty', zh:'口渴的；渴的', ph:'ˈθɜːrsti', pos:'adj.', ex:'I am thirsty after running.'},
+      {en:'favourite', zh:'特别喜爱的；最喜爱的', ph:'ˈfeɪvərɪt', pos:'adj.', ex:'Blue is my favourite colour.'},
+      {en:'food', zh:'食物', ph:'fuːd', pos:'n.', ex:'We need healthy food.'},
+      {en:'dear', zh:'（用于书信开头）亲爱的', ph:'dɪr', pos:'adj.', ex:'Dear friend, how are you?'},
+      {en:'onion', zh:'洋葱；葱头', ph:'ˈʌnjən', pos:'n.', ex:'I do not like onion.'},
+      {en:'bread', zh:'面包', ph:'bred', pos:'n.', ex:'I eat bread for breakfast.'},
+      {en:'noodles', zh:'面条', ph:'ˈnuːdlz', pos:'n.', ex:'I like noodles for lunch.'},
+      {en:'rice', zh:'米饭', ph:'raɪs', pos:'n.', ex:'We have rice every day.'},
+      {en:'chicken', zh:'鸡肉', ph:'ˈtʃɪkɪn', pos:'n.', ex:'I love chicken.'},
+      {en:'milk', zh:'牛奶', ph:'mɪlk', pos:'n.', ex:'Drink some milk, please.'},
+      {en:'juice', zh:'果汁', ph:'dʒuːs', pos:'n.', ex:'Orange juice is my favourite.'},
     ],
     sentences:[
       {en:"What would you like to eat?", zh:'你想吃什么？'},
@@ -558,13 +851,36 @@ const BOOK_SHANG = [
   {
     id:'u4', title:'Unit 4 能力与才艺', emoji:'🎸', color:'var(--grass)',
     words:[
-      {en:'sing', zh:'唱；唱歌', ph:'sɪŋ', pos:'v.', ex:'I sing a song at the party.'}, {en:'song', zh:'歌曲', ph:'sɔːŋ', pos:'n.', ex:'This song is very nice.'},
-      {en:'dance', zh:'跳舞', ph:'dæns', pos:'v.', ex:'We dance to the music.'}, {en:'draw', zh:'画', ph:'drɔː', pos:'v.', ex:'I draw a cat on paper.'},
-      {en:'cartoon', zh:'漫画', ph:'kɑːrˈtuːn', pos:'n.', ex:'I watch a cartoon on Sunday.'}, {en:'cook', zh:'烹调；烹饪', ph:'kʊk', pos:'v.', ex:'My mom can cook well.'},
-      {en:'swim', zh:'游泳', ph:'swɪm', pos:'v.', ex:'I swim in the pool.'}, {en:'kung fu', zh:'功夫', ph:'ˌkʌŋ ˈfuː', pos:'n.', ex:'He learns kung fu at school.'},
-      {en:'pipa', zh:'琵琶', ph:'ˈpiːpɑː', pos:'n.', ex:'She plays the pipa beautifully.'}, {en:'play basketball', zh:'打篮球', ph:'pleɪ ˈbæskɪtbɔːl', pos:'phr.', ex:'We play basketball after class.'},
-      {en:'speak English', zh:'说英语', ph:'spiːk ˈɪŋɡlɪʃ', pos:'phr.', ex:'I can speak English.'}, {en:'party', zh:'聚会；派对', ph:'ˈpɑːrti', pos:'n.', ex:'We have a party on birthdays.'},
-      {en:'wonderful', zh:'极好的；精彩的', ph:'ˈwʌndərfl', pos:'adj.', ex:'The show is wonderful!'}
+      {en:'sing', zh:'唱；唱歌', ph:'sɪŋ', pos:'v.', ex:'I sing a song at the party.'},
+      {en:'song', zh:'歌曲', ph:'sɔːŋ', pos:'n.', ex:'This song is very nice.'},
+      {en:'sing English songs', zh:'唱英文歌曲', ph:'sɪŋ ˈɪŋɡlɪʃ sɔːŋz', pos:'phr.', ex:'I can sing English songs.'},
+      {en:'play the pipa', zh:'弹琵琶', ph:'pleɪ ðə ˈpiːpɑː', pos:'phr.', ex:'She plays the pipa beautifully.'},
+      {en:'kung fu', zh:'功夫；武术', ph:'ˌkʌŋ ˈfuː', pos:'n.', ex:'He learns kung fu at school.'},
+      {en:'do kung fu', zh:'练武术', ph:'duː ˌkʌŋ ˈfuː', pos:'phr.', ex:'I can do kung fu.'},
+      {en:'dance', zh:'跳舞', ph:'dæns', pos:'v.', ex:'We dance to the music.'},
+      {en:'draw', zh:'画', ph:'drɔː', pos:'v.', ex:'I draw a cat on paper.'},
+      {en:'cartoon', zh:'漫画', ph:'kɑːrˈtuːn', pos:'n.', ex:'I watch a cartoon on Sunday.'},
+      {en:'draw cartoons', zh:'画漫画', ph:'drɔː ˈkɑːrtuːnz', pos:'phr.', ex:'He draws cartoons for fun.'},
+      {en:'cook', zh:'烹调；烹饪', ph:'kʊk', pos:'v.', ex:'My mom can cook well.'},
+      {en:'swim', zh:'游泳', ph:'swɪm', pos:'v.', ex:'I swim in the pool.'},
+      {en:'play basketball', zh:'打篮球', ph:'pleɪ ˈbæskɪtbɔːl', pos:'phr.', ex:'We play basketball after class.'},
+      {en:'ping-pong', zh:'乒乓球运动', ph:'ˈpɪŋpɑːŋ', pos:'n.', ex:'I like ping-pong.'},
+      {en:'play ping-pong', zh:'打乒乓球', ph:'pleɪ ˈpɪŋpɑːŋ', pos:'phr.', ex:'We play ping-pong together.'},
+      {en:'speak English', zh:'说英语', ph:'spiːk ˈɪŋɡlɪʃ', pos:'phr.', ex:'I can speak English.'},
+      {en:'party', zh:'聚会；派对', ph:'ˈpɑːrti', pos:'n.', ex:'We have a party on birthdays.'},
+      {en:'next', zh:'下一个的；接下来的', ph:'nekst', pos:'adj.', ex:'Next Sunday is my birthday.'},
+      {en:'wonderful', zh:'极好的；精彩的', ph:'ˈwʌndərfl', pos:'adj.', ex:'The show is wonderful!'},
+      {en:'learn', zh:'学；学习；学会', ph:'lɜːrn', pos:'v.', ex:'I learn English at school.'},
+      {en:'any', zh:'任何的；任一的', ph:'ˈeni', pos:'adj.', ex:'Do you have any questions?'},
+      {en:'problem', zh:'问题', ph:'ˈprɑːbləm', pos:'n.', ex:'No problem at all.'},
+      {en:'no problem', zh:'没问题', ph:'noʊ ˈprɑːbləm', pos:'phr.', ex:'Thank you! No problem.'},
+      {en:'want', zh:'想要', ph:'wɑːnt', pos:'v.', ex:'I want a new book.'},
+      {en:'send', zh:'发送；邮寄', ph:'send', pos:'v.', ex:'I send an email to my friend.'},
+      {en:'email', zh:'电子邮件', ph:'ˈiːmeɪl', pos:'n.', ex:'Please send me an email.'},
+      {en:'play the piano', zh:'弹钢琴', ph:'pleɪ ðə piˈænoʊ', pos:'phr.', ex:'She plays the piano well.'},
+      {en:'paint', zh:'用颜料绘画', ph:'peɪnt', pos:'v.', ex:'I paint with colours.'},
+      {en:'skate', zh:'滑冰', ph:'skeɪt', pos:'v.', ex:'We skate on the ice.'},
+      {en:'violin', zh:'小提琴', ph:'ˌvaɪəˈlɪn', pos:'n.', ex:'He plays the violin.'},
     ],
     sentences:[
       {en:"What can you do?", zh:'你会做什么？'},
@@ -577,12 +893,36 @@ const BOOK_SHANG = [
   {
     id:'u5', title:'Unit 5 房间与物品', emoji:'🛏️', color:'var(--sun)',
     words:[
-      {en:'clock', zh:'时钟', ph:'klɑːk', pos:'n.', ex:'The clock shows seven o\'clock.'}, {en:'photo', zh:'照片；相片', ph:'ˈfoʊtoʊ', pos:'n.', ex:'I take a photo of the dog.'},
-      {en:'plant', zh:'植物', ph:'plænt', pos:'n.', ex:'We plant flowers in spring.'}, {en:'water bottle', zh:'水瓶', ph:'ˈwɔːtər ˈbɑːtl', pos:'n.', ex:'My water bottle is blue.'},
-      {en:'bike', zh:'自行车', ph:'baɪk', pos:'n.', ex:'I ride a bike to school.'}, {en:'bottle', zh:'瓶子', ph:'ˈbɑːtl', pos:'n.', ex:'The bottle is full of water.'},
-      {en:'in front of', zh:'在……前面', ph:'ɪn frʌnt əv', pos:'prep.', ex:'The cat sits in front of me.'}, {en:'between', zh:'在……中间', ph:'bɪˈtwiːn', pos:'prep.', ex:'I sit between Tom and Lily.'},
-      {en:'above', zh:'在（或向）……上面', ph:'əˈbʌv', pos:'prep.', ex:'The plane is above the clouds.'}, {en:'beside', zh:'在旁边', ph:'bɪˈsaɪd', pos:'prep.', ex:'The dog sleeps beside me.'},
-      {en:'behind', zh:'在（或向）……后面', ph:'bɪˈhaɪnd', pos:'prep.', ex:'The ball is behind the door.'}, {en:'there', zh:'表示存在', ph:'ðer', pos:'adv.', ex:'There is a book on the desk.'}
+      {en:'clock', zh:'钟；时钟', ph:'klɑːk', pos:'n.', ex:'The clock shows seven o\'clock.'},
+      {en:'plant', zh:'植物', ph:'plænt', pos:'n.', ex:'We plant flowers in spring.'},
+      {en:'bottle', zh:'瓶子', ph:'ˈbɑːtl', pos:'n.', ex:'The bottle is full of water.'},
+      {en:'water bottle', zh:'水瓶', ph:'ˈwɔːtər ˈbɑːtl', pos:'phr.', ex:'My water bottle is blue.'},
+      {en:'bike', zh:'自行车；脚踏车', ph:'baɪk', pos:'n.', ex:'I ride a bike to school.'},
+      {en:'photo', zh:'照片；相片', ph:'ˈfoʊtoʊ', pos:'n.', ex:'I take a photo of the dog.'},
+      {en:'front', zh:'正面', ph:'frʌnt', pos:'n.', ex:'The teacher stands in front.'},
+      {en:'in front of', zh:'在……前面', ph:'ɪn frʌnt əv', pos:'prep.', ex:'The cat sits in front of me.'},
+      {en:'between', zh:'在……中间', ph:'bɪˈtwiːn', pos:'prep.', ex:'I sit between Tom and Lily.'},
+      {en:'above', zh:'在（或向）……上面', ph:'əˈbʌv', pos:'prep.', ex:'The plane is above the clouds.'},
+      {en:'beside', zh:'在旁边（附近）', ph:'bɪˈsaɪd', pos:'prep.', ex:'The dog sleeps beside me.'},
+      {en:'behind', zh:'在（或向）……后面', ph:'bɪˈhaɪnd', pos:'prep.', ex:'The ball is behind the door.'},
+      {en:'there', zh:'（表示存在或发生）', ph:'ðɛr', pos:'adv.', ex:'There is a book on the desk.'},
+      {en:'grandparent', zh:'（外）祖父（母）', ph:'ˈɡrændperənt', pos:'n.', ex:'My grandparent lives with us.'},
+      {en:'their', zh:'他们的；她们的；它们的', ph:'ðɛr', pos:'pron.', ex:'The kids eat their lunch.'},
+      {en:'house', zh:'房屋；房子；住宅', ph:'haʊs', pos:'n.', ex:'My house has a red door.'},
+      {en:'lot', zh:'大量；许多', ph:'lɑːt', pos:'n.', ex:'Thanks a lot!'},
+      {en:'lots of', zh:'大量；许多', ph:'lɑːts əv', pos:'phr.', ex:'We have lots of books.'},
+      {en:'flower', zh:'花；花朵', ph:'ˈflaʊər', pos:'n.', ex:'The flower is red.'},
+      {en:'move', zh:'搬家', ph:'muːv', pos:'v.', ex:'We move to a new house.'},
+      {en:'dirty', zh:'肮脏的', ph:'ˈdɜːrti', pos:'adj.', ex:'My room is dirty.'},
+      {en:'everywhere', zh:'到处；处处', ph:'ˈevriwer', pos:'adv.', ex:'Toys are everywhere.'},
+      {en:'mouse', zh:'老鼠', ph:'maʊs', pos:'n.', ex:'The mouse is small.'},
+      {en:'live', zh:'居住', ph:'lɪv', pos:'v.', ex:'I live in a big city.'},
+      {en:'nature', zh:'自然界；大自然', ph:'ˈneɪtʃər', pos:'n.', ex:'I love nature.'},
+      {en:'desk', zh:'书桌', ph:'desk', pos:'n.', ex:'My desk is tidy.'},
+      {en:'chair', zh:'椅子', ph:'tʃɛr', pos:'n.', ex:'Sit on the chair, please.'},
+      {en:'bed', zh:'床', ph:'bed', pos:'n.', ex:'The bed is soft.'},
+      {en:'window', zh:'窗户', ph:'ˈwɪndoʊ', pos:'n.', ex:'Please open the window.'},
+      {en:'door', zh:'门', ph:'dɔːr', pos:'n.', ex:'Please close the door.'},
     ],
     sentences:[
       {en:"There is a big bed.", zh:'有一张大床。'},
@@ -595,13 +935,26 @@ const BOOK_SHANG = [
   {
     id:'u6', title:'Unit 6 自然公园', emoji:'🌲', color:'var(--sky)',
     words:[
-      {en:'forest', zh:'森林', ph:'ˈfɔːrɪst', pos:'n.', ex:'We walk in the forest.'}, {en:'river', zh:'河；江', ph:'ˈrɪvər', pos:'n.', ex:'The river is long and blue.'},
-      {en:'lake', zh:'湖；湖泊', ph:'leɪk', pos:'n.', ex:'They swim in the lake.'}, {en:'mountain', zh:'高山', ph:'ˈmaʊntn', pos:'n.', ex:'The mountain is very high.'},
-      {en:'hill', zh:'山丘；小山', ph:'hɪl', pos:'n.', ex:'We climb the small hill.'}, {en:'tree', zh:'树；树木', ph:'triː', pos:'n.', ex:'The tree is tall and green.'},
-      {en:'bridge', zh:'桥', ph:'brɪdʒ', pos:'n.', ex:'We cross the bridge on foot.'}, {en:'building', zh:'建筑物', ph:'ˈbɪldɪŋ', pos:'n.', ex:'The building is very tall.'},
-      {en:'village', zh:'村庄；村镇', ph:'ˈvɪlɪdʒ', pos:'n.', ex:'He lives in a small village.'}, {en:'house', zh:'房屋；房子', ph:'haʊs', pos:'n.', ex:'My house has a red door.'},
-      {en:'boat', zh:'船', ph:'boʊt', pos:'n.', ex:'We go on a small boat.'}, {en:'rabbit', zh:'兔子', ph:'ˈræbɪt', pos:'n.', ex:'The rabbit has long ears.'},
-      {en:'go boating', zh:'去划船', ph:'ɡoʊ ˈboʊtɪŋ', pos:'phr.', ex:'Let us go boating on the lake.'}
+      {en:'forest', zh:'森林；林区', ph:'ˈfɔːrɪst', pos:'n.', ex:'We walk in the forest.'},
+      {en:'river', zh:'河；江', ph:'ˈrɪvər', pos:'n.', ex:'The river is long and blue.'},
+      {en:'lake', zh:'湖；湖泊', ph:'leɪk', pos:'n.', ex:'They swim in the lake.'},
+      {en:'mountain', zh:'高山；山岳', ph:'ˈmaʊntn', pos:'n.', ex:'The mountain is very high.'},
+      {en:'hill', zh:'山丘；小山', ph:'hɪl', pos:'n.', ex:'We climb the small hill.'},
+      {en:'tree', zh:'树；树木；乔木', ph:'triː', pos:'n.', ex:'The tree is tall and green.'},
+      {en:'bridge', zh:'桥', ph:'brɪdʒ', pos:'n.', ex:'We cross the bridge on foot.'},
+      {en:'building', zh:'建筑物；房子；楼房', ph:'ˈbɪldɪŋ', pos:'n.', ex:'The building is very tall.'},
+      {en:'village', zh:'村庄；村镇', ph:'ˈvɪlɪdʒ', pos:'n.', ex:'He lives in a small village.'},
+      {en:'house', zh:'房屋；房子；住宅', ph:'haʊs', pos:'n.', ex:'My house has a red door.'},
+      {en:'boating', zh:'划船', ph:'ˈboʊtɪŋ', pos:'n.', ex:'We go boating on Sunday.'},
+      {en:'go boating', zh:'去划船', ph:'ɡoʊ ˈboʊtɪŋ', pos:'phr.', ex:'Let us go boating on the lake.'},
+      {en:'aren\'t', zh:'不是', ph:'ɑːrnt', pos:'contraction', ex:'They aren\'t here.'},
+      {en:'rabbit', zh:'兔子', ph:'ˈræbɪt', pos:'n.', ex:'The rabbit has long ears.'},
+      {en:'high', zh:'高的', ph:'haɪ', pos:'adj.', ex:'The mountain is high.'},
+      {en:'cloud', zh:'云', ph:'klaʊd', pos:'n.', ex:'The cloud is white.'},
+      {en:'sky', zh:'天空', ph:'skaɪ', pos:'n.', ex:'The sky is blue.'},
+      {en:'sun', zh:'太阳', ph:'sʌn', pos:'n.', ex:'The sun is bright.'},
+      {en:'star', zh:'星星', ph:'stɑːr', pos:'n.', ex:'Stars shine at night.'},
+      {en:'grass', zh:'草', ph:'græs', pos:'n.', ex:'The grass is green.'},
     ],
     sentences:[
       {en:"Is there a river in the forest?", zh:'森林里有河吗？'},
@@ -618,19 +971,45 @@ const BOOK_XIA = [
   {
     id:'v1', title:'Unit 1 我的一天', emoji:'🕐', color:'var(--sky)',
     words:[
-      {en:'do morning exercises', zh:'做早操', ph:'duː ˈmɔːrnɪŋ ˈeksərsaɪzɪz', pos:'phr.', ex:'We do morning exercises at school.'},
       {en:'eat breakfast', zh:'吃早饭', ph:'iːt ˈbrekfəst', pos:'phr.', ex:'I eat breakfast at seven.'},
-      {en:'play sports', zh:'做运动', ph:'pleɪ spɔːrts', pos:'phr.', ex:'I play sports every day.'},
+      {en:'have ... class', zh:'上……课', ph:'hæv klæs', pos:'phr.', ex:'We have English class today.'},
+      {en:'play sports', zh:'进行体育运动', ph:'pleɪ spɔːrts', pos:'phr.', ex:'I play sports every day.'},
+      {en:'exercise', zh:'活动；运动', ph:'ˈeksərsaɪz', pos:'n.', ex:'Morning exercise is good for us.'},
+      {en:'do morning exercises', zh:'做早操', ph:'duː ˈmɔːrnɪŋ ˈeksərsaɪzɪz', pos:'phr.', ex:'We do morning exercises at school.'},
       {en:'eat dinner', zh:'吃晚饭', ph:'iːt ˈdɪnər', pos:'phr.', ex:'We eat dinner together.'},
-      {en:'when', zh:'什么时候', ph:'wɛn', pos:'adv.', ex:'When do you go to bed?'},
+      {en:'clean my room', zh:'打扫我的房间', ph:'kliːn maɪ ruːm', pos:'phr.', ex:'I clean my room on Sunday.'},
+      {en:'go for a walk', zh:'散步', ph:'ɡoʊ fɔːr ə wɔːk', pos:'phr.', ex:'We go for a walk after dinner.'},
+      {en:'go shopping', zh:'去买东西；购物', ph:'ɡoʊ ˈʃɑːpɪŋ', pos:'phr.', ex:'My mom goes shopping.'},
+      {en:'take', zh:'学习；上（课）', ph:'teɪk', pos:'v.', ex:'I take a dancing class.'},
+      {en:'dancing', zh:'跳舞；舞蹈', ph:'ˈdænsɪŋ', pos:'n.', ex:'She likes dancing.'},
+      {en:'take a dancing class', zh:'上舞蹈课', ph:'teɪk ə ˈdænsɪŋ klæs', pos:'phr.', ex:'I take a dancing class on Saturday.'},
+      {en:'when', zh:'什么时候；何时', ph:'wen', pos:'adv.', ex:'When do you get up?'},
+      {en:'after', zh:'在（时间）后', ph:'ˈæftər', pos:'prep.', ex:'We play after school.'},
+      {en:'start', zh:'开始', ph:'stɑːrt', pos:'v.', ex:'Class starts at eight.'},
       {en:'usually', zh:'通常地；惯常地', ph:'ˈjuːʒuəli', pos:'adv.', ex:'I usually read before sleep.'},
+      {en:'Spain', zh:'西班牙', ph:'speɪn', pos:'n.', ex:'I am from Spain.'},
+      {en:'late', zh:'晚；迟', ph:'leɪt', pos:'adj.', ex:'Sorry, I am late.'},
+      {en:'a.m.', zh:'午前；上午', ph:'ˌeɪ ˈem', pos:'abbr.', ex:'We eat at 7 a.m.'},
+      {en:'p.m.', zh:'午后；下午', ph:'ˌpiː ˈem', pos:'abbr.', ex:'Class ends at 3 p.m.'},
       {en:'why', zh:'为什么', ph:'waɪ', pos:'adv.', ex:'Why are you late today?'},
+      {en:'shop', zh:'去买东西；购物', ph:'ʃɑːp', pos:'v.', ex:'I shop with my mom.'},
+      {en:'work', zh:'工作', ph:'wɜːrk', pos:'v.', ex:'My dad works hard.'},
+      {en:'last', zh:'上一个的；刚过去的', ph:'læst', pos:'adj.', ex:'Last Sunday was fun.'},
+      {en:'sound', zh:'听起来好像', ph:'saʊnd', pos:'v.', ex:'That sounds good.'},
+      {en:'also', zh:'还；也', ph:'ˈɔːlsoʊ', pos:'adv.', ex:'I also like music.'},
       {en:'busy', zh:'忙的', ph:'ˈbɪzi', pos:'adj.', ex:'My dad is busy at work.'},
       {en:'need', zh:'需要', ph:'niːd', pos:'v.', ex:'I need a new pencil.'},
-      {en:'play football', zh:'踢足球', ph:'pleɪ ˈfʊtbɔːl', pos:'phr.', ex:'They play football on the field.'},
-      {en:'always', zh:'总是；一直', ph:'ˈɔːlweɪz', pos:'adv.', ex:'She always helps her mom.'},
+      {en:'play', zh:'戏剧；剧本', ph:'pleɪ', pos:'n.', ex:'We watch a play.'},
+      {en:'letter', zh:'信', ph:'ˈletər', pos:'n.', ex:'I write a letter to grandma.'},
+      {en:'live', zh:'居住', ph:'lɪv', pos:'v.', ex:'He lives in a small village.'},
       {en:'island', zh:'岛', ph:'ˈaɪlənd', pos:'n.', ex:'We visit a small island.'},
-      {en:'win', zh:'获胜', ph:'wɪn', pos:'v.', ex:'Our team wants to win.'}
+      {en:'always', zh:'总是；一直', ph:'ˈɔːlweɪz', pos:'adv.', ex:'She always helps her mom.'},
+      {en:'cave', zh:'山洞；洞穴', ph:'keɪv', pos:'n.', ex:'The bear lives in a cave.'},
+      {en:'win', zh:'获胜', ph:'wɪn', pos:'v.', ex:'Our team wants to win.'},
+      {en:'get up', zh:'起床', ph:'ɡet ʌp', pos:'phr.', ex:'I get up at seven.'},
+      {en:'go to bed', zh:'上床睡觉', ph:'ɡoʊ tə bed', pos:'phr.', ex:'I go to bed at nine.'},
+      {en:'brush my teeth', zh:'刷牙', ph:'brʌʃ maɪ tiːθ', pos:'phr.', ex:'I brush my teeth every day.'},
+      {en:'take a shower', zh:'洗澡', ph:'teɪk ə ˈʃaʊər', pos:'phr.', ex:'I take a shower at night.'},
     ],
     sentences:[
       {en:"When do you finish class in the morning?", zh:'你们上午什么时候下课？'},
@@ -643,13 +1022,37 @@ const BOOK_XIA = [
   {
     id:'v2', title:'Unit 2 喜欢的季节', emoji:'🌸', color:'var(--coral)',
     words:[
-      {en:'spring', zh:'春天', ph:'sprɪŋ', pos:'n.', ex:'Spring is warm and green.'}, {en:'summer', zh:'夏天', ph:'ˈsʌmər', pos:'n.', ex:'Summer is hot and sunny.'},
-      {en:'autumn', zh:'秋天', ph:'ˈɔːtəm', pos:'n.', ex:'Autumn leaves turn yellow.'}, {en:'winter', zh:'冬天', ph:'ˈwɪntər', pos:'n.', ex:'Winter is cold and white.'},
-      {en:'season', zh:'季节', ph:'ˈsiːzn', pos:'n.', ex:'My favourite season is spring.'}, {en:'which', zh:'哪一个', ph:'wɪtʃ', pos:'pron.', ex:'Which book do you like?'},
-      {en:'best', zh:'最；最高程度地', ph:'bɛst', pos:'adv.', ex:'I like dogs best.'}, {en:'snow', zh:'雪；下雪', ph:'snoʊ', pos:'n.', ex:'It begins to snow at night.'},
-      {en:'because', zh:'因为', ph:'bɪˈkɔːz', pos:'conj.', ex:'I am happy because it is Sunday.'}, {en:'vacation', zh:'假期', ph:'veɪˈkeɪʃn', pos:'n.', ex:'We go to the beach on vacation.'},
-      {en:'pink', zh:'粉色；粉色的', ph:'pɪŋk', pos:'adj.', ex:'She wears a pink dress.'}, {en:'lovely', zh:'可爱的；美丽的', ph:'ˈlʌvli', pos:'adj.', ex:'The baby is so lovely.'},
-      {en:'leaf', zh:'叶子', ph:'liːf', pos:'n.', ex:'The leaf is red in autumn.'}
+      {en:'spring', zh:'春天', ph:'sprɪŋ', pos:'n.', ex:'Spring is warm and green.'},
+      {en:'summer', zh:'夏天', ph:'ˈsʌmər', pos:'n.', ex:'Summer is hot and sunny.'},
+      {en:'autumn', zh:'秋天', ph:'ˈɔtəm', pos:'n.', ex:'Autumn leaves turn yellow.'},
+      {en:'winter', zh:'冬天', ph:'ˈwɪntər', pos:'n.', ex:'Winter is cold and white.'},
+      {en:'season', zh:'季节', ph:'ˈsiːzn', pos:'n.', ex:'My favourite season is spring.'},
+      {en:'picnic', zh:'野餐', ph:'ˈpɪknɪk', pos:'n.', ex:'We have a picnic in the park.'},
+      {en:'go on a picnic', zh:'去野餐', ph:'ɡoʊ ɑːn ə ˈpɪknɪk', pos:'phr.', ex:'Let us go on a picnic.'},
+      {en:'pick', zh:'摘；采集', ph:'pɪk', pos:'v.', ex:'We pick apples in fall.'},
+      {en:'pick apples', zh:'摘苹果', ph:'pɪk ˈæplz', pos:'phr.', ex:'I pick apples with my dad.'},
+      {en:'snowman', zh:'雪人', ph:'ˈsnoʊmæn', pos:'n.', ex:'We make a snowman.'},
+      {en:'make a snowman', zh:'堆雪人', ph:'meɪk ə ˈsnoʊmæn', pos:'phr.', ex:'Let us make a snowman!'},
+      {en:'go swimming', zh:'去游泳', ph:'ɡoʊ ˈswɪmɪŋ', pos:'phr.', ex:'I go swimming in summer.'},
+      {en:'which', zh:'哪一个', ph:'wɪtʃ', pos:'pron.', ex:'Which book do you like?'},
+      {en:'best', zh:'最；最高程度地', ph:'best', pos:'adv.', ex:'I like dogs best.'},
+      {en:'snow', zh:'雪；下雪', ph:'snoʊ', pos:'n.', ex:'It begins to snow at night.'},
+      {en:'good job', zh:'做得好', ph:'ɡʊd dʒɑːb', pos:'phr.', ex:'Good job, kids!'},
+      {en:'because', zh:'因为', ph:'bɪˈkɔz', pos:'conj.', ex:'I am happy because it is Sunday.'},
+      {en:'vacation', zh:'假期', ph:'veɪˈkeɪʃn', pos:'n.', ex:'We go to the beach on vacation.'},
+      {en:'all', zh:'全；完全', ph:'ɔːl', pos:'adj.', ex:'We are all here.'},
+      {en:'pink', zh:'粉色（的）；粉色的', ph:'pɪŋk', pos:'adj.', ex:'She wears a pink dress.'},
+      {en:'lovely', zh:'可爱的；美丽的', ph:'ˈlʌvli', pos:'adj.', ex:'The baby is so lovely.'},
+      {en:'leaf', zh:'叶子', ph:'liːf', pos:'n.', ex:'The leaf is red in autumn.'},
+      {en:'leaves', zh:'叶子（leaf 的复数）', ph:'liːvz', pos:'n.', ex:'The leaves fall in autumn.'},
+      {en:'fall', zh:'落下；【美】秋天', ph:'fɔːl', pos:'v.', ex:'Leaves fall in fall.'},
+      {en:'paint', zh:'用颜料绘画', ph:'peɪnt', pos:'v.', ex:'I paint a picture.'},
+      {en:'weather', zh:'天气', ph:'ˈwɛðər', pos:'n.', ex:'The weather is fine today.'},
+      {en:'sunny', zh:'晴朗的', ph:'ˈsʌni', pos:'adj.', ex:'It is sunny today.'},
+      {en:'rainy', zh:'下雨的', ph:'ˈreɪni', pos:'adj.', ex:'It is rainy outside.'},
+      {en:'windy', zh:'有风的', ph:'ˈwɪndi', pos:'adj.', ex:'It is windy in March.'},
+      {en:'snowy', zh:'下雪的', ph:'ˈsnoʊi', pos:'adj.', ex:'It is snowy in winter.'},
+      {en:'cloudy', zh:'多云的', ph:'ˈklaʊdi', pos:'adj.', ex:'It is cloudy now.'},
     ],
     sentences:[
       {en:"Which season do you like best?", zh:'你最喜欢哪个季节？'},
@@ -662,13 +1065,44 @@ const BOOK_XIA = [
   {
     id:'v3', title:'Unit 3 校历', emoji:'📆', color:'var(--grape)',
     words:[
-      {en:'January', zh:'一月', ph:'ˈdʒænjueri', pos:'n.', ex:'January is the first month.'}, {en:'February', zh:'二月', ph:'ˈfebrueri', pos:'n.', ex:'February has twenty-eight days.'},
-      {en:'March', zh:'三月', ph:'mɑːrtʃ', pos:'n.', ex:'March comes after February.'}, {en:'April', zh:'四月', ph:'ˈeɪprəl', pos:'n.', ex:'April is a rainy month.'},
-      {en:'May', zh:'五月', ph:'meɪ', pos:'n.', ex:'May is warm and nice.'}, {en:'June', zh:'六月', ph:'dʒuːn', pos:'n.', ex:'We finish school in June.'},
-      {en:'July', zh:'七月', ph:'dʒuˈlaɪ', pos:'n.', ex:'July is hot in my city.'}, {en:'August', zh:'八月', ph:'ˈɔːɡəst', pos:'n.', ex:'August is the summer holiday.'},
-      {en:'September', zh:'九月', ph:'sepˈtembər', pos:'n.', ex:'School starts in September.'}, {en:'October', zh:'十月', ph:'ɑːkˈtoʊbər', pos:'n.', ex:'October has a cool wind.'},
-      {en:'November', zh:'十一月', ph:'noʊˈvembər', pos:'n.', ex:'November is cold and grey.'}, {en:'December', zh:'十二月', ph:'dɪˈsembər', pos:'n.', ex:'December brings Christmas.'},
-      {en:'birthday', zh:'生日', ph:'ˈbɜːrθdeɪ', pos:'n.', ex:'Today is my birthday!'}
+      {en:'January', zh:'一月', ph:'ˈdʒænjuˌɛri', pos:'n.', ex:'January is the first month.'},
+      {en:'February', zh:'二月', ph:'ˈfɛbruˌɛri', pos:'n.', ex:'February has twenty-eight days.'},
+      {en:'March', zh:'三月', ph:'mɑːrtʃ', pos:'n.', ex:'March comes after February.'},
+      {en:'April', zh:'四月', ph:'ˈeɪprəl', pos:'n.', ex:'April is a rainy month.'},
+      {en:'May', zh:'五月', ph:'meɪ', pos:'n.', ex:'May is warm and nice.'},
+      {en:'June', zh:'六月', ph:'dʒuːn', pos:'n.', ex:'We finish school in June.'},
+      {en:'July', zh:'七月', ph:'dʒuˈlaɪ', pos:'n.', ex:'July is hot in my city.'},
+      {en:'August', zh:'八月', ph:'ˈɔːɡəst', pos:'n.', ex:'August is the summer holiday.'},
+      {en:'September', zh:'九月', ph:'sepˈtembər', pos:'n.', ex:'School starts in September.'},
+      {en:'October', zh:'十月', ph:'ɑːkˈtoʊbər', pos:'n.', ex:'October has a cool wind.'},
+      {en:'November', zh:'十一月', ph:'noʊˈvembər', pos:'n.', ex:'November is cold and grey.'},
+      {en:'December', zh:'十二月', ph:'dɪˈsembər', pos:'n.', ex:'December brings Christmas.'},
+      {en:'few', zh:'不多；很少', ph:'fjuː', pos:'adj.', ex:'I have a few friends.'},
+      {en:'a few', zh:'一些', ph:'ə fjuː', pos:'phr.', ex:'I have a few books.'},
+      {en:'thing', zh:'事情', ph:'θɪŋ', pos:'n.', ex:'What a funny thing!'},
+      {en:'meet', zh:'集会；开会', ph:'miːt', pos:'n.', ex:'We have a sports meet.'},
+      {en:'sports meet', zh:'运动会', ph:'spɔːrts miːt', pos:'phr.', ex:'The sports meet is fun.'},
+      {en:'Easter', zh:'复活节', ph:'ˈiːstər', pos:'n.', ex:'We paint eggs at Easter.'},
+      {en:'trip', zh:'旅行', ph:'trɪp', pos:'n.', ex:'We take a school trip.'},
+      {en:'year', zh:'年', ph:'jɪr', pos:'n.', ex:'Happy New Year!'},
+      {en:'plant', zh:'种植', ph:'plænt', pos:'v.', ex:'We plant trees in spring.'},
+      {en:'contest', zh:'比赛；竞赛', ph:'ˈkɑːntest', pos:'n.', ex:'We have a singing contest.'},
+      {en:'the Great Wall', zh:'长城', ph:'ðə ɡreɪt wɔːl', pos:'phr.', ex:'We visit the Great Wall.'},
+      {en:'national', zh:'国家的', ph:'ˈnæʃənəl', pos:'adj.', ex:'It is a national holiday.'},
+      {en:'National Day', zh:'国庆日', ph:'ˈnæʃənəl deɪ', pos:'phr.', ex:'National Day is in October.'},
+      {en:'American', zh:'美国的', ph:'əˈmerɪkən', pos:'adj.', ex:'I like American food.'},
+      {en:'Thanksgiving', zh:'感恩节', ph:'ˈθæŋksɡɪvɪŋ', pos:'n.', ex:'We eat turkey at Thanksgiving.'},
+      {en:'Christmas', zh:'圣诞节', ph:'ˈkrɪsməs', pos:'n.', ex:'We have a tree at Christmas.'},
+      {en:'holiday', zh:'假日；节日', ph:'ˈhɑːlədeɪ', pos:'n.', ex:'Summer holiday is long.'},
+      {en:'game', zh:'游戏', ph:'ɡeɪm', pos:'n.', ex:'We play a game.'},
+      {en:'riddle', zh:'谜；谜语', ph:'ˈrɪdl', pos:'n.', ex:'A riddle is fun.'},
+      {en:'act', zh:'扮演', ph:'ækt', pos:'v.', ex:'We act out a story.'},
+      {en:'act out', zh:'把……表演出来', ph:'ækt aʊt', pos:'phr.', ex:'Let us act out the story.'},
+      {en:'RSVP', zh:'（尤用于请柬）请赐复', ph:'ˌɑːr ˌes ˌviː ˈpiː', pos:'abbr.', ex:'Please RSVP to the party.'},
+      {en:'by', zh:'在……之前', ph:'baɪ', pos:'prep.', ex:'Please reply by Friday.'},
+      {en:'birthday', zh:'生日', ph:'ˈbɜːrθdeɪ', pos:'n.', ex:'My birthday is in May.'},
+      {en:'month', zh:'月份', ph:'mʌnθ', pos:'n.', ex:'There are twelve months in a year.'},
+      {en:'week', zh:'星期', ph:'wiːk', pos:'n.', ex:'A week has seven days.'},
     ],
     sentences:[
       {en:"When is Tree Planting Day?", zh:'植树节是什么时候？'},
@@ -681,13 +1115,32 @@ const BOOK_XIA = [
   {
     id:'v4', title:'Unit 4 艺术展', emoji:'🎨', color:'var(--grass)',
     words:[
-      {en:'first', zh:'第一（的）', ph:'fɜːrst', pos:'num.', ex:'He is the first in the race.'}, {en:'second', zh:'第二（的）', ph:'ˈsekənd', pos:'num.', ex:'She is the second to finish.'},
-      {en:'third', zh:'第三（的）', ph:'θɜːrd', pos:'num.', ex:'I am third in line.'}, {en:'fourth', zh:'第四（的）', ph:'fɔːrθ', pos:'num.', ex:'The fourth apple is red.'},
-      {en:'fifth', zh:'第五（的）', ph:'fɪfθ', pos:'num.', ex:'We live on the fifth floor.'}, {en:'twelfth', zh:'第十二（的）', ph:'twelfθ', pos:'num.', ex:'December is the twelfth month.'},
-      {en:'twentieth', zh:'第二十（的）', ph:'ˈtwentiəθ', pos:'num.', ex:'It is my twentieth day here.'}, {en:'other', zh:'其他', ph:'ˈʌðər', pos:'adj.', ex:'The other book is on the desk.'},
-      {en:'show', zh:'展览；展示', ph:'ʃoʊ', pos:'n.', ex:'We watch a show on Friday.'}, {en:'festival', zh:'节日', ph:'ˈfestɪvl', pos:'n.', ex:'The festival is lots of fun.'},
-      {en:'kitten', zh:'小猫', ph:'ˈkɪtn', pos:'n.', ex:'The kitten is small and cute.'}, {en:'still', zh:'仍然；依旧', ph:'stɪl', pos:'adv.', ex:'The baby is still sleeping.'},
-      {en:'noise', zh:'声音；响声', ph:'nɔɪz', pos:'n.', ex:'Please do not make noise.'}
+      {en:'first', zh:'第一（的）', ph:'fɜːrst', pos:'num.', ex:'He is the first in the race.'},
+      {en:'second', zh:'第二（的）', ph:'ˈsekənd', pos:'num.', ex:'She is the second to finish.'},
+      {en:'third', zh:'第三（的）', ph:'θɜːrd', pos:'num.', ex:'I am third in line.'},
+      {en:'fourth', zh:'第四（的）', ph:'fɔːrθ', pos:'num.', ex:'The fourth apple is red.'},
+      {en:'fifth', zh:'第五（的）', ph:'fɪfθ', pos:'num.', ex:'We live on the fifth floor.'},
+      {en:'twelfth', zh:'第十二（的）', ph:'twelfθ', pos:'num.', ex:'December is the twelfth month.'},
+      {en:'twentieth', zh:'第二十（的）', ph:'ˈtwentiəθ', pos:'num.', ex:'It is my twentieth day here.'},
+      {en:'twenty-first', zh:'第二十一（的）', ph:'ˌtwenti ˈfɜːrst', pos:'num.', ex:'Today is the twenty-first.'},
+      {en:'twenty-third', zh:'第二十三（的）', ph:'ˌtwenti ˈθɜːrd', pos:'num.', ex:'The twenty-third is my day.'},
+      {en:'thirtieth', zh:'第三十（的）', ph:'ˈθɜːrtiəθ', pos:'num.', ex:'The thirtieth is here.'},
+      {en:'other', zh:'其他', ph:'ˈʌðər', pos:'adj.', ex:'The other book is on the desk.'},
+      {en:'special', zh:'特殊的；特别的', ph:'ˈspeʃl', pos:'adj.', ex:'It is a special day.'},
+      {en:'show', zh:'展览', ph:'ʃoʊ', pos:'n.', ex:'We watch a show on Friday.'},
+      {en:'festival', zh:'节日', ph:'ˈfestɪvl', pos:'n.', ex:'The festival is lots of fun.'},
+      {en:'kitten', zh:'小猫', ph:'ˈkɪtn', pos:'n.', ex:'The kitten is small and cute.'},
+      {en:'diary', zh:'日记', ph:'ˈdaɪəri', pos:'n.', ex:'I write in my diary.'},
+      {en:'still', zh:'仍然；依旧；还是', ph:'stɪl', pos:'adv.', ex:'The baby is still sleeping.'},
+      {en:'noise', zh:'声音；响声；噪音', ph:'nɔɪz', pos:'n.', ex:'Please do not make noise.'},
+      {en:'fur', zh:'（某些动物的）浓密软毛', ph:'fɜːr', pos:'n.', ex:'The kitten has soft fur.'},
+      {en:'open', zh:'开着的', ph:'ˈoʊpən', pos:'adj.', ex:'The door is open.'},
+      {en:'walk', zh:'行走', ph:'wɔːk', pos:'v.', ex:'We walk to school.'},
+      {en:'sixth', zh:'第六（的）', ph:'sɪksθ', pos:'num.', ex:'June is the sixth month.'},
+      {en:'seventh', zh:'第七（的）', ph:'ˈsɛvənθ', pos:'num.', ex:'He is the seventh in line.'},
+      {en:'eighth', zh:'第八（的）', ph:'eɪtθ', pos:'num.', ex:'August is the eighth month.'},
+      {en:'ninth', zh:'第九（的）', ph:'naɪnθ', pos:'num.', ex:'Today is the ninth.'},
+      {en:'tenth', zh:'第十（的）', ph:'tɛnθ', pos:'num.', ex:'The tenth day is sunny.'},
     ],
     sentences:[
       {en:"When is the art show?", zh:'艺术展是什么时候？'},
@@ -700,13 +1153,27 @@ const BOOK_XIA = [
   {
     id:'v5', title:'Unit 5 这是谁的', emoji:'🐶', color:'var(--sun)',
     words:[
-      {en:'mine', zh:'我的', ph:'maɪn', pos:'pron.', ex:'This red pen is mine.'}, {en:'yours', zh:'你（们）的', ph:'jɔːrz', pos:'pron.', ex:'Is this book yours?'},
-      {en:'his', zh:'他的', ph:'hɪz', pos:'pron.', ex:'That blue bag is his.'}, {en:'hers', zh:'她的', ph:'hɜːrz', pos:'pron.', ex:'The pink ruler is hers.'},
-      {en:'theirs', zh:'他们的；她们的', ph:'ðerz', pos:'pron.', ex:'The big house is theirs.'}, {en:'ours', zh:'我们的', ph:'aʊərz', pos:'pron.', ex:'This dog is ours.'},
-      {en:'climbing', zh:'攀登；攀爬', ph:'ˈklaɪmɪŋ', pos:'v.', ex:'The cat is climbing the tree.'}, {en:'eating', zh:'吃', ph:'ˈiːtɪŋ', pos:'v.', ex:'The panda is eating bamboo.'},
-      {en:'playing', zh:'玩耍', ph:'ˈpleɪɪŋ', pos:'v.', ex:'The children are playing outside.'}, {en:'jumping', zh:'跳', ph:'ˈdʒʌmpɪŋ', pos:'v.', ex:'The frog is jumping high.'},
-      {en:'drinking', zh:'喝', ph:'ˈdrɪŋkɪŋ', pos:'v.', ex:'He is drinking some milk.'}, {en:'sleeping', zh:'睡觉', ph:'ˈsliːpɪŋ', pos:'v.', ex:'The baby is sleeping now.'},
-      {en:'excited', zh:'兴奋的；激动的', ph:'ɪkˈsaɪtɪd', pos:'adj.', ex:'I am excited about the trip.'}
+      {en:'mine', zh:'我的', ph:'maɪn', pos:'pron.', ex:'This red pen is mine.'},
+      {en:'yours', zh:'你（们）的', ph:'jɔːrz', pos:'pron.', ex:'Is this book yours?'},
+      {en:'his', zh:'他的', ph:'hɪz', pos:'pron.', ex:'That blue bag is his.'},
+      {en:'hers', zh:'她的', ph:'hɜːrz', pos:'pron.', ex:'The pink ruler is hers.'},
+      {en:'theirs', zh:'他们的；她们的；它们的', ph:'ðɛrz', pos:'pron.', ex:'The big house is theirs.'},
+      {en:'ours', zh:'我们的', ph:'ˈaʊərz', pos:'pron.', ex:'This dog is ours.'},
+      {en:'climbing', zh:'（正在）攀登；攀爬', ph:'ˈklaɪmɪŋ', pos:'v.', ex:'The cat is climbing the tree.'},
+      {en:'eating', zh:'（正在）吃', ph:'ˈiːtɪŋ', pos:'v.', ex:'The panda is eating bamboo.'},
+      {en:'playing', zh:'（正在）玩耍', ph:'ˈpleɪɪŋ', pos:'v.', ex:'The children are playing outside.'},
+      {en:'jumping', zh:'（正在）跳', ph:'ˈdʒʌmpɪŋ', pos:'v.', ex:'The frog is jumping high.'},
+      {en:'drinking', zh:'（正在）喝（水）', ph:'ˈdrɪŋkɪŋ', pos:'v.', ex:'He is drinking some milk.'},
+      {en:'sleeping', zh:'（正在）睡觉', ph:'ˈsliːpɪŋ', pos:'v.', ex:'The baby is sleeping now.'},
+      {en:'each', zh:'每一；各个', ph:'iːtʃ', pos:'adj.', ex:'Each child has a book.'},
+      {en:'other', zh:'其他', ph:'ˈʌðər', pos:'adj.', ex:'Show me the other one.'},
+      {en:'excited', zh:'兴奋的；激动的', ph:'ɪkˈsaɪtɪd', pos:'adj.', ex:'I am excited about the trip.'},
+      {en:'like', zh:'像……那样', ph:'laɪk', pos:'prep.', ex:'The cat runs like a tiger.'},
+      {en:'each other', zh:'相互', ph:'iːtʃ ˈʌðər', pos:'phr.', ex:'We help each other.'},
+      {en:'running', zh:'（正在）跑', ph:'ˈrʌnɪŋ', pos:'v.', ex:'He is running fast.'},
+      {en:'walking', zh:'（正在）走', ph:'ˈwɔːkɪŋ', pos:'v.', ex:'They are walking home.'},
+      {en:'singing', zh:'（正在）唱', ph:'ˈsɪŋɪŋ', pos:'v.', ex:'She is singing a song.'},
+      {en:'laughing', zh:'（正在）笑', ph:'ˈlæfɪŋ', pos:'v.', ex:'The kids are laughing.'},
     ],
     sentences:[
       {en:"Whose dog is it?", zh:'这是谁的狗？'},
@@ -719,13 +1186,34 @@ const BOOK_XIA = [
   {
     id:'v6', title:'Unit 6 安静规则', emoji:'🤫', color:'var(--coral)',
     words:[
-      {en:'eating lunch', zh:'吃午饭', ph:'ˈiːtɪŋ lʌntʃ', pos:'phr.', ex:'We are eating lunch at school.'}, {en:'reading a book', zh:'看书', ph:'ˈriːdɪŋ ə bʊk', pos:'phr.', ex:'She is reading a book quietly.'},
-      {en:'listening to music', zh:'听音乐', ph:'ˈlɪsnɪŋ tə ˈmjuːzɪk', pos:'phr.', ex:'He is listening to music.'}, {en:'keep', zh:'保持某种状态', ph:'kiːp', pos:'v.', ex:'Please keep your room tidy.'},
-      {en:'keep to the right', zh:'靠右', ph:'kiːp tə ðə raɪt', pos:'phr.', ex:'We keep to the right on stairs.'}, {en:'keep your desk clean', zh:'保持桌面整洁', ph:'kiːp jɔːr desk kliːn', pos:'phr.', ex:'Keep your desk clean, please.'},
-      {en:'talk quietly', zh:'小声讲话', ph:'tɔːk ˈkwaɪətli', pos:'phr.', ex:'We talk quietly in the library.'}, {en:'take turns', zh:'按顺序来', ph:'teɪk tɜːrnz', pos:'phr.', ex:'We take turns to speak.'},
-      {en:'bamboo', zh:'竹子', ph:'bæmˈbuː', pos:'n.', ex:'Pandas love bamboo.'}, {en:'its', zh:'它的', ph:'ɪts', pos:'pron.', ex:'The dog wags its tail.'},
-      {en:'anything', zh:'任何事物', ph:'ˈeniθɪŋ', pos:'pron.', ex:'I do not see anything there.'}, {en:'else', zh:'另外；其他', ph:'ɛls', pos:'adv.', ex:'What else do you want?'},
-      {en:'teach', zh:'教', ph:'tiːtʃ', pos:'v.', ex:'My mom will teach me to cook.'}
+      {en:'doing morning exercises', zh:'（正在）做早操', ph:'ˈduːɪŋ ˈmɔːrnɪŋ ˈeksərsaɪzɪz', pos:'phr.', ex:'He is doing morning exercises.'},
+      {en:'having ... class', zh:'（正在）上……课', ph:'ˈhævɪŋ klæs', pos:'phr.', ex:'We are having English class.'},
+      {en:'eating lunch', zh:'（正在）吃午饭', ph:'ˈiːtɪŋ lʌntʃ', pos:'phr.', ex:'We are eating lunch at school.'},
+      {en:'reading a book', zh:'（正在）看书', ph:'ˈriːdɪŋ ə bʊk', pos:'phr.', ex:'She is reading a book quietly.'},
+      {en:'listening to music', zh:'（正在）听音乐', ph:'ˈlɪsnɪŋ tə ˈmjuːzɪk', pos:'phr.', ex:'He is listening to music.'},
+      {en:'keep', zh:'保持某种状态', ph:'kiːp', pos:'v.', ex:'Please keep your room tidy.'},
+      {en:'keep to the right', zh:'靠右', ph:'kiːp tə ðə raɪt', pos:'phr.', ex:'We keep to the right on stairs.'},
+      {en:'keep your desk clean', zh:'保持你的课桌干净', ph:'kiːp jɔːr desk kliːn', pos:'phr.', ex:'Keep your desk clean, please.'},
+      {en:'talk quietly', zh:'小声讲话', ph:'tɔːk ˈkwaɪətli', pos:'phr.', ex:'We talk quietly in the library.'},
+      {en:'turn', zh:'顺序', ph:'tɜːrn', pos:'n.', ex:'It is your turn.'},
+      {en:'take turns', zh:'按顺序来', ph:'teɪk tɜːrnz', pos:'phr.', ex:'We take turns to speak.'},
+      {en:'bamboo', zh:'竹子', ph:'bæmˈbuː', pos:'n.', ex:'Pandas love bamboo.'},
+      {en:'its', zh:'它的', ph:'ɪts', pos:'pron.', ex:'The dog wags its tail.'},
+      {en:'show', zh:'给人看', ph:'ʃoʊ', pos:'v.', ex:'Show me your book.'},
+      {en:'anything', zh:'任何事物', ph:'ˈeniθɪŋ', pos:'pron.', ex:'I do not see anything there.'},
+      {en:'else', zh:'另外；其他', ph:'els', pos:'adv.', ex:'What else do you want?'},
+      {en:'exhibition', zh:'展览', ph:'ˌeksɪˈbɪʃn', pos:'n.', ex:'We go to an exhibition.'},
+      {en:'say', zh:'说', ph:'seɪ', pos:'v.', ex:'Please say hello.'},
+      {en:'have a look', zh:'看一看', ph:'hæv ə lʊk', pos:'phr.', ex:'Let me have a look.'},
+      {en:'sushi', zh:'寿司', ph:'ˈsuːʃi', pos:'n.', ex:'I eat sushi for lunch.'},
+      {en:'teach', zh:'教', ph:'tiːtʃ', pos:'v.', ex:'My mom will teach me to cook.'},
+      {en:'sure', zh:'当然', ph:'ʃʊr', pos:'adj.', ex:'Can you help? Sure!'},
+      {en:'Canadian', zh:'加拿大的', ph:'kəˈneɪdiən', pos:'adj.', ex:'He is Canadian.'},
+      {en:'Spanish', zh:'用西班牙语（的）', ph:'ˈspænɪʃ', pos:'adj.', ex:'We speak Spanish.'},
+      {en:'wait', zh:'等待', ph:'weɪt', pos:'v.', ex:'Please wait a moment.'},
+      {en:'line', zh:'排队', ph:'laɪn', pos:'v.', ex:'We line up before class.'},
+      {en:'quietly', zh:'安静地', ph:'ˈkwaɪətli', pos:'adv.', ex:'Walk quietly in the hall.'},
+      {en:'queue', zh:'队列', ph:'kjuː', pos:'n.', ex:'Stand in the queue.'},
     ],
     sentences:[
       {en:"What are they doing?", zh:'它们在做什么？'},
@@ -742,6 +1230,82 @@ let UNITS = BOOK_SHANG;
 /* 全部单元（上下册合并），用于跨书单词归因与全局统计 */
 const ALL_UNITS = [...BOOK_SHANG, ...BOOK_XIA];
 
+/* =========================================================
+   语法小课堂（五年级核心语法点 + 练习）
+   ========================================================= */
+const GRAMMAR=[
+ {id:'g1', emoji:'🕰️', title:'一般现在时', intro:'表示经常性、习惯性的动作或现在的状态。',
+  points:['主语是 he / she / it 或单数名词时，动词加 -s / -es：She likes milk.','否定句：主语 + don\u2019t / doesn\u2019t + 动词原形','疑问句用 Do / Does 开头：Does he like apples?','频率副词放动词前：always / usually / often / sometimes'],
+  examples:[{en:"She likes music.", zh:"她喜欢音乐。"},{en:"He doesn't play football.", zh:"他不踢足球。"},{en:"Does he get up at six?", zh:"他六点起床吗？"}],
+  quiz:[
+   {q:"She ___ milk every morning.", opts:["drink","drinks","drinking","is drink"], ans:1, exp:"主语 She 是第三人称单数，动词要加 -s → drinks。"},
+   {q:"___ he like apples?", opts:["Do","Does","Is","Are"], ans:1, exp:"第三人称单数的一般疑问句用 Does 开头，后面动词用原形。"},
+   {q:"He ___ his homework at eight.", opts:["do","does","doing","is do"], ans:1, exp:"He 是第三人称单数，表示日常习惯用 does。"}]},
+ {id:'g2', emoji:'🏃', title:'现在进行时', intro:'表示此时此刻正在进行的动作：be + 动词-ing。',
+  points:['结构：am / is / are + doing：I am reading.','He / She / It 用 is；You / We / They 用 are；I 用 am','动词加 -ing：一般直接加；以 e 结尾去 e 加 -ing（make→making）；重读闭音节双写（run→running）','常与 now / look / listen 连用'],
+  examples:[{en:"I am reading a book.", zh:"我正在看书。"},{en:"She is singing now.", zh:"她正在唱歌。"},{en:"They are playing football.", zh:"他们正在踢足球。"}],
+  quiz:[
+   {q:"Look! The boy ___ in the river.", opts:["swim","swims","is swimming","swimming"], ans:2, exp:"Look! 表示正在发生，用 is + swimming。"},
+   {q:"We ___ dinner now.", opts:["are having","have","has","is having"], ans:0, exp:"主语 We 用 are + having，表示正在吃晚饭。"},
+   {q:"___ you doing your homework?", opts:["Are","Is","Do","Does"], ans:0, exp:"进行时疑问句把 be 提到句首，You 用 Are。"}]},
+ {id:'g3', emoji:'⏪', title:'一般过去时', intro:'表示过去发生的动作或状态。',
+  points:['be 动词过去式：am/is → was；are → were','规则动词加 -ed：play → played；以 e 结尾加 -d：like → liked；辅音字母+y 变 -ied：study → studied','常见不规则：go → went，have → had，see → saw，eat → ate','常与 yesterday / last week / ago 连用'],
+  examples:[{en:"I was at home yesterday.", zh:"昨天我在家。"},{en:"We went to the park last Sunday.", zh:"上周日我们去了公园。"},{en:"She watched TV last night.", zh:"她昨晚看电视了。"}],
+  quiz:[
+   {q:"I ___ a good time last weekend.", opts:["have","had","has","having"], ans:1, exp:"last weekend 表示过去，用 had。"},
+   {q:"They ___ at school yesterday.", opts:["is","are","was","were"], ans:3, exp:"They 的 be 动词过去式是 were。"},
+   {q:"He ___ to Beijing last month.", opts:["go","goes","went","going"], ans:2, exp:"last month 是过去时间，go 的过去式是 went。"}]},
+ {id:'g4', emoji:'📍', title:'There be 句型', intro:'表示“某处有某物”。',
+  points:['There is + 单数名词 / 不可数名词','There are + 复数名词','就近原则：There is a book and two pens.（靠近 be 的是单数就用 is）','否定：There isn\u2019t / aren\u2019t；疑问：Is / Are there...?'],
+  examples:[{en:"There is a cat under the chair.", zh:"椅子下面有一只猫。"},{en:"There are many flowers in the garden.", zh:"花园里有许多花。"},{en:"Is there a river near the village?", zh:"村庄附近有条河吗？"}],
+  quiz:[
+   {q:"There ___ a book on the desk.", opts:["is","are","am","be"], ans:0, exp:"a book 是单数，用 There is。"},
+   {q:"There ___ two birds in the tree.", opts:["is","are","am","be"], ans:1, exp:"two birds 是复数，用 There are。"},
+   {q:"___ there any milk in the glass?", opts:["Is","Are","Do","Does"], ans:0, exp:"milk 是不可数名词，用 Is there。"}]},
+ {id:'g5', emoji:'🙋', title:'人称代词与物主代词', intro:'代词用来代替人或物，避免重复。',
+  points:['主格（做主语）：I, you, he, she, it, we, they','宾格（做宾语）：me, you, him, her, it, us, them','物主代词（表“谁的”）：my, your, his, her, its, our, their','物主代词后要接名词：my book, her bag'],
+  examples:[{en:"This is my pen. It is mine.", zh:"这是我的钢笔，它是我的。"},{en:"She is my teacher. We like her.", zh:"她是我的老师，我们喜欢她。"},{en:"They help us with English.", zh:"他们帮助我们学英语。"}],
+  quiz:[
+   {q:"___ is my good friend.", opts:["I","He","Me","My"], ans:1, exp:"作主语用主格，选 He。"},
+   {q:"This is ___ new bike.", opts:["I","me","my","mine"], ans:2, exp:"后面有名词 bike，用物主代词 my。"},
+   {q:"Please give the book to ___.", opts:["he","him","his","he's"], ans:1, exp:"to 后面用宾格 him。"}]},
+ {id:'g6', emoji:'🍎', title:'可数与不可数名词', intro:'名词分可数（有复数）和不可数（没有复数）。',
+  points:['可数名词：a book → two books；a → an（元音开头）：an apple','不可数名词没有复数：water, milk, bread, rice, tea, juice','some 用于肯定句；any 用于否定句和疑问句','a / an 只用于可数名词单数前'],
+  examples:[{en:"I have an apple and two bananas.", zh:"我有一个苹果和两根香蕉。"},{en:"Would you like some water?", zh:"你想喝点水吗？"},{en:"There isn't any milk in the fridge.", zh:"冰箱里没有牛奶了。"}],
+  quiz:[
+   {q:"I can see ___ elephant in the zoo.", opts:["a","an","some","any"], ans:1, exp:"elephant 以元音音素开头，用 an。"},
+   {q:"Do you have ___ brothers?", opts:["some","any","a","an"], ans:1, exp:"疑问句用 any。"},
+   {q:"There is ___ bread on the table.", opts:["a","an","some","many"], ans:2, exp:"bread 不可数，用 some。"}]},
+ {id:'g7', emoji:'🗺️', title:'方位介词', intro:'介词表示物体之间的位置关系。',
+  points:['in 在…里面；on 在…上面；under 在…下面','beside 在旁边；behind 在…后面；in front of 在…前面','between 在…（两者）之间；above 在…上方','问路：Where is it? It is + 介词短语'],
+  examples:[{en:"The cat is in front of the door.", zh:"猫在门前面。"},{en:"I sit between Tom and Lily.", zh:"我坐在汤姆和莉莉中间。"},{en:"The ball is under the bed.", zh:"球在床下面。"}],
+  quiz:[
+   {q:"The moon is ___ the clouds.", opts:["under","above","behind","in"], ans:1, exp:"月亮在云朵上方，用 above。"},
+   {q:"The teacher stands ___ the classroom.", opts:["in front of","between","under","beside"], ans:0, exp:"老师站在教室前面，用 in front of。"},
+   {q:"The dog sleeps ___ the table.", opts:["on","under","in","at"], ans:1, exp:"狗在桌子下面睡觉，用 under。"}]},
+ {id:'g8', emoji:'❓', title:'特殊疑问句', intro:'用疑问词提问的句子，回答不能用 yes / no。',
+  points:['What 什么 / Where 哪里 / When 什么时候','Who 谁 / Why 为什么 / How 怎么样（How many 多少）','结构：疑问词 + 助动词/be + 主语 + ...?','How many + 复数名词：How many books do you have?'],
+  examples:[{en:"Where do you live?", zh:"你住在哪里？"},{en:"When do you get up?", zh:"你什么时候起床？"},{en:"How many apples are there?", zh:"有多少个苹果？"}],
+  quiz:[
+   {q:"___ is your birthday?", opts:["What","When","Where","Who"], ans:1, exp:"问时间用 When。"},
+   {q:"___ do you like? I like the blue one.", opts:["Which","When","Why","Who"], ans:0, exp:"问哪一个用 Which。"},
+   {q:"___ are you late? Because I missed the bus.", opts:["What","Where","Why","How"], ans:2, exp:"回答是 Because，问原因用 Why。"}]},
+ {id:'g9', emoji:'📏', title:'形容词比较级', intro:'比较两个人或事物，用“比较级 + than”。',
+  points:['一般加 -er：tall → taller；以 e 结尾加 -r：nice → nicer','辅音+y 变 -ier：happy → happier；重读闭音节双写：big → bigger','多音节词用 more：more beautiful','比较级 + than：A is taller than B'],
+  examples:[{en:"My sister is taller than me.", zh:"我妹妹比我高。"},{en:"This book is more interesting.", zh:"这本书更有趣。"},{en:"Summer is hotter than spring.", zh:"夏天比春天热。"}],
+  quiz:[
+   {q:"A giraffe is ___ than a dog.", opts:["tall","taller","tallest","more tall"], ans:1, exp:"比较级加 -er：taller。"},
+   {q:"The blue pen is ___ than the red one.", opts:["long","longer","longest","more long"], ans:1, exp:"long 的比较级是 longer。"},
+   {q:"I am ___ than you.", opts:["happy","happier","happiest","more happy"], ans:1, exp:"辅音字母+y 结尾，变 y 为 i 加 -er：happier。"}]},
+ {id:'g10', emoji:'🛠️', title:'情态动词', intro:'can / should / will 表示能力、应该和将来，后接动词原形。',
+  points:['can 能/会：I can swim. 否定：can\u2019t','should 应该：You should eat more vegetables. 否定：shouldn\u2019t','will 将要：I will help you. 否定：won\u2019t','情态动词后面永远用动词原形，不随主语变化'],
+  examples:[{en:"I can play the pipa.", zh:"我会弹琵琶。"},{en:"You should drink more water.", zh:"你应该多喝水。"},{en:"I will visit my grandma tomorrow.", zh:"我明天要去看奶奶。"}],
+  quiz:[
+   {q:"She ___ sing English songs.", opts:["can","cans","to can","caning"], ans:0, exp:"情态动词后接动词原形，can 不随主语变化。"},
+   {q:"You ___ clean your room.", opts:["should","shoulds","shoulding","to should"], ans:0, exp:"should 表示应该，后接动词原形 clean。"},
+   {q:"They ___ go to the park next Sunday.", opts:["will","wills","will to","is will"], ans:0, exp:"next Sunday 表将来，用 will + 动词原形。"}]}
+];
+
 /* 单词/句型 -> 所属单元 的查表，用于跨模块（尤其闯关）准确归因进度 */
 const EN2UNIT={};
 ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEach(s=>EN2UNIT[s.en]=u.id); });
@@ -750,7 +1314,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 1;
+const APP_VERSION = 4;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -781,15 +1345,37 @@ function openSettings(){
   syncSeg('bookSeg','b',STATE.settings.book);
   syncSeg('themeSeg','t',STATE.settings.theme);
   syncSeg('rateSeg','r',STATE.settings.rate);
+  syncSeg('fontSeg','f',STATE.settings.fontScale);
   document.getElementById('settingsModal').classList.add('show');
+}
+function setFont(s){
+  s=parseFloat(s);
+  STATE.settings.fontScale=s; applyFont(); saveState();
+  syncSeg('fontSeg','f',s);
+  toast('字号已设置 🔠');
+}
+function applyFont(){
+  const app=document.querySelector('.app');
+  if(app) app.style.zoom = (STATE.settings.fontScale||1);
 }
 function closeSettings(){ document.getElementById('settingsModal').classList.remove('show'); }
 function defaultState(){
   return { version:1, stars:0, streak:0, lastActive:'',
-    units:{}, wrong:[], settings:{rate:0.9, theme:'light', book:'shang'} };
+    units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
+    tests:{}, gameWins:0, gramRight:0,
+    settings:{rate:0.9, theme:'light', book:'shang', fontScale:1} };
 }
 function loadState(){
-  try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1) return s; }catch(e){}
+  try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1){
+    if(!s.daily) s.daily={date:'',count:0};
+    if(!s.chBest) s.chBest=0;
+    if(!s.wrongFixed) s.wrongFixed=0;
+    if(!s.tests) s.tests={};
+    if(!s.gameWins) s.gameWins=0;
+    if(!s.gramRight) s.gramRight=0;
+    if(!s.settings.fontScale) s.settings.fontScale=1;
+    return s;
+  } }catch(e){}
   return defaultState();
 }
 function saveState(){ localStorage.setItem(KEY, JSON.stringify(STATE)); refreshTop(); }
@@ -818,6 +1404,7 @@ function recordWord(id, en, ok){
     // 答对了：从错题本移除（已掌握）
     const wi=STATE.wrong.findIndex(w=>w.en===en);
     if(wi>=0) STATE.wrong.splice(wi,1);
+    bumpGoal(true);
   } else {
     const ex=STATE.wrong.find(w=>w.en===en&&w.unit===realId);
     if(!ex){
@@ -852,13 +1439,19 @@ if('serviceWorker' in navigator){
   });
 }
 function pickVoice(){ return voices.find(v=>/en[-_]US/i.test(v.lang)) || voices.find(v=>/^en/i.test(v.lang)); }
+function speakFxShow(){ const f=document.getElementById('speakFx'); if(f) f.classList.add('show'); }
+function speakFxHide(){ const f=document.getElementById('speakFx'); if(f) f.classList.remove('show'); }
 function speak(text, rate){
   if(!('speechSynthesis' in window)){ toast('当前浏览器不支持朗读 😢'); return; }
+  if(typeof navigator!=='undefined' && navigator.onLine===false){ toast('📴 离线模式：若没声音，连网后重试'); }
   primeSpeech();
   const r = rate || (STATE.settings&&STATE.settings.rate) || 0.9;
   const u=new SpeechSynthesisUtterance(text);
   u.lang='en-US'; u.rate=r;
   const v=pickVoice(); if(v) u.voice=v;
+  u.onstart=()=>speakFxShow();
+  u.onend=()=>speakFxHide();
+  u.onerror=()=>speakFxHide();
   try{ speechSynthesis.cancel(); }catch(e){}
   speechSynthesis.speak(u);
 }
@@ -869,8 +1462,9 @@ function highlightSpeak(text){
   try{ speechSynthesis.cancel(); }catch(e){}
   const tokens=text.split(/\s+/);
   let i=0;
+  speakFxShow();
   const step=()=>{
-    if(i>=tokens.length) return;
+    if(i>=tokens.length){ speakFxHide(); return; }
     document.querySelectorAll('#readHL .w').forEach((el,idx)=>el.classList.toggle('hl', idx===i));
     const u=new SpeechSynthesisUtterance(tokens[i]);
     u.lang='en-US'; u.rate=0.8;
@@ -906,10 +1500,18 @@ function go(name){
   if(name==='skills') initSkills();
   if(name==='adventure') renderMap();
   if(name==='progress') renderProgress();
+  if(name==='wrongbook') renderWrongbook();
+  if(name==='grammar') initGrammar();
+  if(name==='challenge') renderChallenge();
+  if(name==='test') renderMastery();
+  if(name==='games') renderGameHome();
+  if(name==='achievements') renderAchievements();
+  renderGoal();
 }
 function refreshTop(){
   document.getElementById('topStars').textContent='⭐ '+STATE.stars;
   document.getElementById('topStreak').textContent='🔥 '+STATE.streak;
+  renderGoal();
 }
 const TIPS=['试试先学 Unit 1 词汇 📚','今天闯一关吧 🏝️','读一句英文给自己听 📖','复习一下错题本 📒'];
 document.getElementById('dailyTip').textContent = TIPS[new Date().getDate()%TIPS.length];
@@ -1120,14 +1722,17 @@ function startSkill(mode){
     fillSkillOpts(opts, q.zh, q.en);
   } else if(mode==='speak'){
     const q=u.sentences[Math.floor(Math.random()*u.sentences.length)];
+    const en=q.en.replace(/'/g,"\\'");
+    const micBtn = SR_OK ? `<button class="btn grass" id="micBtn" onclick="doSpeak('${en}')">🎤 我来说</button>` : '';
     area.innerHTML=`<h2 class="sec">🗣️ 跟读练习</h2>
       <div class="word-read">${q.en}</div>
       <div class="big-word" style="color:var(--coral-d);font-size:18px">${q.zh}</div>
       <div class="row" style="margin-top:10px">
-        <button class="btn sky" onclick="speak('${q.en.replace(/'/g,"\\'")}')">🔊 听示范</button>
-        <button class="btn grass" id="micBtn" onclick="doSpeak('${q.en.replace(/'/g,"\\'")}')">🎤 我来说</button>
+        <button class="btn sky" onclick="speak('${en}')">🔊 听示范</button>
+        ${micBtn}
+        <button class="btn sun" onclick="selfEval()">✅ 我读完了</button>
       </div>
-      <p class="muted" id="speakResult" style="margin-top:10px">点“我来说”，对着麦克风读出来试试！</p>`;
+      <p class="muted" id="speakResult" style="margin-top:10px">${SR_OK?'点“我来说”让小狐狸听你读，或点“我读完了”自己评。':'听示范后大声跟读，再点“我读完了”给自己打个分吧！'}</p>`;
   } else if(mode==='read'){
     const q=u.sentences[Math.floor(Math.random()*u.sentences.length)];
     const html=q.en.split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
@@ -1181,6 +1786,307 @@ function doSpeak(target){
     toast(ok?'👏 读得不错！+2⭐':'💪 再练练，听示范跟读');
     if(ok) awardStars(2);
   });
+}
+
+/* =========================================================
+   通用：狐狸鼓励 + 彩带
+   ========================================================= */
+let foxT=null;
+function foxSay(msg){
+  const b=document.getElementById('foxBubble'); if(!b) return;
+  b.textContent='🦊 '+msg; b.classList.add('show');
+  clearTimeout(foxT); foxT=setTimeout(()=>b.classList.remove('show'), 2800);
+}
+function confetti(){
+  const colors=['#3ec6ff','#ffd23f','#5fd068','#ff7b6b','#a97bff'];
+  for(let i=0;i<32;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    d.style.left=(Math.random()*100)+'vw';
+    d.style.background=colors[i%colors.length];
+    d.style.animationDuration=(1.6+Math.random()*1.4)+'s';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(), 3200);
+  }
+}
+
+/* =========================================================
+   听说读写：跟读自评（iPhone 无语音识别也能用）
+   ========================================================= */
+function selfEval(){
+  const res=document.getElementById('speakResult'); if(!res) return;
+  res.innerHTML='你觉得自己读得怎么样？<div class="row" style="margin-top:8px;justify-content:center">'+
+    '<button class="btn grass" onclick="selfEvalDone(true)">👍 读得不错</button>'+
+    '<button class="btn coral" onclick="selfEvalDone(false)">💪 还要练</button></div>';
+}
+function selfEvalDone(good){
+  const res=document.getElementById('speakResult');
+  if(good){ awardStars(1); bumpGoal(true); foxSay('👏 好样的，多读就会更溜！'); toast('👏 +1⭐ 继续保持'); }
+  else { foxSay('💪 没关系，多听示范跟着读就好！'); toast('💪 再练练，你可以的'); }
+  if(res) res.innerHTML='点“听示范”再读一遍，或换一题试试～';
+}
+
+/* =========================================================
+   单元测试（学习闭环）
+   ========================================================= */
+let testQs=[], testIdx=0, testCorrect=0, testLocked=false;
+function renderMastery(){
+  const list=document.getElementById('masteryList'); if(!list) return;
+  list.innerHTML='';
+  UNITS.forEach(u=>{
+    const tot=u.words.length;
+    const mas=unitStat(u.id).mastered.length;
+    const p=Math.round(mas/tot*100);
+    const best=(STATE.tests&&STATE.tests[u.id]!=null)?STATE.tests[u.id]+'分':'—';
+    const row=document.createElement('div'); row.className='mastery-row';
+    row.innerHTML=`<div class="nm">${u.emoji} ${u.title.split(' ')[0]}</div>
+      <div class="ring" style="--p:${p}"><span>${p}%</span></div>
+      <div class="muted" style="font-size:12px">${mas}/${tot}词 · 测验 ${best}</div>`;
+    list.appendChild(row);
+  });
+  buildUnitChips('testUnits', ()=>{});
+}
+function startTest(){
+  const u=UNITS.find(x=>x.id===curUnitId);
+  const singles=u.words.filter(w=>!w.en.includes(' '));
+  const sents=shuffle(u.sentences.slice());
+  const qw=shuffle(singles.slice());
+  const questions=[];
+  qw.slice(0,4).forEach(w=>questions.push({type:'en', w}));
+  qw.slice(4,6).forEach(w=>questions.push({type:'zh', w}));
+  qw.slice(6,8).forEach(w=>questions.push({type:'spell', w}));
+  sents.slice(0,2).forEach(s=>questions.push({type:'sent', s}));
+  testQs=shuffle(questions); testIdx=0; testCorrect=0;
+  renderTestQ();
+}
+function lockOpts(box){ [...box.children].forEach(c=>{ c.style.pointerEvents='none'; }); }
+function renderTestQ(){
+  const area=document.getElementById('testArea');
+  if(!area) return;
+  if(testIdx>=testQs.length){ finishTest(); return; }
+  const q=testQs[testIdx];
+  const U=UNITS.find(x=>x.id===curUnitId);
+  const prog=Math.round(testIdx/testQs.length*100);
+  let html=`<div class="test-prog"><i style="width:${prog}%"></i></div><p class="muted">第 ${testIdx+1} / ${testQs.length} 题</p>`;
+  if(q.type==='en'){
+    testLocked=false;
+    const opts=shuffle([q.w.en, ...sample(U.words,q.w,3).map(x=>x.en)]);
+    html+=`<div class="test-q">“${q.w.zh}” 的英文是？</div><div class="opts two" id="tOpts"></div>`;
+    area.innerHTML=html;
+    const box=document.getElementById('tOpts');
+    opts.forEach(o=>{ const el=document.createElement('div'); el.className='opt'; el.textContent=o;
+      el.onclick=()=>{ if(testLocked)return; testLocked=true; lockOpts(box);
+        const ok=norm(o)===norm(q.w.en);
+        if(ok) el.classList.add('correct'); else { el.classList.add('wrong'); const c=[...box.children].find(x=>norm(x.textContent)===norm(q.w.en)); if(c)c.classList.add('correct'); }
+        commitTest(ok, q.w.en); };
+      box.appendChild(el); });
+  } else if(q.type==='zh'){
+    testLocked=false;
+    const opts=shuffle([q.w.zh, ...sample(U.words,q.w,3).map(x=>x.zh)]);
+    html+=`<div class="test-q">“${q.w.en}” 的意思是？</div><div class="opts two" id="tOpts"></div>`;
+    area.innerHTML=html;
+    const box=document.getElementById('tOpts');
+    opts.forEach(o=>{ const el=document.createElement('div'); el.className='opt'; el.textContent=o;
+      el.onclick=()=>{ if(testLocked)return; testLocked=true; lockOpts(box);
+        const ok=norm(o)===norm(q.w.zh);
+        if(ok) el.classList.add('correct'); else { el.classList.add('wrong'); const c=[...box.children].find(x=>norm(x.textContent)===norm(q.w.zh)); if(c)c.classList.add('correct'); }
+        commitTest(ok, q.w.en); };
+      box.appendChild(el); });
+  } else if(q.type==='spell'){
+    html+=`<div class="test-q">拼写：“${q.w.zh}”</div>
+      <div class="row" style="justify-content:center"><button class="btn sky" onclick="speak('${q.w.en.replace(/'/g,"\\'")}')">🔊 听发音</button></div>
+      <input class="type" id="tSpell" placeholder="写出英文" style="margin-top:10px">
+      <button class="btn grass lg" style="margin-top:10px;width:100%" onclick="ansSpell()">✔ 提交</button>`;
+    area.innerHTML=html;
+  } else if(q.type==='sent'){
+    const pool=shuffle(q.s.en.split(/\s+/).slice());
+    html+=`<div class="test-q" style="font-size:16px">连词成句：“${q.s.zh}”</div>
+      <div class="build-slot" id="tSlot"></div>
+      <div class="letter-pool" id="tPool"></div>
+      <button class="btn grass lg" style="width:100%" onclick="ansSent()">✔ 检查</button>`;
+    area.innerHTML=html;
+    pool.forEach(w=>{ const t=document.createElement('div'); t.className='lt'; t.textContent=w;
+      t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+        const s=document.createElement('span'); s.className='lt in'; s.textContent=w;
+        s.onclick=()=>{ s.remove(); t.classList.remove('used'); };
+        document.getElementById('tSlot').appendChild(s); };
+      document.getElementById('tPool').appendChild(t); });
+  }
+}
+function ansSpell(){
+  const q=testQs[testIdx]; const v=document.getElementById('tSpell').value;
+  const ok=norm(v)===norm(q.w.en);
+  if(!ok) toast('💡 正确拼写：'+q.w.en);
+  commitTest(ok, q.w.en);
+}
+function ansSent(){
+  const q=testQs[testIdx];
+  const got=[...document.querySelectorAll('#tSlot .in')].map(e=>e.textContent).join(' ');
+  const ok=norm(got)===norm(q.s.en);
+  if(!ok) toast('💡 正确顺序：'+q.s.en);
+  commitTest(ok, null);
+}
+function commitTest(ok, enForWrong){
+  if(ok){ testCorrect++; awardStars(1); }
+  else if(enForWrong){ addTestWrong(enForWrong, curUnitId); }
+  testIdx++;
+  setTimeout(renderTestQ, 480);
+}
+function addTestWrong(en, unitId){
+  if(STATE.wrong.some(w=>w.en===en&&w.unit===unitId)) return;
+  const u=ALL_UNITS.find(x=>x.id===unitId);
+  const zh=(u.words.find(w=>w.en===en)||{}).zh||'';
+  STATE.wrong.push({en, zh, unit:unitId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
+}
+function finishTest(){
+  const total=testQs.length;
+  const score=Math.round(testCorrect/total*100);
+  STATE.tests[curUnitId]=Math.max(STATE.tests[curUnitId]||0, score);
+  saveState();
+  const area=document.getElementById('testArea');
+  area.innerHTML=`<div class="panel center">
+    <div class="test-score">${score}分</div>
+    <p class="muted">答对 ${testCorrect} / ${total} 题 · ${score>=90?'🏆 太棒了！':score>=60?'👍 不错！':'💪 继续加油！'}</p>
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <button class="btn grape" onclick="startTest()">🔄 再做一次</button>
+      <button class="btn sky" onclick="go('home')">🏠 首页</button>
+    </div></div>`;
+  renderMastery();
+  if(score>=90){ confetti(); foxSay('🏆 满分小天才！'); }
+  else if(score>=60){ foxSay('👍 不错哦，继续练！'); }
+}
+
+/* =========================================================
+   单词游戏：拼词 + 连连看
+   ========================================================= */
+let gameMode='spell', gameUnitId='u1', spellState=null, memState=null;
+function setGameMode(m){
+  gameMode=m;
+  document.querySelectorAll('#gameMode .chip').forEach(c=>c.classList.toggle('on', c.dataset.m===m));
+  renderGameHome();
+}
+function renderGameHome(){
+  if(!UNITS.find(x=>x.id===gameUnitId)) gameUnitId=UNITS[0].id;
+  buildGameChips();
+  const area=document.getElementById('gameArea');
+  area.innerHTML='<p class="center muted">选好单元，点下面的按钮开始～</p>';
+  const btn=document.createElement('button'); btn.className='btn grape lg'; btn.style.width='100%'; btn.style.marginTop='10px';
+  btn.textContent = gameMode==='spell'?'🔤 开始拼词':'🃏 开始连连看';
+  btn.onclick = ()=> gameMode==='spell'?startSpell():startMatch();
+  area.appendChild(btn);
+}
+function buildGameChips(){
+  const c=document.getElementById('gameUnits'); c.innerHTML='';
+  UNITS.forEach(u=>{
+    const el=document.createElement('div'); el.className='chip'+(u.id===gameUnitId?' on':'');
+    el.textContent=u.emoji+' '+u.title.split(' ')[0];
+    el.onclick=()=>{ gameUnitId=u.id; buildGameChips(); };
+    c.appendChild(el);
+  });
+}
+function startSpell(){
+  const u=UNITS.find(x=>x.id===gameUnitId);
+  const singles=u.words.filter(w=>!w.en.includes(' '));
+  const w=singles[Math.floor(Math.random()*singles.length)];
+  spellState={w, pool:shuffle(w.en.split('').map(ch=>({ch,used:false}))), chosen:[]};
+  renderSpell();
+}
+function renderSpell(){
+  const s=spellState; const area=document.getElementById('gameArea');
+  area.innerHTML=`<h2 class="sec">🔤 拼词：${s.w.zh}</h2>
+    <div class="row" style="justify-content:center"><button class="btn sky" onclick="speak('${s.w.en.replace(/'/g,"\\'")}')">🔊 听发音</button></div>
+    <div class="build-slot" id="spChosen"></div>
+    <div class="letter-pool" id="spPool"></div>
+    <div class="row" style="justify-content:center;margin-top:10px">
+      <button class="btn grass" onclick="spellCheck()">✔ 检查</button>
+      <button class="btn ghost" onclick="startSpell()">🔄 换一个</button>
+    </div>`;
+  const pool=document.getElementById('spPool');
+  s.pool.forEach(it=>{ const t=document.createElement('div'); t.className='lt'+(it.used?' used':''); t.textContent=it.ch;
+    t.onclick=()=>{ if(it.used)return; it.used=true; s.chosen.push(it); renderSpell(); };
+    pool.appendChild(t); });
+  const ch=document.getElementById('spChosen');
+  s.chosen.forEach(it=>{ const t=document.createElement('div'); t.className='lt in'; t.textContent=it.ch;
+    t.onclick=()=>{ it.used=false; s.chosen=s.chosen.filter(x=>x!==it); renderSpell(); };
+    ch.appendChild(t); });
+}
+function spellCheck(){
+  const s=spellState; const got=s.chosen.map(x=>x.ch).join('');
+  const ok=got.toLowerCase()===s.w.en.toLowerCase();
+  if(ok){
+    STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(2);
+    confetti(); foxSay('🎉 拼对啦，你真棒！');
+    document.getElementById('gameArea').insertAdjacentHTML('beforeend','<p class="center" style="color:var(--grass-d);font-weight:800;margin-top:10px">✅ 正确！+2⭐</p>');
+  } else { toast('💡 正确拼写：'+s.w.en); }
+}
+function startMatch(){
+  const u=UNITS.find(x=>x.id===gameUnitId);
+  const pool=u.words.filter(w=>!w.en.includes(' '));
+  const pick=shuffle(pool.slice()).slice(0,6);
+  let cards=[];
+  pick.forEach((w,p)=>{ cards.push({pair:p,kind:'en',text:w.en}); cards.push({pair:p,kind:'zh',text:w.zh}); });
+  cards=shuffle(cards);
+  memState={cards, flipped:[], matched:0};
+  const area=document.getElementById('gameArea');
+  area.innerHTML=`<h2 class="sec">🃏 连连看：翻开配对单词与意思</h2>
+    <p class="muted" id="memInfo">已配对 0 / 6</p>
+    <div class="mem-grid" id="memGrid"></div>
+    <button class="btn ghost lg" style="margin-top:10px;width:100%" onclick="startMatch()">🔄 重开</button>`;
+  const grid=document.getElementById('memGrid');
+  cards.forEach((c,i)=>{
+    const el=document.createElement('div'); el.className='mem-card'; el.textContent='?';
+    el.onclick=()=>memTap(i); c.el=el; grid.appendChild(el);
+  });
+}
+function memTap(i){
+  const st=memState; if(!st) return;
+  const c=st.cards[i];
+  if(c.matched || st.flipped.includes(i) || st.flipped.length>=2) return;
+  c.el.classList.add('flip'); c.el.textContent=c.text; st.flipped.push(i);
+  if(st.flipped.length===2){
+    const [a,b]=st.flipped;
+    if(st.cards[a].pair===st.cards[b].pair && st.cards[a].kind!==st.cards[b].kind){
+      st.cards[a].matched=st.cards[b].matched=true;
+      st.cards[a].el.classList.add('matched'); st.cards[b].el.classList.add('matched');
+      st.matched++;
+      st.flipped=[];
+      const info=document.getElementById('memInfo'); if(info) info.textContent='已配对 '+st.matched+' / 6';
+      if(st.matched>=6){
+        STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(3);
+        confetti(); foxSay('🏆 全部配对成功，记忆大师！');
+      }
+    } else {
+      const fa=a, fb=b;
+      st.flipped=[];
+      setTimeout(()=>{ st.cards[fa].el.classList.remove('flip'); st.cards[fa].el.textContent='?'; st.cards[fb].el.classList.remove('flip'); st.cards[fb].el.textContent='?'; }, 700);
+    }
+  }
+}
+
+/* =========================================================
+   成就墙
+   ========================================================= */
+const ACHS=[
+  {ico:'🌟',nm:'十星小将',ds:'集满 10 星',ok:()=>STATE.stars>=10},
+  {ico:'⭐',nm:'三十星达人',ds:'集满 30 星',ok:()=>STATE.stars>=30},
+  {ico:'🔥',nm:'三天打卡',ds:'连续 3 天',ok:()=>STATE.streak>=3},
+  {ico:'💯',nm:'一周坚持',ds:'连续 7 天',ok:()=>STATE.streak>=7},
+  {ico:'📚',nm:'词汇先锋',ds:'掌握 20+ 词',ok:()=>Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0)>=20},
+  {ico:'🏅',nm:'错题清零',ds:'消灭所有错题',ok:()=>STATE.wrong.length===0 && Object.values(STATE.units).reduce((a,u)=>a+u.attempts,0)>0},
+  {ico:'📝',nm:'测验达人',ds:'测验≥90分',ok:()=>Object.values(STATE.tests||{}).some(s=>s>=90)},
+  {ico:'⚡',nm:'挑战王者',ds:'挑战 15 题',ok:()=>STATE.chBest>=15},
+  {ico:'🎮',nm:'游戏高手',ds:'赢一局游戏',ok:()=>STATE.gameWins>=1},
+  {ico:'🧩',nm:'语法学霸',ds:'语法答对10题',ok:()=>STATE.gramRight>=10},
+];
+function renderAchievements(){
+  const grid=document.getElementById('achGrid'); const sum=document.getElementById('achSummary');
+  if(!grid) return;
+  grid.innerHTML=''; let got=0;
+  ACHS.forEach(a=>{ const ok=a.ok(); if(ok) got++;
+    const el=document.createElement('div'); el.className='ach'+(ok?'':' locked');
+    el.innerHTML=`<span class="ico">${a.ico}</span><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div>`;
+    grid.appendChild(el);
+  });
+  if(sum) sum.textContent='已获得 '+got+' / '+ACHS.length+' 枚勋章'+(got===ACHS.length?' 🎉 全部解锁！':'');
 }
 
 /* =========================================================
@@ -1341,7 +2247,10 @@ function renderProgress(){
     {c:STATE.streak>=3, t:'🔥 三天打卡'},
     {c:STATE.streak>=7, t:'💯 一周坚持'},
     {c:Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0)>=20, t:'📚 词汇先锋'},
-    {c:STATE.wrong.length>0 && STATE.wrong.every(w=>unitStat(w.unit).mastered.includes(w.en)), t:'🏅 错题清零'}
+    {c:STATE.wrong.length>0 && STATE.wrong.every(w=>unitStat(w.unit).mastered.includes(w.en)), t:'🏅 错题清零'},
+    {c:(STATE.chBest||0)>=15, t:'⚡ 挑战王'},
+    {c:(STATE.chBest||0)>=30, t:'👑 纪录保持者'},
+    {c:STATE.daily && STATE.daily.count>=20, t:'🎯 今日达人'}
   ];
   awards.forEach(a=>{ const b=document.createElement('span'); b.className='badge'; b.textContent=a.t; if(!a.c) b.style.opacity='.35'; badges.appendChild(b); });
 }
@@ -1376,6 +2285,7 @@ function showReport(){
   const totalAtt=Object.values(STATE.units).reduce((a,u)=>a+u.attempts,0);
   const totalCor=Object.values(STATE.units).reduce((a,u)=>a+u.correct,0);
   const acc=totalAtt?Math.round(totalCor/totalAtt*100):0;
+  const testsLine = ALL_UNITS.map(u=>STATE.tests&&STATE.tests[u.id]!=null?(u.title.split(' ')[0]+STATE.tests[u.id]+'分'):null).filter(Boolean).join(' · ')||'尚未测验';
   const box=document.getElementById('reportBox');
   box.innerHTML=`<b>📋 学习报告（${todayStr()}）</b>
     <ul>
@@ -1384,9 +2294,10 @@ function showReport(){
       <li>掌握单词：${mastered} / ${totalW}（${totalW?Math.round(mastered/totalW*100):0}%）</li>
       <li>答题正确率：${acc}%</li>
       <li>待巩固错题：${STATE.wrong.length} 个</li>
+      <li>单元测试：${testsLine}</li>
       <li>各单元闯关星星：${ALL_UNITS.map(u=>unitStat(u.id).levelStars+'⭐').join(' · ')}</li>
     </ul>
-    <p class="muted">建议：每天保持 15 分钟，优先复习错题本中的单词。</p>`;
+    <p class="muted">建议：每天保持 15 分钟，优先复习错题本中的单词，并定期做单元测试查漏补缺。</p>`;
 }
 
 /* =========================================================
@@ -1449,8 +2360,304 @@ function toast(msg){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1400);
 }
 
+/* =========================================================
+   每日目标（今日答对题数 → 首页进度条）
+   ========================================================= */
+const DAILY_GOAL=20;
+function dailyRec(){
+  const t=todayStr();
+  if(!STATE.daily || STATE.daily.date!==t) STATE.daily={date:t,count:0};
+  return STATE.daily;
+}
+function bumpGoal(ok){
+  if(!ok) return;
+  const d=dailyRec();
+  d.count+=1;
+  if(d.count===DAILY_GOAL) toast('🎉 今日目标达成！你太棒啦！');
+  saveState();
+}
+function renderGoal(){
+  const d=dailyRec();
+  const n=Math.min(d.count,DAILY_GOAL);
+  const fill=document.getElementById('goalFill');
+  const bar=document.getElementById('goalBar');
+  const done=document.getElementById('goalDone');
+  const label=document.getElementById('goalLabel');
+  if(fill) fill.style.width=(n/DAILY_GOAL*100)+'%';
+  if(bar) bar.classList.toggle('done', n>=DAILY_GOAL);
+  if(done) done.textContent = n>=DAILY_GOAL ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题';
+  if(label) label.textContent=n+' / '+DAILY_GOAL+' 题';
+  refreshWrongDot();
+}
+
+/* =========================================================
+   错题本（独立模块：列表 + 逐题重做）
+   ========================================================= */
+function renderWrongbook(){
+  const wl=STATE.wrong||[];
+  document.getElementById('wbTotal').textContent=wl.length;
+  const due=dueReviews();
+  document.getElementById('wbDue').textContent=due.length;
+  document.getElementById('wbMaster').textContent=STATE.wrongFixed||0;
+  document.getElementById('wbAllCount').textContent='('+wl.length+')';
+  document.getElementById('wbReviewCount').textContent='('+due.length+' 个待复习)';
+  document.getElementById('wbReviewBtn').disabled = due.length===0;
+  const btn=document.getElementById('redoBtn'); if(btn) btn.disabled = wl.length===0;
+  const box=document.getElementById('wbList');
+  if(wl.length===0){ box.innerHTML='<div class="wb-empty"><span class="e">🌟</span>还没有错题，真厉害！继续加油！</div>'; }
+  else{
+    box.innerHTML='';
+    wl.slice().reverse().forEach(w=>{
+      const u=(ALL_UNITS.find(x=>x.id===w.unit))||{title:w.unit};
+      const el=document.createElement('div'); el.className='wb-row';
+      el.innerHTML=`<span class="wb-en">${w.en}</span><span class="wb-zh">${w.zh||''}</span>
+        <span class="wb-tag">${u.title||''}</span><span class="wb-times">✗ ${w.reviews||1} 次</span>
+        <span class="wb-actions">
+          <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="speak('${w.en.replace(/'/g,"\\'")}')">🔊</button>
+          <button class="btn grass" style="padding:6px 12px;font-size:13px" onclick="removeWrong('${w.en.replace(/'/g,"\\'")}')">✔ 会了</button>
+        </span>`;
+      box.appendChild(el);
+    });
+  }
+  refreshWrongDot();
+}
+function removeWrong(en){
+  const i=STATE.wrong.findIndex(w=>w.en===en);
+  if(i>=0){ STATE.wrong.splice(i,1); STATE.wrongFixed=(STATE.wrongFixed||0)+1; saveState(); renderWrongbook(); toast('已移出错题本 ✅'); }
+}
+function refreshWrongDot(){
+  const dot=document.getElementById('wrongDot');
+  if(!dot) return;
+  const n=(STATE.wrong||[]).length;
+  dot.classList.toggle('hidden', n===0);
+  dot.textContent=n>99?'99+':n;
+}
+/* —— 错题重做：听音 / 看义 / 拼写 轮流出题 —— */
+let redoList=[], redoIdx=0;
+function startRedo(){
+  if(!STATE.wrong.length){ toast('没有错题可重做 🎉'); return; }
+  redoList=STATE.wrong.slice(); redoIdx=0;
+  const area=document.getElementById('redoArea');
+  area.innerHTML=`<div class="redo-prog"><i id="redoProgFill" style="width:0%"></i></div>
+    <p class="muted" id="redoStatus">0 / ${redoList.length}</p>`;
+  redoNext();
+}
+function redoNext(){
+  const area=document.getElementById('redoArea');
+  if(redoIdx>=redoList.length){
+    area.innerHTML=`<div class="center"><div style="font-size:44px">🎉</div>
+      <b>错题重做完成！</b><p class="muted">消灭了 ${redoList.length} 个错题，太棒了！</p>
+      <button class="btn grape" style="margin-top:6px" onclick="startRedo()">🔄 再来一轮</button>
+      <button class="btn ghost" onclick="go('wrongbook')">返回错题本</button></div>`;
+    return;
+  }
+  const w=redoList[redoIdx];
+  const u0=(ALL_UNITS.find(x=>x.id===w.unit))||{words:[]};
+  const full=(u0.words.find(x=>x.en===w.en))||{en:w.en,zh:w.zh||'',ph:'',ex:''};
+  const modes=['listen','meaning','spell'];
+  const m=modes[redoIdx%3];
+  const modeTxt = m==='listen'?'👂 听音选词' : m==='meaning'?'🈯 看义选词':'⌨️ 拼写';
+  let html=`<p class="muted">第 ${redoIdx+1} / ${redoList.length} 个 · ${modeTxt}</p>`;
+  if(m==='listen'){
+    const distract=sample(u0.words.length>1?u0.words:[full],full,3).map(x=>x.en);
+    const opts=shuffle([full.en,...distract]);
+    html+=`<div class="word">👂 听发音，选出单词：</div>
+      <button class="btn sky lg" style="margin:6px 0 12px" onclick="speak('${full.en.replace(/'/g,"\\'")}')">🔊 听发音</button>
+      <div class="opts two" id="redoOpts"></div>`;
+    area.innerHTML=html;
+    fillRedoOpts(opts, full.en);
+    setTimeout(()=>speak(full.en),150);
+  } else if(m==='meaning'){
+    const distract=sample(u0.words.length>1?u0.words:[full],full,3).map(x=>x.en);
+    const opts=shuffle([full.en,...distract]);
+    html+=`<div class="word">“${full.zh}”</div><p class="muted">选出对应的英文：</p>
+      <div class="opts two" id="redoOpts"></div>`;
+    area.innerHTML=html;
+    fillRedoOpts(opts, full.en);
+  } else {
+    html+=`<div class="word">“${full.zh}”</div>
+      <button class="btn sky lg" style="margin:6px 0 12px" onclick="speak('${full.en.replace(/'/g,"\\'")}')">🔊 听发音</button>
+      <input class="type" id="redoIn" placeholder="拼写这个单词" style="margin-bottom:10px">
+      <button class="btn grass lg" onclick="checkRedoSpell('${full.en.replace(/'/g,"\\'")}')">✔ 提交</button>`;
+    area.innerHTML=html;
+    setTimeout(()=>{ const i=document.getElementById('redoIn'); if(i) i.focus(); },100);
+  }
+}
+function fillRedoOpts(opts, answer){
+  const box=document.getElementById('redoOpts');
+  if(!box) return;
+  box.innerHTML='';
+  opts.forEach(o=>{
+    const el=document.createElement('div'); el.className='opt'; el.textContent=o;
+    el.onclick=()=>{
+      const ok=norm(o)===norm(answer);
+      [...box.children].forEach(c=>{ c.disabled=true; if(norm(c.textContent)===norm(answer)) c.classList.add('correct'); });
+      if(!ok) el.classList.add('wrong');
+      redoJudge(answer, ok);
+    };
+    box.appendChild(el);
+  });
+}
+function checkRedoSpell(ans){
+  const v=document.getElementById('redoIn');
+  const ok=!!v && norm(v.value)===norm(ans);
+  redoJudge(ans, ok);
+}
+function redoJudge(ans, ok){
+  const w=redoList[redoIdx];
+  const idx=STATE.wrong.findIndex(x=>x.en===w.en && x.unit===w.unit);
+  if(ok){
+    if(idx>=0){ STATE.wrong.splice(idx,1); STATE.wrongFixed=(STATE.wrongFixed||0)+1; }
+    awardStars(2); toast('🎉 重做答对！+2⭐');
+  } else {
+    if(idx>=0){ STATE.wrong[idx].stage=0; STATE.wrong[idx].reviews=(STATE.wrong[idx].reviews||0)+1; STATE.wrong[idx].due=addDays(todayStr(),1); }
+    toast('💪 记住了，明天再练它！');
+  }
+  bumpGoal(ok); saveState(); refreshWrongDot();
+  redoIdx++;
+  redoNext();
+  const fill=document.getElementById('redoProgFill');
+  if(fill) fill.style.width=Math.min(100, redoIdx/Math.max(1,redoList.length)*100)+'%';
+}
+
+/* =========================================================
+   语法小课堂
+   ========================================================= */
+let curGram=0;
+function initGrammar(){
+  const c=document.getElementById('gramUnits'); c.innerHTML='';
+  GRAMMAR.forEach((g,i)=>{
+    const el=document.createElement('div');
+    el.className='chip'+(i===curGram?' on':'');
+    el.textContent=g.emoji+' '+g.title;
+    el.onclick=()=>{ curGram=i; initGrammar(); };
+    c.appendChild(el);
+  });
+  renderGrammar();
+  renderGramQuiz();
+}
+function renderGrammar(){
+  const g=GRAMMAR[curGram];
+  const body=document.getElementById('gramBody');
+  body.innerHTML=`<h2 class="sec">${g.emoji} ${g.title}</h2>
+    <div class="gram-tip">💡 ${g.intro}</div>
+    ${g.points.map(p=>`<div class="gram-point">${p}</div>`).join('')}
+    <h3 style="margin:12px 0 6px">📖 例句</h3>
+    ${g.examples.map(e=>`<div class="gram-ex"><b>${e.en}</b><div class="zh">${e.zh}</div></div>`).join('')}`;
+}
+let gramQIdx=0;
+function renderGramQuiz(){
+  gramQIdx=0;
+  showGramQ();
+}
+function showGramQ(){
+  const g=GRAMMAR[curGram];
+  const box=document.getElementById('gramQuiz');
+  if(gramQIdx>=g.quiz.length){
+    box.innerHTML=`<div class="center"><div style="font-size:44px">🎉</div>
+      <b>本课练习完成！</b><p class="muted">掌握了吗？去词汇或闯关里试试身手吧！</p>
+      <button class="btn grape" style="margin-top:6px" onclick="renderGramQuiz()">🔄 再练一次</button></div>`;
+    return;
+  }
+  const q=g.quiz[gramQIdx];
+  box.innerHTML=`<div class="qprompt">第 ${gramQIdx+1}/${g.quiz.length} 题 · ${q.q}</div>
+    <div class="opts" id="gqOpts"></div>
+    <div class="gram-ex" id="gqExp" style="display:none;margin-top:10px"></div>`;
+  const o=document.getElementById('gqOpts');
+  q.opts.forEach((t,i)=>{
+    const el=document.createElement('div'); el.className='opt'; el.textContent=t;
+    el.onclick=()=>{
+      [...o.children].forEach(c=>{ c.disabled=true; });
+      const expEl=document.getElementById('gqExp');
+      if(i===q.ans){ el.classList.add('correct'); awardStars(1); bumpGoal(true); STATE.gramRight=(STATE.gramRight||0)+1; saveState(); toast('🎉 答对啦！+1⭐'); }
+      else { el.classList.add('wrong'); o.children[q.ans].classList.add('correct'); toast('💪 再看看上面的讲解吧'); }
+      expEl.style.display=''; expEl.innerHTML='📖 解析：'+q.exp;
+      const again=document.createElement('button'); again.className='btn sky lg'; again.style.marginTop='12px';
+      again.textContent='下一题 →'; again.onclick=()=>{ gramQIdx++; showGramQ(); };
+      box.appendChild(again);
+    };
+    o.appendChild(el);
+  });
+}
+
+/* =========================================================
+   限时挑战（60 秒看义选词）
+   ========================================================= */
+let chTimer=null, chTime=0, chScore=0;
+function renderChallenge(){
+  document.getElementById('chBest').textContent=STATE.chBest||0;
+  const area=document.getElementById('chArea');
+  if(area && !chTimer) area.innerHTML='<p class="center muted">点“开始挑战”，60 秒内看中文选英文，冲最高纪录！</p>';
+}
+function startChallenge(){
+  touchDay();
+  if(chTimer) clearInterval(chTimer);
+  chTime=60; chScore=0;
+  document.getElementById('chBest').textContent=STATE.chBest||0;
+  const area=document.getElementById('chArea');
+  area.innerHTML=`<div class="challenge-top">
+      <span class="ch-timer" id="chTimer">60</span>
+      <span class="ch-score" id="chScore">答对 0 题</span>
+    </div>
+    <div class="qprompt" id="chPrompt">👀 看中文选英文！</div>
+    <div class="opts two" id="chOpts"></div>`;
+  chTimer=setInterval(()=>{
+    chTime--;
+    const t=document.getElementById('chTimer');
+    if(t) t.textContent=chTime;
+    if(chTime<=0){ clearInterval(chTimer); chTimer=null; chFinish(); }
+  },1000);
+  chNext();
+}
+function chNext(){
+  if(chTime<=0) return;
+  const all=ALL_UNITS.reduce((a,u)=>a.concat(u.words),[]);
+  const q=all[Math.floor(Math.random()*all.length)];
+  const distract=sample(all,q,3).map(x=>x.en);
+  const opts=shuffle([q.en,...distract]);
+  const box=document.getElementById('chOpts');
+  if(!box) return;
+  box.innerHTML='';
+  document.getElementById('chPrompt').textContent='“'+q.zh+'” 的英文是？';
+  opts.forEach(o=>{
+    const el=document.createElement('div'); el.className='opt'; el.textContent=o;
+    el.onclick=()=>{
+      if(chTime<=0) return;
+      [...box.children].forEach(c=>{ c.disabled=true; });
+      const ok=norm(o)===norm(q.en);
+      if(ok){
+        chScore++;
+        recordWord(curUnitId, q.en, true);
+        const s=document.getElementById('chScore'); if(s) s.textContent='答对 '+chScore+' 题';
+      } else {
+        el.classList.add('wrong');
+        box.children[opts.indexOf(q.en)].classList.add('correct');
+      }
+      setTimeout(chNext, 350);
+    };
+    box.appendChild(el);
+  });
+}
+function chFinish(){
+  const box=document.getElementById('chOpts'); if(box) box.innerHTML='';
+  const pr=document.getElementById('chPrompt'); if(pr) pr.innerHTML='⏰ 时间到！';
+  const isBest = chScore>(STATE.chBest||0);
+  if(isBest) STATE.chBest=chScore;
+  if(chScore>=10) awardStars(3);
+  if(chScore>=20) awardStars(3);
+  saveState();
+  const b=document.getElementById('chBest'); if(b) b.textContent=STATE.chBest;
+  const area=document.getElementById('chArea');
+  area.insertAdjacentHTML('beforeend',`<div class="center" style="margin-top:14px">
+    <div style="font-size:52px">${chScore>=20?'🏆':chScore>=10?'🎉':'💪'}</div>
+    <b style="font-size:20px">本局答对 ${chScore} 题${isBest?' · 新纪录！':''}</b>
+    <p class="muted">${chScore>=20?'太强了，你就是单词小达人！':chScore>=10?'很棒的纪录，再来一局冲新高！':'多练练词汇，下次会更快！'}</p>
+    <button class="btn coral lg" onclick="startChallenge()">🔄 再来一局</button></div>`);
+}
+
 /* 初始化 */
 applyTheme(STATE.settings.theme||'light');
+applyFont();
 if(STATE.settings.book==='xia'){ UNITS=BOOK_XIA; }
 curUnitId=UNITS[0].id;
 updateBookUI();
