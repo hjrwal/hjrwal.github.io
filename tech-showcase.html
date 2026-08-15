@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 33,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v34',// 与 sw.js 的 CACHE 保持一致
+    version: 34,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v35',// 与 sw.js 的 CACHE 保持一致
     words:   341,       // 核心词数
     audio:   671,       // 预录音频数
     audioMB: 9.5,       // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    33,        // 迭代版本数
+    iter:    34,        // 迭代版本数
     updated: '2026-08-15'
   };
 </script>
@@ -339,6 +339,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
       <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
       <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
+      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
       </div>
     </div>
   </section>
