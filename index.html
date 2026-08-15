@@ -97,6 +97,27 @@
   .hero-txt{flex:1; min-width:0;}
   .hero-hi{font-size:19px; font-weight:900; letter-spacing:.3px; line-height:1.2;}
   .hero-sub{font-size:13px; font-weight:700; opacity:.95; margin-top:3px;}
+  .rank-chip{display:flex; align-items:center; gap:6px; margin-top:8px; padding:5px 9px; border-radius:999px;
+    background:color-mix(in srgb, var(--rc,#b87333) 18%, #fff); border:1px solid color-mix(in srgb, var(--rc,#b87333) 45%, #fff);
+    cursor:pointer; width:fit-content; max-width:100%; font-weight:800; font-size:12px; color:#3a2e22;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);}
+  .rank-chip:active{transform:scale(.97);}
+  .rk-ico{font-size:15px; line-height:1;}
+  .rk-t{white-space:nowrap;}
+  .rk-bar{width:42px; height:6px; border-radius:99px; background:rgba(0,0,0,.12); overflow:hidden; flex:0 0 auto;}
+  .rk-bar i{display:block; height:100%; border-radius:99px; background:var(--rc,#b87333); transition:width .5s ease;}
+  .rk-nx{font-size:10.5px; font-weight:700; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .rank-list{display:flex; flex-direction:column; gap:8px; margin:4px 0;}
+  .rank-row{display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:12px; background:#f4f6fb; border:1px solid #e7eaf2; position:relative;}
+  .rank-row.cur{border-color:var(--rc,#8b5cf6); box-shadow:0 0 0 2px color-mix(in srgb,var(--rc,#8b5cf6) 25%,transparent);}
+  .rank-row.lock{opacity:.55; filter:saturate(.6);}
+  .rank-row .ri{font-size:22px;}
+  .rank-row .rl{flex:1; display:flex; flex-direction:column;}
+  .rank-row .rl b{font-size:14px;}
+  .rank-row .rl small{font-size:11px; opacity:.7;}
+  .rank-row .rb{font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; background:#e7eaf2; color:#888;}
+  .rank-row .rb.ok{background:#e3f9ec; color:#1a9e5a;}
+  .rank-row.cur .rb{background:#fff0f5; color:#e0457f;}
   .hero-go{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;}
   .hero-ring{width:50px; height:50px; background:conic-gradient(#ffe08a calc(var(--p,0)*1%), rgba(255,255,255,.32) 0); box-shadow:0 4px 12px rgba(0,0,0,.18);}
   .hero-ring::before{width:36px; height:36px; background:transparent;}
@@ -649,6 +670,7 @@
       <div class="hero-txt">
         <div class="hero-hi" id="heroHi">你好，小学霸！🌟</div>
         <div class="hero-sub" id="heroSub">今天继续加油哦～</div>
+        <div class="rank-chip" id="heroRank" onclick="event.stopPropagation();openRank()"></div>
       </div>
       <div class="hero-go">
         <div class="ring hero-ring" id="heroGoalRing" style="--p:0"><span id="heroGoalPct">0%</span></div>
@@ -763,7 +785,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">35</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">36</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -787,6 +809,7 @@ update → controllerchange
       <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
       <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
       <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
+      <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1134,6 +1157,9 @@ update → controllerchange
 <div class="modal-mask" id="reviewModal" onclick="if(event.target===this)closeReview()">
   <div class="modal" id="reviewBody"></div>
 </div>
+
+<!-- 段位弹窗 -->
+<div class="modal-mask" id="rankModal" onclick="if(event.target===this)closeRank()"></div>
 
 <div class="nav">
   <button onclick="go('home')" data-nav="home"><span class="e">🏠</span>首页</button>
@@ -1768,7 +1794,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 35;
+const APP_VERSION = 36;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1823,6 +1849,7 @@ function defaultState(){
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
+    rankIdx:0,
     settings:{rate:0.9, theme:'light', book:'shang', fontScale:1} };
 }
 function loadState(){
@@ -1838,6 +1865,7 @@ function loadState(){
     if(!s.weakByUnit) s.weakByUnit={};
     if(!s.ab) s.ab={sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}};
     if(!s.settings.fontScale) s.settings.fontScale=1;
+    if(typeof s.rankIdx!=='number') s.rankIdx=0;
     return s;
   } }catch(e){}
   return defaultState();
@@ -1908,7 +1936,40 @@ function recordWord(id, en, ok){
   }
   saveState();
 }
-function awardStars(n){ STATE.stars+=n; saveState(); flyStar(n); }
+const RANKS=[
+  {lo:0,   ico:'🥉', t:'英语小萌新', c:'#b87333'},
+  {lo:10,  ico:'🥈', t:'开口小能手', c:'#9aa7b5'},
+  {lo:30,  ico:'🥇', t:'单词小达人', c:'#f5b301'},
+  {lo:60,  ico:'💎', t:'句型小高手', c:'#4cc9f0'},
+  {lo:100, ico:'🏆', t:'听力小霸王', c:'#8b5cf6'},
+  {lo:150, ico:'👑', t:'英语小学霸', c:'#ff5d8f'}
+];
+function getRank(s){ s=Math.max(0,s|0); let i=0; for(let k=0;k<RANKS.length;k++){ if(s>=RANKS[k].lo) i=k; }
+  const cur=RANKS[i], nxt=RANKS[i+1]||null;
+  let pct=100; if(nxt) pct=Math.min(100, Math.round((s-cur.lo)/(nxt.lo-cur.lo)*100));
+  return {idx:i, cur, nxt, pct, toNext: nxt? (nxt.lo-s):0}; }
+function rankUpFx(){
+  const r=getRank(STATE.stars); celebrate(); confetti();
+  foxSay('🎉 段位升级！你现在是「'+r.cur.ico+r.cur.t+'」'); toast('🎉 段位升级 → '+r.cur.ico+r.cur.t);
+}
+function openRank(){ const m=document.getElementById('rankModal'); if(!m) return;
+  const rk=getRank(STATE.stars);
+  let html='<div class="modal"><div class="row spread"><h2 class="sec" style="margin:0">🏅 段位称号</h2><button class="back" onclick="closeRank()">✕</button></div>'+
+    '<p class="muted" style="margin:2px 0 12px">攒 ⭐ 升级，每过一阶都解锁新称号！</p><div class="rank-list">';
+  RANKS.forEach((R,i)=>{ const got=i<=rk.idx, cur=i===rk.idx, cls=(got?'got':'lock')+(cur?' cur':'');
+    html+='<div class="rank-row '+cls+'" style="--rc:'+R.c+'"><span class="ri">'+R.ico+'</span>'+
+      '<div class="rl"><b>'+R.t+'</b><small>'+(i===0?'起点段位':('需 '+R.lo+'⭐ 解锁'))+'</small></div>'+
+      (cur?'<span class="rb">当前</span>':got?'<span class="rb ok">已达成</span>':'<span class="rb">未解锁</span>')+'</div>'; });
+  html+='</div><p class="muted center" style="margin-top:10px">当前 ⭐ '+STATE.stars+(rk.nxt?' · 下一阶还差 '+rk.toNext+'⭐':' · 已满级 👑')+'</p></div>';
+  m.innerHTML=html; m.classList.add('show');
+}
+function closeRank(){ const m=document.getElementById('rankModal'); if(m) m.classList.remove('show'); }
+function awardStars(n){
+  const before=getRank(STATE.stars).idx;
+  STATE.stars+=n; STATE.rankIdx=getRank(STATE.stars).idx;
+  saveState(); flyStar(n);
+  if(STATE.rankIdx>before) rankUpFx();
+}
 function flyStar(n){
   try{
     const target=document.getElementById('topStars'); if(!target) return;
@@ -3725,6 +3786,12 @@ function renderHero(){
   const hi=document.getElementById('heroHi'); if(hi) hi.textContent=helloWord()+'小学霸！🌟';
   const sub=document.getElementById('heroSub');
   if(sub) sub.textContent='已收集 ⭐ '+STATE.stars+' 颗 · 连续打卡 🔥'+STATE.streak+' 天';
+  const rk=getRank(STATE.stars); const rc=document.getElementById('heroRank');
+  if(rc){ rc.style.setProperty('--rc', rk.cur.c);
+    rc.innerHTML='<span class="rk-ico">'+rk.cur.ico+'</span><span class="rk-t">'+rk.cur.t+'</span>'+
+      '<span class="rk-bar"><i style="width:'+rk.pct+'%"></i></span>'+
+      (rk.nxt? '<span class="rk-nx">还差 '+rk.toNext+'⭐ 升 '+rk.nxt.ico+rk.nxt.t+'</span>'
+             : '<span class="rk-nx">已满级 👑</span>'); }
   const d=dailyRec();
   const p=Math.min(100, Math.round(Math.min(d.count,DAILY_GOAL)/DAILY_GOAL*100));
   const ring=document.getElementById('heroGoalRing');
