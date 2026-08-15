@@ -19,7 +19,11 @@
     --ink:#2c2c3e; --paper:#fffdf7; --muted:#8c889f;
     --card:#ffffff;
     --line:#ece8f6; --soft:#f5f3ff;
-    --r:22px;
+    --r:22px; --r-sm:14px; --r-md:22px; --r-lg:30px;
+    /* 统一缓动曲线：spring 用于强调动效，out/io 用于常规过渡 */
+    --ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --ease-out:cubic-bezier(.22,.61,.36,1);
+    --ease-io:cubic-bezier(.4,0,.2,1);
     /* 柔和分层阴影：替代廉价“厚底黑影”，营造高级质感 */
     --sh-1:0 2px 6px rgba(54,44,96,.06);
     --sh-2:0 6px 18px rgba(54,44,96,.10);
@@ -503,6 +507,18 @@
   .star-layer{position:fixed; inset:0; z-index:82; pointer-events:none; overflow:hidden;}
   .star-burst{position:absolute; transform:translate(-50%,-50%); animation:starFly 1.8s cubic-bezier(.22,.61,.36,1) forwards; will-change:transform,opacity;}
   @keyframes starFly{0%{opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(0)}18%{opacity:1}100%{opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15) rotate(40deg)}}
+  /* 高光爆发（配合彩带/星爆，强化“胜利”瞬间） */
+  .celebrate-glow{position:fixed; inset:0; z-index:78; pointer-events:none;
+    background:radial-gradient(circle at 50% 42%, rgba(255,224,138,.55), rgba(255,224,138,0) 60%);
+    animation:glowPulse .9s var(--ease-out) forwards;}
+  @keyframes glowPulse{0%{opacity:0; transform:scale(.7)}25%{opacity:1}100%{opacity:0; transform:scale(1.18)}}
+  /* 狐狸加载态 */
+  .loading{position:fixed; inset:0; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    background:rgba(255,253,247,.84); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
+  .loading.show{display:flex;}
+  .loading .fox-spin{font-size:56px; animation:foxBob .9s var(--ease-spring) infinite;}
+  .loading p{margin:0; color:var(--muted); font-weight:800; letter-spacing:.5px;}
+  @keyframes foxBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(5deg)}}
   /* 掌握度环 */
   .ring{position:relative; width:52px; height:52px; border-radius:50%; background:conic-gradient(var(--grass) calc(var(--p,0)*1%), var(--line) 0); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
   .ring::before{content:""; position:absolute; width:38px; height:38px; background:var(--card); border-radius:50%;}
@@ -741,7 +757,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">31</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">32</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -761,6 +777,7 @@ update → controllerchange
       <div class="it"><b>v29 · 趣味闯关大改造</b><span>世界地图加狐狸当前位置标记+关卡任务卡；新增听音打地鼠/拼词/连连看/捉迷藏 4 种迷你玩法，每关收尾接单元 BOSS 血条战</span></div>
       <div class="it"><b>v30 · 修复拼词玩法 "undefined"</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
       <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
+      <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1058,6 +1075,7 @@ update → controllerchange
 <div class="toast" id="toast"></div>
 <div class="speak-fx" id="speakFx">🔊 发音中<b></b><b></b><b></b><b></b><b></b></div>
 <div class="fox-bubble" id="foxBubble"></div>
+<div class="loading" id="loading"><div class="fox-spin">🦊</div><p>加载中…</p></div>
 
 <!-- 设置弹窗 -->
 <div class="modal-mask" id="settingsModal" onclick="if(event.target===this)closeSettings()">
@@ -1740,7 +1758,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 31;
+const APP_VERSION = 32;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2458,6 +2476,32 @@ function starBurst(n){
   document.body.appendChild(layer);
   setTimeout(()=>layer.remove(), 2300);
 }
+/* 胜利音效：用 WebAudio 合成“叮”，无需任何音频资源 */
+function playDing(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    const ctx=new AC();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(880, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+.12);
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.16, ctx.currentTime+.02);
+    g.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime+.5);
+    o.start(); o.stop(ctx.currentTime+.52);
+    setTimeout(()=>{ try{ctx.close();}catch(e){} }, 700);
+  }catch(e){}
+}
+/* 统一庆祝：高光 + 彩带 + 星爆 + 音效（用于“大胜利”瞬间） */
+function celebrate(){
+  confetti(); starBurst(2);
+  const glow=document.createElement('div'); glow.className='celebrate-glow';
+  document.body.appendChild(glow); setTimeout(()=>glow.remove(), 900);
+  playDing();
+}
+/* 狐狸加载态 */
+function showLoading(){ const l=document.getElementById('loading'); if(l) l.classList.add('show'); }
+function hideLoading(){ const l=document.getElementById('loading'); if(l) l.classList.remove('show'); }
 
 /* =========================================================
    听说读写：跟读自评（iPhone 无语音识别也能用）
@@ -2874,7 +2918,7 @@ function renderAchievements(){
   });
   if(sum) sum.textContent='已获得 '+got+' / '+ACHS.length+' 枚勋章'+(got===ACHS.length?' 🎉 全部解锁！':'');
   if(newly>0){ STATE._achSeen=ACHS.map((a,i)=>a.ok()?i:-1).filter(i=>i>=0); saveState();
-    confetti(); foxSay('🏆 解锁了 '+newly+' 枚新勋章，太厉害了！'); }
+    celebrate(); foxSay('🏆 解锁了 '+newly+' 枚新勋章，太厉害了！'); }
 }
 
 /* =========================================================
@@ -3006,20 +3050,25 @@ function startLevel(id){
   const lvlArea=document.getElementById('lvlArea');
   lvlArea.style.display='block';
   lvlArea.innerHTML='';
-  const u=UNITS.find(x=>x.id===id);
-  const questions=buildLevelQuestions(u);
-  levelTotal=questions.length;
-  levelTotalNormal=Math.max(1, questions.length-1);
-  levelQi=0; levelCorrect=0;
-  const area=lvlArea;
-  function next(){
-    if(levelQi>=questions.length){ finish(); return; }
-    const q=questions[levelQi];
-    if(q.type==='boss'){ renderBoss(u, ()=>finish()); return; }
-    const dispatch={choose:renderChoose, sentence:renderSentence, whack:renderWhack, puzzle:renderPuzzle, match:renderMatch, find:renderFind};
-    dispatch[q.type](q, ()=>{ levelQi++; next(); });
-  }
-  next();
+  showLoading();
+  // 延后一帧再跑重活，让“加载中”狐狸动画先绘出
+  setTimeout(()=>{
+    const u=UNITS.find(x=>x.id===id);
+    const questions=buildLevelQuestions(u);
+    levelTotal=questions.length;
+    levelTotalNormal=Math.max(1, questions.length-1);
+    levelQi=0; levelCorrect=0;
+    const area=lvlArea;
+    function next(){
+      if(levelQi>=questions.length){ finish(); return; }
+      const q=questions[levelQi];
+      if(q.type==='boss'){ renderBoss(u, ()=>finish()); return; }
+      const dispatch={choose:renderChoose, sentence:renderSentence, whack:renderWhack, puzzle:renderPuzzle, match:renderMatch, find:renderFind};
+      dispatch[q.type](q, ()=>{ levelQi++; next(); });
+    }
+    next();
+    hideLoading();
+  }, 60);
 }
 // 4 选 1：看中文选英文
 function renderChoose(q, done){
@@ -3178,7 +3227,7 @@ function renderBoss(u, done){
     if(idx>=sents.length){
       const win=hits>=sents.length;
       if(win){
-        awardStars(1); confetti(); starBurst(2); foxSay('🏆 你击败了 BOSS！获得额外 ⭐！');
+        awardStars(1); celebrate(); foxSay('🏆 你击败了 BOSS！获得额外 ⭐！');
         area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss}</div><h2>🏆 BOSS 被击败！</h2><p class="muted">额外获得 1 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       } else {
         foxSay('💪 BOSS 逃走了，多练练句型再来！');
@@ -3231,7 +3280,7 @@ function finish(){
   awardStars(stars);
   saveState();
   if(unlockedName) setTimeout(()=>toast('🔓 解锁新关卡：'+unlockedName), 900);
-  if(stars>0){ confetti(); starBurst(stars); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
+  if(stars>0){ celebrate(); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
   const wrongTot=levelWrong.sel+levelWrong.spell+levelWrong.sent;
   const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 拼写 ${levelWrong.spell} · 句子题 ${levelWrong.sent}</p>`:'';
   const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
