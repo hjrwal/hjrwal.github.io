@@ -378,6 +378,23 @@
   .hp-bar{height:14px; border-radius:999px; background:#ffe1e1; overflow:hidden; border:2px solid #ffb3b3;}
   .hp-bar i{display:block; height:100%; background:linear-gradient(90deg,#ff6b6b,#ff3b3b); transition:width .4s;}
   .boss-win{box-shadow:0 0 0 3px rgba(255,179,71,.5), var(--shadow);}
+  /* BOSS 剧情化 v38 */
+  .boss-intro{text-align:center; padding:20px 14px; animation:bossCardIn .35s cubic-bezier(.2,.8,.2,1);}
+  .boss-avatar{width:98px; height:98px; border-radius:50%; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:56px; background:#fff; border:4px solid var(--bc); box-shadow:0 8px 20px rgba(0,0,0,.14); animation:bossIdle 1.6s ease-in-out infinite;}
+  .boss-name{font-size:22px; font-weight:900; color:#333; letter-spacing:.5px;}
+  .boss-title{display:inline-block; font-size:12px; font-weight:800; color:#fff; padding:2px 12px; border-radius:999px; margin-top:5px;}
+  .boss-story{font-size:14px; line-height:1.75; margin:14px auto 0; max-width:340px; color:#444; font-weight:600;}
+  .boss-weak{font-size:13px; font-weight:800; color:#c0392b; background:#fff3f3; border:2px dashed #ffb3b3; border-radius:12px; padding:8px 10px; margin:12px auto 0; max-width:300px;}
+  .boss-av{text-align:center;}
+  .boss-av .boss-nm{font-size:12px; font-weight:800; margin-top:2px; color:#444;}
+  .boss-bubble{position:relative; background:#fff; border:2px solid var(--bc); border-radius:14px; padding:8px 12px; font-size:13px; font-weight:800; margin-bottom:12px; color:#333; animation:bossBubbleIn .3s;}
+  .boss-bubble::after{content:''; position:absolute; left:26px; bottom:-9px; border:8px solid transparent; border-top-color:var(--bc);}
+  .boss-bubble.pop{animation:bossPop .45s;}
+  .boss-bubble.shake{animation:bossShake .4s;}
+  @keyframes bossCardIn{from{opacity:0; transform:translateY(10px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);}}
+  @keyframes bossBubbleIn{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);}}
+  @keyframes bossPop{0%{transform:scale(1);} 40%{transform:scale(1.07);} 100%{transform:scale(1);}}
+  @keyframes bossShake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);}}
   /* progress bars */
   .heat-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:8px;}
   .heat-cell{border-radius:12px; padding:10px 8px; text-align:center; cursor:pointer; border:2px solid rgba(0,0,0,.05); transition:transform .15s, box-shadow .15s;}
@@ -801,7 +818,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">37</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">38</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -827,6 +844,7 @@ update → controllerchange
       <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
       <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
       <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
+      <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1818,7 +1836,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 37;
+const APP_VERSION = 38;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1873,7 +1891,7 @@ function defaultState(){
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
-    rankIdx:0, codex:{},
+    rankIdx:0, codex:{}, bossSeen:{},
     settings:{rate:0.9, theme:'light', book:'shang', fontScale:1} };
 }
 function loadState(){
@@ -1891,6 +1909,7 @@ function loadState(){
     if(!s.settings.fontScale) s.settings.fontScale=1;
     if(typeof s.rankIdx!=='number') s.rankIdx=0;
     if(!s.codex) s.codex={};
+    if(!s.bossSeen) s.bossSeen={};
     return s;
   } }catch(e){}
   return defaultState();
@@ -3462,22 +3481,106 @@ function renderFind(q, done){
   speak(answer.en);
 }
 // 单元 BOSS 战：连对 3 句连词成句，掉光血条即击败（额外奖励星）
+// 每个单元一个主题反派，首遇弹剧情卡，战斗中吐槽，胜负有专属台词
+const BOSSES={
+  u1:{emoji:'👴',name:'糊涂老校长',title:'记性黑洞',color:'var(--sky)',
+    intro:'老校长把全校同学的名字都记混啦！🤦 必须用英语说出正确的句子，才能帮他理清谁是谁！',
+    weak:'连词成句：说出描述人物性格的句子',
+    tr:'哎呀，这句太清楚，我记起来啦！', tw:'嗯？这句有点乱，我没听懂哦～',
+    win:'哎哟，被你绕晕了，我去翻花名册啦！📒', lose:'哼，下次我换个更绕的谜题！'},
+  u2:{emoji:'🐢',name:'拖延小龟',title:'明日复明日',color:'var(--grape)',
+    intro:'拖延小龟把所有作业都推到「下周一」了！🐢 用英语说出星期和课程，戳破它的拖延咒！',
+    weak:'连词成句：说出星期 / 课程安排',
+    tr:'啊，被你安排得明明白白！', tw:'嘻嘻，这句没说清，我继续拖～',
+    win:'完蛋，计划全暴露，我溜了！🐢💨', lose:'下次我要拖到「下下周一」！'},
+  u3:{emoji:'🍔',name:'贪吃怪',title:'干饭黑洞',color:'var(--coral)',
+    intro:'贪吃怪把美食岛的单词全吃进肚子啦！🍔 用英语点出正确的食物句子，让它乖乖吐出来！',
+    weak:'连词成句：说出食物 / 饮料',
+    tr:'唔…这句太香，我喷出来了！', tw:'咦，这句不对，我咽回去啦～',
+    win:'嗝～撑不住了，单词还给你！🍔💦', lose:'哼，下次我连菜单一起吃！'},
+  u4:{emoji:'🤡',name:'本领盲盒怪',title:'才艺黑洞',color:'var(--grass)',
+    intro:'本领盲盒怪说自己啥都不会，还笑话别人！🤡 用英语说出「我会…」，戳穿它的牛皮！',
+    weak:'连词成句：说出能力与才艺 (can)',
+    tr:'哎，被你秀到了，我认输！', tw:'哈哈，这句卡壳，你也不会吧？',
+    win:'服了服了，我这就去学才艺！🎸', lose:'哼，下次我假装会跳舞！'},
+  u5:{emoji:'🌀',name:'乱糟糟小魔',title:'颠倒大师',color:'var(--sun)',
+    intro:'乱糟糟小魔把房间全打乱啦！🌀 用英语说出「哪里有什么」，把东西归位打败它！',
+    weak:'连词成句：说出房间与物品位置',
+    tr:'哎呀，被你摆得整整齐齐！', tw:'嘿嘿，这句没说清，更乱了～',
+    win:'呜，房间太整齐我待不住，溜了！🌀💨', lose:'下次我把天花板当地板！'},
+  u6:{emoji:'🌲',name:'迷路林妖',title:'丢丢精',color:'var(--sky)',
+    intro:'迷路林妖把公园里的东西都藏丢啦！🌲 用英语说出「那里有…」，帮它找回自然宝藏！',
+    weak:'连词成句：说出自然公园 (there be)',
+    tr:'哎哟，被你一指，东西回来啦！', tw:'嘻嘻，这句没说对，还在丢～',
+    win:'糟了，宝藏全被你找齐，我迷路咯！🌲💨', lose:'下次我把湖藏起来！'},
+  v1:{emoji:'⏰',name:'迟到精灵',title:'慢吞吞',color:'var(--sky)',
+    intro:'迟到精灵总把时间搞乱，害大家迟到！⏰ 用英语说出「我几点做什么」，把作息拨回正轨！',
+    weak:'连词成句：说出一天作息',
+    tr:'啊，被你安排得准准的！', tw:'嘻嘻，这句没说清，时间又乱了～',
+    win:'完蛋，闹钟响了，我得跑了！⏰💨', lose:'下次我把钟表调慢一小时！'},
+  v2:{emoji:'🌈',name:'反季妖',title:'乱穿衣',color:'var(--coral)',
+    intro:'反季妖夏天穿棉袄、冬天吃冰棍！🌈 用英语说出你喜欢的季节，把它扳回正常！',
+    weak:'连词成句：说出喜欢的季节',
+    tr:'哎，被你描述得我都想换季了！', tw:'嘿嘿，这句没说明白，继续乱穿～',
+    win:'冷…热…晕了，我去换衣服！🌈💨', lose:'下次我秋天开桃花！'},
+  v3:{emoji:'📆',name:'健忘日历精',title:'日期糊涂虫',color:'var(--grape)',
+    intro:'健忘日历精把校历的日期全忘啦！📆 用英语说出「某月有什么活动」，帮它补齐日历！',
+    weak:'连词成句：说出校历月份活动',
+    tr:'哎呀，被你一说，日期想起来啦！', tw:'嗯？这句没说清，又忘了～',
+    win:'糟了，整本日历被你填满，我没事干啦！📆💨', lose:'下次我把二月改成有30天！'},
+  v4:{emoji:'🎨',name:'涂鸦怪',title:'乱画王',color:'var(--grass)',
+    intro:'涂鸦怪把艺术展画得乱七八糟！🎨 用英语说出「这是谁画的 / 什么画」，还原名画打败它！',
+    weak:'连词成句：说出艺术展 (whose)',
+    tr:'哎，被你一描述，画变美了！', tw:'嘻嘻，这句没说清，我继续涂！',
+    win:'呜，被你点评为大师，我不敢画了！🎨💨', lose:'下次我把蒙娜丽莎画成猫！'},
+  v5:{emoji:'🐶',name:'认领混混',title:'乱认主',color:'var(--sun)',
+    intro:'认领混混把大家的东西都认错主人啦！🐶 用英语说出「这是谁的」，把东西还回原主！',
+    weak:'连词成句：说出所属关系 (whose / mine)',
+    tr:'哎呀，被你一说，物归原主啦！', tw:'嘿嘿，这句没说明白，继续乱认～',
+    win:'完蛋，东西全还完了，我没得拿！🐶💨', lose:'下次我把狗认成猫！'},
+  v6:{emoji:'🤫',name:'吵闹鬼',title:'反安静',color:'var(--coral)',
+    intro:'吵闹鬼专在图书馆大喊大叫！🤫 用英语说出「请安静 / 保持…」的规则，把它压回安静！',
+    weak:'连词成句：说出安静规则 (quietly / keep)',
+    tr:'嘘…被你管得不敢出声了！', tw:'哈哈，这句没说清，我更大声！',
+    win:'啊，被你的规则封印，我闭嘴啦！🤫💤', lose:'下次我在考场唱歌！'}
+};
+function getBoss(u){
+  return BOSSES[u.id] || {emoji:'👹',name:'捣蛋小怪',title:'关卡 BOSS',color:'var(--grape)',
+    intro:'这个捣蛋小怪挡住了去路！用英语连词成句，把它打跑！',
+    weak:'连词成句：说出正确的句子',
+    tr:'哎哟，被你打中！', tw:'嘿嘿，这句没说对～',
+    win:'呜，被你打败啦，我溜了！', lose:'嘻嘻，下次再来挑战我！'};
+}
 function renderBoss(u, done){
   const area=document.getElementById('lvlArea');
   const sents=shuffle(u.sentences.slice()).slice(0,3);
   if(sents.length===0){ done(); return; }
-  const bossEmojis=['👹','👺','🐉','👾','🦖','🐲'];
-  const boss=bossEmojis[(u.id.charCodeAt(1)||0)%bossEmojis.length]||'👹';
+  const boss=getBoss(u);
   let hp=sents.length, idx=0, hits=0;
+  function intro(){
+    // 首遇弹剧情卡；重遇直接开战，不重复唠叨
+    if(STATE.bossSeen[u.id]){ fight(); return; }
+    STATE.bossSeen[u.id]=true; saveState();
+    area.innerHTML=`<div class="panel boss-intro">
+      <div class="boss-avatar" style="--bc:${boss.color}">${boss.emoji}</div>
+      <div class="boss-name">${boss.name}</div>
+      <div class="boss-title" style="background:${boss.color}">${boss.title}</div>
+      <div class="boss-story">${boss.intro}</div>
+      <div class="boss-weak">🎯 弱点：${boss.weak}</div>
+      <button class="btn coral lg" style="margin-top:6px" onclick="__bossStart()">⚔️ 开战！</button>
+    </div>`;
+    window.__bossStart=fight;
+  }
+  function fight(){ render(); }
   function render(){
     if(idx>=sents.length){
       const win=hits>=sents.length;
       if(win){
-        awardStars(1); celebrate(); foxSay('🏆 你击败了 BOSS！获得额外 ⭐！');
-        area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss}</div><h2>🏆 BOSS 被击败！</h2><p class="muted">额外获得 1 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
+        awardStars(1); celebrate(); foxSay('🏆 你击败了 '+boss.name+'！获得额外 ⭐！');
+        area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss.emoji}</div><h2>🏆 ${boss.name} 被击败！</h2><p class="muted">${boss.win}</p><p class="muted">额外获得 1 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       } else {
-        foxSay('💪 BOSS 逃走了，多练练句型再来！');
-        area.innerHTML=`<div class="panel center"><div class="boss-emoji">${boss}</div><h2>BOSS 还没倒下…</h2><p class="muted">连对 ${hits}/${sents.length} 句，再练练句型！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
+        foxSay('💪 '+boss.name+'逃走了，多练练句型再来！');
+        area.innerHTML=`<div class="panel center"><div class="boss-emoji">${boss.emoji}</div><h2>${boss.name} 还没倒下…</h2><p class="muted">${boss.lose}</p><p class="muted">连对 ${hits}/${sents.length} 句，再练练句型！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       }
       window.__bossDone=done;
       return;
@@ -3490,8 +3593,9 @@ function renderBoss(u, done){
     const wordPool=(u.words||[]).map(w=>w.en).filter(w=>!parts.includes(w));
     const distract=shuffle(wordPool).slice(0, needDistract);
     const pool=shuffle(parts.concat(distract));
-    area.innerHTML=`<div class="panel boss-fight"><div class="boss-top"><span class="boss-emoji">${boss}</span>
-      <div class="hp"><div class="hp-label">BOSS 生命 ${hp}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(hp/sents.length*100)}%"></i></div></div></div>
+    area.innerHTML=`<div class="panel boss-fight" style="--bc:${boss.color}"><div class="boss-top"><div class="boss-av"><span class="boss-emoji">${boss.emoji}</span><div class="boss-nm">${boss.name}</div></div>
+      <div class="hp"><div class="hp-label">${boss.name} 生命 ${hp}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(hp/sents.length*100)}%"></i></div></div></div>
+      <div class="boss-bubble" id="bbub">来吧，造出正确的句子！</div>
       <div class="qprompt">⚔️ 第 ${idx+1}/${sents.length} 击 · 连词成句：“${s.zh}”</div>
       <div class="basket" id="bb"></div><div class="pool" id="bp"></div>
       <button class="btn grass lg" style="margin-top:10px" onclick="__bossCheck('${s.en.replace(/'/g,"\\'")}')">💥 攻击！</button></div>`;
@@ -3503,11 +3607,21 @@ function renderBoss(u, done){
     window.__bossCheck=(ans)=>{
       const got=[...document.querySelectorAll('#bb .in')].map(e=>e.textContent).join(' ');
       const ok=norm(got)===norm(ans);
-      if(ok){ hits++; hp--; idx++; toast('💥 命中！BOSS 掉血'); render(); }
-      else { const b=document.getElementById('bb'); b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),500); toast('🛡️ BOSS 挡下了，再试试'); }
+      const b=document.getElementById('bbub');
+      if(ok){
+        hits++; hp--; idx++;
+        if(b){ b.textContent=boss.tr; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('pop'); }
+        toast('💥 命中！'+boss.name+'掉血');
+        setTimeout(render, 750);
+      } else {
+        const bb=document.getElementById('bb');
+        if(bb){ bb.classList.add('wrong'); setTimeout(()=>bb.classList.remove('wrong'),500); }
+        if(b){ b.textContent=boss.tw; b.classList.remove('pop'); void b.offsetWidth; b.classList.add('shake'); }
+        toast('🛡️ '+boss.name+'挡下了，再试试');
+      }
     };
   }
-  render();
+  intro();
 }
 function finish(){
   const id=curUnitId;
