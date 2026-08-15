@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 23,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v24',// 与 sw.js 的 CACHE 保持一致
+    version: 24,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v25',// 与 sw.js 的 CACHE 保持一致
     words:   341,       // 核心词数
     audio:   671,       // 预录音频数
     audioMB: 9.5,       // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    23,        // 迭代版本数
+    iter:    24,        // 迭代版本数
     updated: '2026-08-15'
   };
 </script>
@@ -112,6 +112,18 @@
     background:var(--indigo2); border:2px solid #fff; box-shadow:0 0 0 3px #e8e4fb;}
   .tl .it b{font-size:14px;}
   .tl .it span{display:block; font-size:12px; color:var(--muted);}
+
+  /* challenges */
+  .sec-sub{margin:-4px 0 14px; font-size:13px; color:var(--muted);}
+  code{font:600 12.5px var(--mono); color:var(--indigo2); background:#eef0fb; padding:1px 6px; border-radius:6px;}
+  .qcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
+  .qcard h4{margin:0 0 10px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
+  .qrow{display:flex; gap:9px; margin-top:9px; align-items:flex-start;}
+  .qtag{flex:0 0 auto; font:800 11px var(--mono); padding:3px 9px; border-radius:999px; white-space:nowrap; margin-top:1px;}
+  .qtag.q{color:#b45309; background:#fef3c7;}
+  .qtag.p{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 4px 10px rgba(109,94,252,.25);}
+  .qtxt{font-size:13px; color:var(--muted); line-height:1.55;}
+  .qcard pre.code{margin-top:10px;}
 
   .foot{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); text-align:center;}
   @media(max-width:640px){
@@ -261,9 +273,52 @@ master = solved / total <span class="c">// 进度条</span></pre>
     </div>
   </section>
 
-  <!-- 5. TIMELINE -->
+  <!-- 5. CHALLENGES -->
   <section class="sec">
-    <div class="sec-h"><span class="n">5</span><h3>版本演进</h3><span class="ln"></span></div>
+    <div class="sec-h"><span class="n">5</span><h3>技术难点与解决方案</h3><span class="ln"></span></div>
+    <p class="sec-sub">真实开发中被「卡住」过、并逐一破解的工程问题——每一个都来自真机实测。</p>
+    <div class="grid2">
+      <div class="qcard">
+        <h4>🔇 设备级 TTS 整体缺失</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">一加 Ace 5 Pro / ColorOS 16 的 Web Speech API 朗读整台设备不可用（系统级语音引擎缺失，非浏览器问题），QQ 浏览器与系统浏览器均无法出声。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">用 edge-tts（en-US-AriaNeural）批量预录 671 个 mp3（341 词 + 341 例句 + 句型，共 9.5MB），建立 <code>AUDIO_MAP</code> 内嵌；<code>speak()</code> 优先播本地音频，无则降级 web TTS，彻底摆脱运行时 TTS 依赖。</span></div>
+        <pre class="code"><span class="k">speak</span>(text):
+  <span class="k">if</span> AUDIO_MAP[text]: play(local_mp3)
+  <span class="k">else</span>: webTTS(text)</pre>
+      </div>
+      <div class="qcard">
+        <h4>🔄 PWA 常驻不重启，更新到不了</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">手机 PWA 长期驻留内存，Service Worker 不接管新版本，旧缓存一直生效，用户永远看不到更新。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">install 阶段 <code>try/catch</code> 后必执行 <code>skipWaiting()</code> 抢接管；注册后监听 <code>controllerchange</code> → <code>saveState()</code> 后 <code>location.reload()</code>；页面可见时（<code>visibilitychange</code>）主动 <code>reg.update()</code> 查新。双保险根治缓存陈旧。</span></div>
+        <pre class="code">install → <span class="k">skipWaiting</span>()   <span class="c">// 必执行</span>
+update  → <span class="k">controllerchange</span>
+        → saveState(); location.reload()</pre>
+      </div>
+      <div class="qcard">
+        <h4>📦 671 音频的离线 + 国内可访问</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">671 个音频共 9.5MB，既要离线可听又不能拖慢首屏；且 Vercel / Cloudflare 子域在国内被 DNS 污染，无法直连。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">SW 对 <code>/audio/</code> 走 cache-first 永久离线；仅 install 预缓存壳资源（index / sw / icon），音频按需 fetch 时缓存；部署锁定 GitHub Pages（<code>*.github.io</code> 国内可直连）。</span></div>
+      </div>
+      <div class="qcard">
+        <h4>🎯 弱项诊断：从「有错」到「知道错在哪」</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">仅统计错题总数无法指导复习，孩子不知道该练哪个单元、哪种题型。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt"><code>weakByUnit[unit] = {sel, spell, sent}</code> 三维计数；进度页双维度热力图（色=错次、蓝条=掌握度）；首页推荐「去练某单元某题型」，单元测试与闯关两路错题同源汇聚。</span></div>
+        <pre class="code">weakByUnit[unit] = {
+  sel, spell, sent   <span class="c">// 错次计数</span>
+}
+<span class="c">// 色阶: 错次→红 ; 蓝条: 掌握度</span></pre>
+      </div>
+      <div class="qcard">
+        <h4>🗂️ 零依赖下的可维护词库</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">单文件 + 零依赖，341 词手维护易错、易漏音标，且音频与词表易失同步。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">本地 Python 工具链（<code>rebuild / expand / validate</code>）管词库，脚本式校验词数一致；<code>AUDIO_MAP</code> 由脚本生成，保证与词库同源同步，改词后一键重生成音频。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. TIMELINE -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
     <div class="card">
       <div class="tl">
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
@@ -273,6 +328,8 @@ master = solved / total <span class="c">// 进度条</span></pre>
         <div class="it"><b>v18 · 可视化</b><span>关卡路线 · 弱项热力图 · Hero 进度环</span></div>
         <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
         <div class="it"><b>v22 · 技术亮点</b><span>技术展示页 · 架构与工程实践对外呈现</span></div>
+        <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
+        <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
       </div>
     </div>
   </section>
