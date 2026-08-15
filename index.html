@@ -547,6 +547,15 @@
   .weak-tip{margin-top:10px; padding:8px 12px; border-radius:12px; background:linear-gradient(90deg,#fff4d6,#ffe9c2); color:#9a6b00; font-size:13px; font-weight:700; border:1px solid #ffd98a;}
   .link-btn{background:none; border:none; color:#1b8f5a; font-weight:800; font-size:13px; cursor:pointer; padding:0 2px; text-decoration:underline;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.75}}
+  /* 今日目标可编辑（v40） */
+  .edit-pen{font-size:11px; opacity:.55; margin-left:2px; transition:.2s;}
+  .edit-pen:hover{opacity:1; transform:scale(1.15) rotate(-8deg);}
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .chip{padding:7px 14px; border-radius:999px; background:var(--line); color:var(--ink); font-size:14px; font-weight:800; cursor:pointer; border:2px solid transparent; transition:.18s;}
+  .chip:hover{transform:translateY(-2px);}
+  .chip.on{background:linear-gradient(90deg,var(--grape),var(--sky)); color:#fff; border-color:rgba(255,255,255,.6); box-shadow:var(--shadow);}
+  .num-in{width:72px; padding:7px 10px; border-radius:10px; border:2px solid var(--line); background:var(--card); color:var(--ink); font-size:15px; font-weight:800; text-align:center;}
+  .num-in:focus{outline:none; border-color:var(--grape);}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .floaty{animation:floaty 2.5s ease-in-out infinite;}
   /* 发音动画条 */
@@ -785,7 +794,7 @@
       <span class="rc-go">去复习 →</span>
     </div>
     <div class="panel" style="margin-top:14px;">
-      <div class="row spread"><b>🎯 今日目标</b><span class="muted" id="dailyTip"></span></div>
+      <div class="row spread"><b style="cursor:pointer" onclick="openGoal()">🎯 今日目标 <span class="edit-pen">✏️</span></b><span class="muted" id="dailyTip"></span></div>
       <div class="goal-wrap">
         <div class="goal-bar" id="goalBar"><i id="goalFill" style="width:0%"></i></div>
         <div class="goal-text"><span id="goalDone">今天已答对 0 题</span><span id="goalLabel">0 / 20 题</span></div>
@@ -855,7 +864,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">39</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">40</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -883,6 +892,7 @@ update → controllerchange
       <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
       <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
       <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染，不闪空白）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
+      <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1240,6 +1250,7 @@ update → controllerchange
 <!-- 段位弹窗 -->
 <div class="modal-mask" id="rankModal" onclick="if(event.target===this)closeRank()"></div>
 <div class="modal-mask" id="wordModal" onclick="if(event.target===this)closeWord()"></div>
+<div class="modal-mask" id="goalModal" onclick="if(event.target===this)closeGoal()"></div>
 
 <div class="nav">
   <button onclick="go('home')" data-nav="home"><span class="e">🏠</span>首页</button>
@@ -1874,7 +1885,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 39;
+const APP_VERSION = 40;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1930,7 +1941,7 @@ function defaultState(){
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     rankIdx:0, codex:{}, bossSeen:{},
-    settings:{rate:0.9, theme:'light', book:'shang', fontScale:1} };
+    settings:{rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20} };
 }
 function loadState(){
   try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1){
@@ -1945,6 +1956,7 @@ function loadState(){
     if(!s.weakByUnit) s.weakByUnit={};
     if(!s.ab) s.ab={sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}};
     if(!s.settings.fontScale) s.settings.fontScale=1;
+    if(!s.settings.dailyGoal) s.settings.dailyGoal=20;
     if(typeof s.rankIdx!=='number') s.rankIdx=0;
     if(!s.codex) s.codex={};
     if(!s.bossSeen) s.bossSeen={};
@@ -4008,7 +4020,7 @@ function toast(msg){
 /* =========================================================
    每日目标（今日答对题数 → 首页进度条）
    ========================================================= */
-const DAILY_GOAL=20;
+function goalTarget(){ return (STATE.settings && STATE.settings.dailyGoal) || 20; }
 function dailyRec(){
   const t=todayStr();
   if(!STATE.daily || STATE.daily.date!==t) STATE.daily={date:t,count:0};
@@ -4018,20 +4030,21 @@ function bumpGoal(ok){
   if(!ok) return;
   const d=dailyRec();
   d.count+=1;
-  if(d.count===DAILY_GOAL) toast('🎉 今日目标达成！你太棒啦！');
+  if(d.count===goalTarget()) toast('🎉 今日目标达成！你太棒啦！');
   saveState();
 }
 function renderGoal(){
   const d=dailyRec();
-  const n=Math.min(d.count,DAILY_GOAL);
+  const G=goalTarget();
+  const n=Math.min(d.count,G);
   const fill=document.getElementById('goalFill');
   const bar=document.getElementById('goalBar');
   const done=document.getElementById('goalDone');
   const label=document.getElementById('goalLabel');
-  if(fill) fill.style.width=(n/DAILY_GOAL*100)+'%';
-  if(bar) bar.classList.toggle('done', n>=DAILY_GOAL);
-  if(done) done.textContent = n>=DAILY_GOAL ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题';
-  if(label) label.textContent=n+' / '+DAILY_GOAL+' 题';
+  if(fill) fill.style.width=(n/G*100)+'%';
+  if(bar) bar.classList.toggle('done', n>=G);
+  if(done) done.textContent = n>=G ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题';
+  if(label) label.textContent=n+' / '+G+' 题';
   const rc=document.getElementById('reviewCount'); if(rc) rc.textContent=dueReviews().length;
   // B2：错题主动复习推送——首页 callout 升级显示「今日 + 未来3天到期」，有待复习时高亮跳动
   const rc2=document.getElementById('reviewCallout');
@@ -4044,7 +4057,7 @@ function renderGoal(){
       : `暂无须复习 ✅`+(up?` · 未来3天有 <b>${up}</b> 个将到期`:'');
     rc2.classList.toggle('due', due>0);
   }
-  if(n>=DAILY_GOAL && STATE.goalPartyDate!==todayStr()){
+  if(n>=G && STATE.goalPartyDate!==todayStr()){
     STATE.goalPartyDate=todayStr(); saveState();
     confetti(); foxSay('🎉 今天的目标圆满达成，你真是英语小探险家！');
   }
@@ -4080,10 +4093,32 @@ function renderHero(){
       (rk.nxt? '<span class="rk-nx">还差 '+rk.toNext+'⭐ 升 '+rk.nxt.ico+rk.nxt.t+'</span>'
              : '<span class="rk-nx">已满级 👑</span>'); }
   const d=dailyRec();
-  const p=Math.min(100, Math.round(Math.min(d.count,DAILY_GOAL)/DAILY_GOAL*100));
+  const G=goalTarget();
+  const p=Math.min(100, Math.round(Math.min(d.count,G)/G*100));
   const ring=document.getElementById('heroGoalRing');
   if(ring){ ring.style.setProperty('--p', p); const sp=document.getElementById('heroGoalPct'); if(sp) sp.textContent=p+'%'; }
 }
+// 今日目标可编辑（v40）：弹窗设目标题数，存 STATE.settings.dailyGoal
+function openGoal(){
+  const cur=goalTarget();
+  const m=document.getElementById('goalModal'); if(!m) return;
+  const presets=[10,15,20,30,50];
+  m.innerHTML='<div class="modal"><div class="row spread"><h2 class="sec" style="margin:0">🎯 设置今日目标</h2><button class="back" onclick="closeGoal()">✕</button></div>'+
+    '<p class="muted" style="margin:10px 0 4px">每天想答对多少题？</p>'+
+    '<div class="chip-row" id="goalPresets">'+presets.map(p=>'<div class="chip'+(p===cur?' on':'')+'" data-g="'+p+'" onclick="setGoalPreset('+p+')">'+p+' 题</div>').join('')+'</div>'+
+    '<div class="row" style="margin-top:10px;align-items:center;gap:8px"><span class="muted">自定义</span><input id="goalInput" type="number" min="1" max="200" value="'+cur+'" class="num-in"/> 题</div>'+
+    '<div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" onclick="closeGoal()">取消</button><button class="btn grape" onclick="saveGoal()">保存</button></div></div>';
+  m.classList.add('show');
+}
+function setGoalPreset(p){ const i=document.getElementById('goalInput'); if(i) i.value=p; document.querySelectorAll('#goalPresets .chip').forEach(c=>c.classList.toggle('on', +c.dataset.g===p)); }
+function saveGoal(){
+  const i=document.getElementById('goalInput'); let v=parseInt(i&&i.value,10);
+  if(!v||v<1) v=1; if(v>200) v=200;
+  STATE.settings.dailyGoal=v; saveState(); closeGoal();
+  renderGoal(); renderHero();
+  toast('🎯 今日目标已设为 '+v+' 题');
+}
+function closeGoal(){ const m=document.getElementById('goalModal'); if(m) m.classList.remove('show'); }
 
 /* =========================================================
    错题本（独立模块：列表 + 逐题重做）
