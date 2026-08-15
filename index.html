@@ -1734,7 +1734,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 29;
+const APP_VERSION = 30;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3087,11 +3087,11 @@ function renderPuzzle(q, done){
   const area=document.getElementById('lvlArea');
   const answer=q.answer;
   const letters=shuffle(answer.en.split(''));
-  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 拼词：“${q.zh}” ${answer.emoji||''}</div>
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 拼词：“${answer.zh}” ${answer.emoji||''}</div>
     <button class="btn sky" style="margin-bottom:8px" onclick="__puzzlePlay()">🔊 听一听</button>
     <div class="basket" id="pb"></div><div class="pool" id="pp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__puzzleCheck()">✔ 检查</button></div>`;
-  const resolve=makeResolver('puzzle', answer.en, q.zh, done);
+  const resolve=makeResolver('puzzle', answer.en, answer.zh, done);
   const basket=document.getElementById('pb');
   letters.forEach(ch=>{
     const t=document.createElement('div'); t.className='token'; t.textContent=ch;
