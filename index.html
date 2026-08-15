@@ -757,7 +757,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">33</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">34</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -779,6 +779,7 @@ update → controllerchange
       <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
       <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
       <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
+      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1759,7 +1760,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 33;
+const APP_VERSION = 34;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3097,7 +3098,11 @@ function renderChoose(q, done){
 function renderSentence(q, done){
   const area=document.getElementById('lvlArea');
   const parts=q.en.split(/\s+/);
-  const pool=shuffle(parts.slice());
+  // 加干扰词：从本单元词池挑 2-3 个，避免短句“照搬顺序”就过关（与 BOSS 题一致）
+  const needDistract=parts.length<=3?3:2;
+  const wordPool=(curUnit().words||[]).map(w=>w.en).filter(w=>!parts.includes(w));
+  const distract=shuffle(wordPool).slice(0, needDistract);
+  const pool=shuffle(parts.concat(distract));
   area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 连词成句：“${q.zh}”</div>
     <div class="basket" id="lb"></div><div class="pool" id="lp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__lvlSentCheck('${q.en.replace(/'/g,"\\'")}')">✔ 检查</button></div>`;
