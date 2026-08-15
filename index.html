@@ -122,6 +122,12 @@
   .review-callout .rc-txt{flex:1; font-size:15px;}
   .review-callout .rc-txt b{font-size:18px;}
   .review-callout .rc-go{font-size:13px; opacity:.92; white-space:nowrap;}
+  .review-callout.due{background:linear-gradient(135deg,#fff3e0,#ffe0ec); box-shadow:0 6px 18px rgba(255,122,89,.25); animation:rcPulse 1.6s ease-in-out infinite;}
+  @keyframes rcPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.015);}}
+  .eval-wave{width:100%; height:56px; background:#f5f3ff; border-radius:12px; display:block; margin:4px 0;}
+  .sub-eval{margin-top:6px;}
+  .radar-wrap{margin-top:12px; padding:10px; background:rgba(124,92,255,.06); border-radius:14px;}
+  .radar-title{font-weight:800; font-size:14px; margin-bottom:4px;}
   /* 首页卡片错峰浮现 */
   @keyframes tileIn{from{opacity:0; transform:translateY(16px) scale(.96)}to{opacity:1; transform:none}}
   .home-group .grid .tile{animation:tileIn .42s both;}
@@ -757,7 +763,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">34</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">35</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -780,6 +786,7 @@ update → controllerchange
       <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
       <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
       <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
+      <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -804,6 +811,7 @@ update → controllerchange
       <p class="muted">选一个单元，做 10 道题（听音/选词/拼写/连词），完成后给分并自动收集错题。</p>
       <div class="chips" id="testUnits"></div>
       <button class="btn grape lg" style="margin-top:10px; width:100%" onclick="startTest()">▶ 开始单元测试</button>
+      <button class="btn ghost" style="margin-top:8px; width:100%" onclick="genPracticePack()">📦 薄弱练习包（按弱项智能组题）</button>
     </div>
     <div id="testArea"></div>
   </section>
@@ -1760,7 +1768,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 34;
+const APP_VERSION = 35;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1814,6 +1822,7 @@ function defaultState(){
   return { version:1, stars:0, streak:0, lastActive:'',
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
+    ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     settings:{rate:0.9, theme:'light', book:'shang', fontScale:1} };
 }
 function loadState(){
@@ -1827,6 +1836,7 @@ function loadState(){
     if(!s.gramRight) s.gramRight=0;
     if(!s.weak) s.weak={sel:0,spell:0,sent:0};
     if(!s.weakByUnit) s.weakByUnit={};
+    if(!s.ab) s.ab={sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}};
     if(!s.settings.fontScale) s.settings.fontScale=1;
     return s;
   } }catch(e){}
@@ -2510,13 +2520,59 @@ function hideLoading(){ const l=document.getElementById('loading'); if(l) l.clas
    ========================================================= */
 function selfEval(){
   const res=document.getElementById('speakResult'); if(!res) return;
-  res.innerHTML='你觉得自己读得怎么样？<div class="row" style="margin-top:8px;justify-content:center">'+
-    '<button class="btn grass" onclick="selfEvalDone(true)">👍 读得不错</button>'+
-    '<button class="btn coral" onclick="selfEvalDone(false)">💪 还要练</button></div>';
+  res.innerHTML='<div class="sub-eval">'+
+    '<canvas class="eval-wave" id="evalWave" width="300" height="56"></canvas>'+
+    '<p class="muted" id="evalHint">点「🎙️ 看波形跟读」，对着手机大声读，看声波跳不跳～</p>'+
+    '<div class="row" style="justify-content:center;margin:6px 0">'+
+      '<button class="btn sky" id="waveBtn" onclick="startWaveEval()">🎙️ 看波形跟读</button>'+
+    '</div>'+
+    '<div class="row" style="justify-content:center">'+
+      '<button class="btn grass" onclick="selfEvalDone(3)">🤩 读得超棒</button>'+
+      '<button class="btn sky" onclick="selfEvalDone(2)">😀 还不错</button>'+
+      '<button class="btn coral" onclick="selfEvalDone(1)">💪 还要练</button>'+
+    '</div></div>';
 }
-function selfEvalDone(good){
+let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0;
+function startWaveEval(){
+  const c=document.getElementById('evalWave'), hint=document.getElementById('evalHint'), btn=document.getElementById('waveBtn');
+  if(!c){ selfEvalDone(1); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ hint.textContent='这台设备不支持麦克风，你给自己打个分吧～'; return; }
+  hint.textContent='正在请求麦克风…';
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    _waveStream=stream;
+    const AC=window.AudioContext||window.webkitAudioContext; _waveAC=new AC();
+    const src=_waveAC.createMediaStreamSource(stream); const an=_waveAC.createAnalyser(); an.fftSize=256;
+    src.connect(an); const buf=new Uint8Array(an.frequencyBinCount);
+    _waveActive=0; _waveSamples=0;
+    const ctx=c.getContext('2d');
+    const loop=()=>{
+      an.getByteTimeDomainData(buf);
+      let v=0; for(let i=0;i<buf.length;i++){ const d=(buf[i]-128)/128; v+=d*d; } v=Math.sqrt(v/buf.length);
+      _waveSamples++; if(v>0.045) _waveActive++;
+      ctx.clearRect(0,0,c.width,c.height);
+      ctx.strokeStyle='#7c5cff'; ctx.lineWidth=2; ctx.beginPath();
+      for(let i=0;i<buf.length;i++){ const y=(buf[i]/255)*c.height; const x=i/buf.length*c.width; i?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke();
+      _waveRAF=requestAnimationFrame(loop);
+    };
+    loop();
+    hint.textContent='正在听…读完点「⏹ 停」';
+    if(btn){ btn.textContent='⏹ 我读完啦'; btn.className='btn coral'; btn.onclick=stopWaveEval; }
+  }).catch(()=>{ hint.textContent='没拿到麦克风权限，你给自己打个分吧～'; });
+}
+function stopWaveEval(){
+  if(_waveRAF) cancelAnimationFrame(_waveRAF); _waveRAF=null;
+  try{ if(_waveStream) _waveStream.getTracks().forEach(t=>t.stop()); }catch(e){}
+  try{ if(_waveAC) _waveAC.close(); }catch(e){}
+  const ratio=_waveSamples?_waveActive/_waveSamples:0;
+  const st = ratio>0.22?3 : ratio>0.07?2 : 1;
+  const hint=document.getElementById('evalHint');
+  if(hint) hint.textContent='小狐狸听到你读啦，给你 '+ '⭐'.repeat(st) + (st>=3?' 太棒了！':st>=2?' 不错哦～':' 多练练会更好！');
+  selfEvalDone(st);
+}
+function selfEvalDone(stars){
+  stars=stars||1;
   const res=document.getElementById('speakResult');
-  if(good){ awardStars(1); bumpGoal(true); foxSay('👏 好样的，多读就会更溜！'); toast('👏 +1⭐ 继续保持'); }
+  if(stars>=2){ awardStars(stars); bumpGoal(true); foxSay('👏 好样的，多读就会更溜！'); toast('👏 +'+stars+'⭐ 继续保持'); }
   else { foxSay('💪 没关系，多听示范跟着读就好！'); toast('💪 再练练，你可以的'); }
   if(res) res.innerHTML='点“听示范”再读一遍，或换一题试试～';
 }
@@ -2550,6 +2606,7 @@ function goVocabUnit(uid){ // 闯关失败引导：选中单元并进入词汇�
   go('vocab');
 }
 function startTest(){
+  packMode=false;
   const u=UNITS.find(x=>x.id===curUnitId);
   const singles=u.words.filter(w=>!w.en.includes(' '));
   const sents=shuffle(u.sentences.slice());
@@ -2684,6 +2741,7 @@ function commitTest(ok, enForWrong){
     const wu=STATE.weakByUnit[curUnitId]=STATE.weakByUnit[curUnitId]||{sel:0,spell:0,sent:0};
     wu[cat]=(wu[cat]||0)+1; // 累计到具体单元，便于精准推荐
   }
+  bumpAb(cat, ok); // 能力雷达：累计各维度答题次数与正确数
   if(ok){ testCorrect++; awardStars(1); }
   else if(enForWrong){ addTestWrong(enForWrong, curUnitId); }
   testIdx++;
@@ -2706,19 +2764,77 @@ function finishTest(){
   const selC=(ts.en?ts.en.c:0)+(ts.zh?ts.zh.c:0), selT=(ts.en?ts.en.t:0)+(ts.zh?ts.zh.t:0);
   const splC=ts.spell?ts.spell.c:0, splT=ts.spell?ts.spell.t:0;
   const sntC=ts.sent?ts.sent.c:0, sntT=ts.sent?ts.sent.t:0;
+  const remain = packMode ? (packQueue.length-packIdx-1) : 0;
   area.innerHTML=`<div class="panel center">
     <div class="test-score">${score}分</div>
     <p class="muted">答对 ${testCorrect} / ${total} 题 · ${score>=90?'🏆 太棒了！':score>=60?'👍 不错！':'💪 继续加油！'}</p>
     <p class="muted" style="font-size:13px;margin-top:4px">选择 ${selC}/${selT} · 拼写 ${splC}/${splT} · 句子 ${sntC}/${sntT}</p>
+    <div class="radar-wrap">
+      <div class="radar-title">📊 我的能力雷达</div>
+      <canvas id="abRadar" width="260" height="240"></canvas>
+      <div id="abRead" class="muted" style="font-size:13px"></div>
+    </div>
     <div class="row" style="justify-content:center;margin-top:10px">
       ${hasWrong?'<button class="btn coral" onclick="reviewWrong()">🔁 重做错题</button>':''}
       <button class="btn grape" onclick="startTest()">🔄 再做一次</button>
       <button class="btn sky" onclick="go('home')">🏠 首页</button>
-    </div></div>`;
+    </div>
+    ${packMode?(remain>0
+      ? `<div class="row" style="justify-content:center;margin-top:8px"><button class="btn sun" onclick="packAdvance()">➡️ 下一个弱项单元（${remain} 个）</button></div>`
+      : `<div class="row" style="justify-content:center;margin-top:8px"><button class="btn grass" onclick="packFinish()">🎉 练习包完成</button></div>`):''}
+  </div>`;
   renderMastery();
+  abilityRadar();
   if(score>=90){ confetti(); foxSay('🏆 满分小天才！'); }
   else if(score>=60){ foxSay('👍 不错哦，继续练！'); }
 }
+/* ===== 方向B3：能力雷达 ===== */
+function bumpAb(cat, ok){ const a=STATE.ab[cat]; if(!a) return; a.t++; if(ok) a.c++; }
+function abilityRadar(){
+  const cv=document.getElementById('abRadar'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height; const cx=W/2, cy=H/2, R=Math.min(W,H)/2-30;
+  const axes=[['选择',STATE.ab.sel],['拼写',STATE.ab.spell],['句子',STATE.ab.sent],['听力',STATE.ab.listen]];
+  const n=4; const ang=i=> -Math.PI/2 + i*2*Math.PI/n;
+  ctx.clearRect(0,0,W,H);
+  for(let r=1;r<=4;r++){ ctx.beginPath(); for(let i=0;i<n;i++){ const a=ang(i); const x=cx+Math.cos(a)*R*r/4, y=cy+Math.sin(a)*R*r/4; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath(); ctx.strokeStyle='rgba(124,92,255,.16)'; ctx.stroke(); }
+  const vals=axes.map(([nm,o])=> o.t? o.c/o.t : 0);
+  ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let i=0;i<n;i++){ const a=ang(i); const x=cx+Math.cos(a)*R, y=cy+Math.sin(a)*R; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.strokeStyle='rgba(124,92,255,.22)'; ctx.stroke();
+    const lx=cx+Math.cos(a)*(R+14), ly=cy+Math.sin(a)*(R+14); ctx.fillStyle='#555'; ctx.fillText(nm, lx, ly); }
+  ctx.beginPath(); for(let i=0;i<n;i++){ const a=ang(i); const rr=R*vals[i]; const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath();
+  ctx.fillStyle='rgba(124,92,255,.22)'; ctx.fill(); ctx.strokeStyle='#7c5cff'; ctx.lineWidth=2; ctx.stroke();
+  for(let i=0;i<n;i++){ const a=ang(i); const rr=R*vals[i]; const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fillStyle='#7c5cff'; ctx.fill(); }
+  const rd=document.getElementById('abRead');
+  if(rd){ const wd=axes.filter(([nm,o])=>o.t>0);
+    if(wd.length===0){ rd.textContent='多做几道题，就能画出你的能力雷达啦～'; }
+    else { let mi=0; wd.forEach(([nm,o],k)=>{ if(o.c/o.t < wd[mi][1].c/wd[mi][1].t) mi=k; }); const [nm,o]=wd[mi]; const pct=Math.round(o.c/o.t*100); rd.innerHTML='💡 最该加强：<b>'+nm+'</b>（正确率 '+pct+'%）'; } }
+}
+/* ===== 方向B4：薄弱练习包 ===== */
+let packMode=false, packQueue=[], packIdx=0;
+function genPracticePack(){
+  const wb=STATE.weakByUnit||{};
+  const us=Object.keys(wb).map(u=>({u,t:(wb[u].sel||0)+(wb[u].spell||0)+(wb[u].sent||0)}))
+    .filter(x=>x.t>0).sort((a,b)=>b.t-a.t).map(x=>x.u);
+  if(us.length===0){ toast('暂时没有薄弱点，先去做做单元测试吧 💡'); return; }
+  packMode=true; packQueue=us; packIdx=0; packNext();
+}
+function packNext(){
+  if(packIdx>=packQueue.length){ packFinish(); return; }
+  const uid=packQueue[packIdx]; const u=UNITS.find(x=>x.id===uid); if(!u){ packIdx++; return packNext(); }
+  curUnitId=uid;
+  const wu=STATE.weakByUnit[uid]||{sel:0,spell:0,sent:0};
+  const singles=u.words.filter(w=>!w.en.includes(' '));
+  const qs=[];
+  if((wu.sel||0)>0){ qs.push({type:'en', w:singles[Math.floor(Math.random()*singles.length)]}); qs.push({type:'zh', w:singles[Math.floor(Math.random()*singles.length)]}); }
+  if((wu.spell||0)>0){ qs.push({type:'spell', w:singles[Math.floor(Math.random()*singles.length)]}); }
+  if((wu.sent||0)>0 && u.sentences.length){ qs.push({type:'sent', s:u.sentences[Math.floor(Math.random()*u.sentences.length)]}); }
+  if(qs.length===0){ qs.push({type:'en', w:singles[0]}); qs.push({type:'zh', w:singles[0]}); }
+  testQs=shuffle(qs); testIdx=0; testCorrect=0; testTypeStat={};
+  go('test');
+  setTimeout(renderTestQ, 0);
+}
+function packAdvance(){ packIdx++; packNext(); }
+function packFinish(){ packMode=false; toast('🎉 薄弱练习包练完啦！'); go('home'); }
 
 /* =========================================================
    单词游戏：拼词 + 连连看
@@ -2838,10 +2954,10 @@ function pickChoice(i){
     if(s.opts[idx].en===s.w.en) b.classList.add('correct');
     else if(idx===i) b.classList.add('wrong');
   });
-  if(ok){
+  if(ok){ bumpAb('listen',true);
     STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(2); confetti(); foxSay('🎉 选对啦，你真棒！');
     area.insertAdjacentHTML('beforeend','<p class="center" style="color:var(--grass-d);font-weight:800;margin-top:10px">✅ 正确！+2⭐　下一题来啦…</p>');
-  } else {
+  } else { bumpAb('listen',false);
     area.insertAdjacentHTML('beforeend',`<p class="center" style="color:#d33;font-weight:800;margin-top:10px">❌ 不对哦，正确是：<b style="letter-spacing:1px">${s.w.en}</b>　点「换一个」再来</p>`);
   }
   setTimeout(()=>{ if(choiceState===s) startChoice(choiceMode); }, 900);
@@ -3138,8 +3254,8 @@ function renderWhack(q, done){
     d.onclick=()=>{
       if(d.disabled) return;
       const ok=norm(o)===norm(answer.en);
-      if(ok){ d.classList.add('hit'); [...m.children].forEach(c=>c.disabled=true); resolve(true); }
-      else { d.disabled=true; d.classList.add('miss'); resolve(false); }
+      if(ok){ d.classList.add('hit'); [...m.children].forEach(c=>c.disabled=true); bumpAb('listen',true); resolve(true); }
+      else { d.disabled=true; d.classList.add('miss'); bumpAb('listen',false); resolve(false); }
     };
     m.appendChild(d);
   });
@@ -3569,6 +3685,17 @@ function renderGoal(){
   if(done) done.textContent = n>=DAILY_GOAL ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题';
   if(label) label.textContent=n+' / '+DAILY_GOAL+' 题';
   const rc=document.getElementById('reviewCount'); if(rc) rc.textContent=dueReviews().length;
+  // B2：错题主动复习推送——首页 callout 升级显示「今日 + 未来3天到期」，有待复习时高亮跳动
+  const rc2=document.getElementById('reviewCallout');
+  if(rc2){
+    const due=dueReviews().length;
+    const up=STATE.wrong.filter(w=>w.due && w.due>todayStr() && w.due<=addDays(todayStr(),3)).length;
+    const txt=rc2.querySelector('.rc-txt');
+    if(txt) txt.innerHTML = due>0
+      ? `今日复习 <b>${due}</b> 个易错词`+(up?` · 未来3天还有 <b>${up}</b> 个将到期`:'')
+      : `暂无须复习 ✅`+(up?` · 未来3天有 <b>${up}</b> 个将到期`:'');
+    rc2.classList.toggle('due', due>0);
+  }
   if(n>=DAILY_GOAL && STATE.goalPartyDate!==todayStr()){
     STATE.goalPartyDate=todayStr(); saveState();
     confetti(); foxSay('🎉 今天的目标圆满达成，你真是英语小探险家！');
@@ -3587,7 +3714,7 @@ function renderGoal(){
       const cats=[['sel','选择题',topCat.sel||0],['spell','拼写题',topCat.spell||0],['sent','句子题',topCat.sent||0]].sort((a,b)=>b[2]-a[2]);
       const c0=cats[0];
       wt.classList.remove('hidden');
-      wt.innerHTML='💡 建议多练：<b>'+u.emoji+' '+u.title+'</b> 的'+c0[1]+'（累计错 '+c0[2]+' 次） · <button class="link-btn" onclick="goTestUnit(\''+topU+'\')">去练习▶</button>';
+      wt.innerHTML='💡 建议多练：<b>'+u.emoji+' '+u.title+'</b> 的'+c0[1]+'（累计错 '+c0[2]+' 次） · <button class="link-btn" onclick="goTestUnit(\''+topU+'\')">去练习▶</button> <button class="link-btn" onclick="genPracticePack()">📦 练习包</button>';
     } else wt.classList.add('hidden');
   }
   refreshWrongDot();
