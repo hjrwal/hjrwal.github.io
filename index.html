@@ -118,6 +118,21 @@
   .rank-row .rb{font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; background:#e7eaf2; color:#888;}
   .rank-row .rb.ok{background:#e3f9ec; color:#1a9e5a;}
   .rank-row.cur .rb{background:#fff0f5; color:#e0457f;}
+  .codex-top{display:flex; align-items:center; gap:10px; margin:4px 2px 12px;}
+  .codex-prog{font-weight:800; font-size:14px; white-space:nowrap;}
+  .codex-bar{flex:1; height:8px; border-radius:99px; background:rgba(0,0,0,.1); overflow:hidden;}
+  .codex-bar i{display:block; height:100%; background:linear-gradient(90deg,#8b5cf6,#ff5d8f); border-radius:99px; transition:width .6s ease;}
+  .codex-unit{margin-bottom:18px;}
+  .cu-h{font-weight:800; font-size:14px; margin:0 2px 8px; display:flex; align-items:center; gap:6px;}
+  .codex-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:8px;}
+  .wcard{display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 6px; border-radius:12px; background:#fff; border:1px solid #e7eaf2; cursor:pointer; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .wcard:active{transform:scale(.96);}
+  .wcard.lock{background:#f1f3f7; border-style:dashed; color:#aab; cursor:default; opacity:.8;}
+  .wcard .we{font-size:22px; line-height:1;}
+  .wcard .w-en{font-size:12px; font-weight:800; color:#2b2b3a; word-break:break-word;}
+  .wcard .w-zh{font-size:10.5px; color:#888; line-height:1.2;}
+  .wcard.lock .w-en,.wcard.lock .w-zh{color:#bcc;}
+  .w-ex{margin-top:8px; padding:8px 10px; background:#f4f6fb; border-radius:10px; font-size:13px; font-style:italic; color:#555;}
   .hero-go{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;}
   .hero-ring{width:50px; height:50px; background:conic-gradient(#ffe08a calc(var(--p,0)*1%), rgba(255,255,255,.32) 0); box-shadow:0 4px 12px rgba(0,0,0,.18);}
   .hero-ring::before{width:36px; height:36px; background:transparent;}
@@ -707,6 +722,7 @@
       <div class="grid">
         <div class="tile c-sun" onclick="go('achievements')"><span class="ic">🏆</span><h3>成就墙</h3><p>我的勋章</p></div>
         <div class="tile c-grass" onclick="go('progress')"><span class="ic">📈</span><h3>我的进度</h3><p>报告 + 导出</p></div>
+        <div class="tile c-sky" onclick="go('codex')"><span class="ic">📖</span><h3>单词图鉴</h3><p>收集我的词库</p></div>
       </div>
     </div>
     <div class="review-callout" id="reviewCallout" onclick="startReview()">
@@ -785,7 +801,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">36</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">37</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -810,6 +826,7 @@ update → controllerchange
       <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
       <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
       <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
+      <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1045,6 +1062,12 @@ update → controllerchange
   </section>
 
   <!-- WRONGBOOK 错题本 -->
+  <section class="screen" id="codex">
+    <h2 class="sec" style="margin:6px 2px 10px">📖 单词图鉴</h2>
+    <p class="muted" style="margin:-4px 2px 12px">通关单元（单元测试≥60 分 或 闯关拿到星星）即点亮整组词；点亮后可点开看释义、音标与例句，还能听发音。</p>
+    <div id="codexBody"></div>
+  </section>
+
   <section class="screen" id="wrongbook">
     <div class="row spread" style="margin-bottom:10px;">
       <button class="back" onclick="go('home')">← 返回</button>
@@ -1160,6 +1183,7 @@ update → controllerchange
 
 <!-- 段位弹窗 -->
 <div class="modal-mask" id="rankModal" onclick="if(event.target===this)closeRank()"></div>
+<div class="modal-mask" id="wordModal" onclick="if(event.target===this)closeWord()"></div>
 
 <div class="nav">
   <button onclick="go('home')" data-nav="home"><span class="e">🏠</span>首页</button>
@@ -1794,7 +1818,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 36;
+const APP_VERSION = 37;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1849,7 +1873,7 @@ function defaultState(){
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
-    rankIdx:0,
+    rankIdx:0, codex:{},
     settings:{rate:0.9, theme:'light', book:'shang', fontScale:1} };
 }
 function loadState(){
@@ -1866,6 +1890,7 @@ function loadState(){
     if(!s.ab) s.ab={sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}};
     if(!s.settings.fontScale) s.settings.fontScale=1;
     if(typeof s.rankIdx!=='number') s.rankIdx=0;
+    if(!s.codex) s.codex={};
     return s;
   } }catch(e){}
   return defaultState();
@@ -2120,8 +2145,42 @@ function go(name){
   if(name==='games') renderGameHome();
   if(name==='achievements') renderAchievements();
   if(name==='tech') renderTech();
+  if(name==='codex') renderCodex();
   renderGoal();
 }
+function collectUnit(uid){ if(!uid) return; const u=ALL_UNITS.find(x=>x.id===uid); if(!u) return; if(!STATE.codex[uid]) STATE.codex[uid]=[]; u.words.forEach(w=>{ if(!STATE.codex[uid].includes(w.en)) STATE.codex[uid].push(w.en); }); saveState(); }
+function renderCodex(){
+  const box=document.getElementById('codexBody'); if(!box) return;
+  let total=0, got=0; const seen=new Set();
+  ALL_UNITS.forEach(u=>{ total+=u.words.length; (STATE.codex[u.id]||[]).forEach(en=>{ if(!seen.has(en)){ seen.add(en); got++; } }); });
+  const pct=total?Math.round(got/total*100):0;
+  let html='<div class="codex-top"><span class="codex-prog">📖 已收集 <b>'+got+'</b> / '+total+' 词</span><span class="codex-bar"><i style="width:'+pct+'%"></i></span></div>';
+  ALL_UNITS.forEach(u=>{
+    const col=new Set(STATE.codex[u.id]||[]);
+    html+='<div class="codex-unit"><div class="cu-h">'+u.emoji+' '+u.title+' <span class="muted" style="font-size:12px">'+col.size+'/'+u.words.length+'</span></div><div class="codex-grid">';
+    u.words.forEach(w=>{
+      const em=EMOJI_MAP[w.en]||'🔤';
+      if(col.has(w.en)){
+        html+='<button class="wcard" onclick="openWord(\''+u.id+'\',\''+w.en.replace(/'/g,"\\'")+'\')"><span class="we">'+em+'</span><span class="w-en">'+w.en+'</span><span class="w-zh">'+w.zh+'</span></button>';
+      } else {
+        html+='<button class="wcard lock" disabled><span class="we">❓</span><span class="w-en">？？？</span><span class="w-zh">未解锁</span></button>';
+      }
+    });
+    html+='</div></div>';
+  });
+  box.innerHTML=html;
+}
+function openWord(uid,en){
+  const u=ALL_UNITS.find(x=>x.id===uid); const w=u&&u.words.find(x=>x.en===en); if(!w) return;
+  const m=document.getElementById('wordModal'); const em=EMOJI_MAP[en]||'🔤';
+  m.innerHTML='<div class="modal"><div class="row spread"><h2 class="sec" style="margin:0">'+em+' '+w.en+'</h2><button class="back" onclick="closeWord()">✕</button></div>'+
+    '<p class="muted">'+w.pos+' · '+w.ph+'</p><p style="font-size:15px">'+w.zh+'</p>'+
+    (w.ex?'<div class="w-ex">“'+w.ex+'”</div>':'')+
+    '<div class="row" style="margin-top:10px"><button class="btn sky" onclick="speak(\''+w.en.replace(/'/g,"\\'")+'\')">🔊 听单词</button>'+
+    (w.ex?'<button class="btn grape" onclick="speak(\''+w.ex.replace(/'/g,"\\'")+'\')">🔊 听例句</button>':'')+'</div></div>';
+  m.classList.add('show');
+}
+function closeWord(){ const m=document.getElementById('wordModal'); if(m) m.classList.remove('show'); }
 function refreshTop(){
   document.getElementById('topStars').textContent='⭐ '+STATE.stars;
   document.getElementById('topStreak').textContent='🔥 '+STATE.streak;
@@ -2819,6 +2878,7 @@ function finishTest(){
   const score=Math.round(testCorrect/total*100);
   STATE.tests[curUnitId]=Math.max(STATE.tests[curUnitId]||0, score);
   saveState();
+  if(score>=60) collectUnit(curUnitId);
   const area=document.getElementById('testArea');
   const hasWrong = STATE.wrong.some(w=>w.unit===curUnitId);
   const ts=testTypeStat||{};
@@ -3471,7 +3531,7 @@ function finish(){
   awardStars(stars);
   saveState();
   if(unlockedName) setTimeout(()=>toast('🔓 解锁新关卡：'+unlockedName), 900);
-  if(stars>0){ celebrate(); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
+  if(stars>0){ celebrate(); collectUnit(curUnitId); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
   const wrongTot=levelWrong.sel+levelWrong.spell+levelWrong.sent;
   const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 拼写 ${levelWrong.spell} · 句子题 ${levelWrong.sent}</p>`:'';
   const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
