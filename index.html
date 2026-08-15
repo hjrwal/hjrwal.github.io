@@ -757,7 +757,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">32</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">33</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -778,6 +778,7 @@ update → controllerchange
       <div class="it"><b>v30 · 修复拼词玩法 "undefined"</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
       <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
       <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
+      <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1286,7 +1287,7 @@ const BOOK_SHANG = [
     ],
     sentences:[
       {en:"What would you like to eat?", zh:'你想吃什么？'},
-      {en:"A sandwich, please.", zh:'请给我一个三明治。'},
+      {en:"I want a sandwich, please.", zh:'请给我一个三明治。'},
       {en:"What would you like to drink?", zh:'你想喝什么？'},
       {en:"What's your favourite food?", zh:'你最喜欢的食物是什么？'},
       {en:"I love noodles.", zh:'我喜欢面条。'}
@@ -1758,7 +1759,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 32;
+const APP_VERSION = 33;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3051,7 +3052,8 @@ function startLevel(id){
   lvlArea.style.display='block';
   lvlArea.innerHTML='';
   showLoading();
-  // 延后一帧再跑重活，让“加载中”狐狸动画先绘出
+  // 延后让“加载中”狐狸动画先绘出，且保证至少可见 700ms（避免一帧闪过）
+  const startedAt = Date.now();
   setTimeout(()=>{
     const u=UNITS.find(x=>x.id===id);
     const questions=buildLevelQuestions(u);
@@ -3067,7 +3069,9 @@ function startLevel(id){
       dispatch[q.type](q, ()=>{ levelQi++; next(); });
     }
     next();
-    hideLoading();
+    // 保证加载动画至少可见 700ms，避免一闪而过
+    const remain=Math.max(0, 700-(Date.now()-startedAt));
+    if(remain>0){ setTimeout(()=>hideLoading(), remain); } else { hideLoading(); }
   }, 60);
 }
 // 4 选 1：看中文选英文
@@ -3238,7 +3242,12 @@ function renderBoss(u, done){
     }
     const s=sents[idx];
     const parts=s.en.split(/\s+/);
-    const pool=shuffle(parts.slice());
+    // 给 BOSS 题目加 2-3 个干扰词（从本单元其他单词池里挑），避免答案摆那让人照搬
+    const targetLen=parts.length;
+    const needDistract=targetLen<=3 ? 3 : 2; // 短句多加点干扰，保证值得挑战
+    const wordPool=(u.words||[]).map(w=>w.en).filter(w=>!parts.includes(w));
+    const distract=shuffle(wordPool).slice(0, needDistract);
+    const pool=shuffle(parts.concat(distract));
     area.innerHTML=`<div class="panel boss-fight"><div class="boss-top"><span class="boss-emoji">${boss}</span>
       <div class="hp"><div class="hp-label">BOSS 生命 ${hp}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(hp/sents.length*100)}%"></i></div></div></div>
       <div class="qprompt">⚔️ 第 ${idx+1}/${sents.length} 击 · 连词成句：“${s.zh}”</div>
