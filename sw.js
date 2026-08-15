@@ -1,7 +1,7 @@
 // Service Worker for 五年级英语小探险家
 // 缓存策略：cache-first（离线可用）+ 后台更新
 // 发布新版本时，只需把 CACHE 名称的版本号 +1（如 eng5-v4），SW 会自动刷新缓存
-const CACHE = 'eng5-v39';
+const CACHE = 'eng5-v40';
 const ASSETS = [
   './',
   './index.html',
@@ -19,6 +19,10 @@ self.addEventListener('install', event => {
       await self.skipWaiting();
     })()
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
