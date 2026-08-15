@@ -556,6 +556,18 @@
   .chip.on{background:linear-gradient(90deg,var(--grape),var(--sky)); color:#fff; border-color:rgba(255,255,255,.6); box-shadow:var(--shadow);}
   .num-in{width:72px; padding:7px 10px; border-radius:10px; border:2px solid var(--line); background:var(--card); color:var(--ink); font-size:15px; font-weight:800; text-align:center;}
   .num-in:focus{outline:none; border-color:var(--grape);}
+  /* 首次使用指引（v42） */
+  .onboard{text-align:center; max-width:340px; padding:26px 22px 18px;}
+  .ob-fox{font-size:54px; animation:foxBob 1s var(--ease-spring) infinite; margin-bottom:2px; line-height:1;}
+  .ob-title{font-size:21px; font-weight:900; margin:6px 0 10px; color:var(--ink);}
+  .ob-emoji{font-size:50px; margin:2px 0 6px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.12));}
+  .ob-text{font-size:15px; font-weight:700; color:var(--muted); line-height:1.6; min-height:72px; margin:0 0 8px;}
+  .ob-dots{display:flex; gap:7px; justify-content:center; margin:8px 0 16px;}
+  .ob-dot{width:8px; height:8px; border-radius:50%; background:var(--line); transition:.25s;}
+  .ob-dot.on{width:22px; border-radius:999px; background:linear-gradient(90deg,var(--grape),var(--sky));}
+  .ob-nav{justify-content:space-between; gap:10px;}
+  .ob-nav .btn{flex:1; padding:12px 0; font-size:15px;}
+  .ob-skip{display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-size:12px; font-weight:700; cursor:pointer; text-decoration:underline; font-family:inherit;}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .floaty{animation:floaty 2.5s ease-in-out infinite;}
   /* 发音动画条 */
@@ -863,7 +875,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">41</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">42</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -893,6 +905,7 @@ update → controllerchange
       <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染，不闪空白）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
       <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
       <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
+      <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1239,6 +1252,9 @@ update → controllerchange
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importProgress(this)">
       <p class="muted" style="margin:6px 0 0">导出可保存到手机/电脑；换机或清缓存后用「导入进度」恢复全部学习记录。</p>
     </div>
+    <div class="set-row"><b>📖 新手引导</b>
+      <button class="btn sky" style="flex:1" onclick="closeSettings(); openOnboard()">▶ 重新查看</button>
+    </div>
   </div>
 </div>
 
@@ -1251,6 +1267,22 @@ update → controllerchange
 <div class="modal-mask" id="rankModal" onclick="if(event.target===this)closeRank()"></div>
 <div class="modal-mask" id="wordModal" onclick="if(event.target===this)closeWord()"></div>
 <div class="modal-mask" id="goalModal" onclick="if(event.target===this)closeGoal()"></div>
+
+<!-- 首次使用指引 -->
+<div class="modal-mask" id="onboardMask">
+  <div class="modal onboard">
+    <div class="ob-fox">🦊</div>
+    <h2 class="ob-title" id="obTitle"></h2>
+    <div class="ob-emoji" id="obEmoji"></div>
+    <p class="ob-text" id="obText"></p>
+    <div class="ob-dots" id="obDots"></div>
+    <div class="row ob-nav">
+      <button class="btn ghost" id="obPrev" onclick="obStep(-1)">上一步</button>
+      <button class="btn grape" id="obNext" onclick="obStep(1)">下一步</button>
+    </div>
+    <button class="ob-skip" onclick="closeOnboard()">跳过指引</button>
+  </div>
+</div>
 
 <div class="nav">
   <button onclick="go('home')" data-nav="home"><span class="e">🏠</span>首页</button>
@@ -1885,7 +1917,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 41;
+const APP_VERSION = 42;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1941,6 +1973,7 @@ function defaultState(){
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     rankIdx:0, codex:{}, bossSeen:{},
+    onboarded:false,
     settings:{rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20} };
 }
 function loadState(){
@@ -1960,6 +1993,7 @@ function loadState(){
     if(typeof s.rankIdx!=='number') s.rankIdx=0;
     if(!s.codex) s.codex={};
     if(!s.bossSeen) s.bossSeen={};
+    if(typeof s.onboarded!=='boolean') s.onboarded=false;
     return s;
   } }catch(e){}
   return defaultState();
@@ -4121,6 +4155,38 @@ function saveGoal(){
 function closeGoal(){ const m=document.getElementById('goalModal'); if(m) m.classList.remove('show'); }
 
 /* =========================================================
+   首次使用指引（v42）：狐狸向导分步卡片，首次打开自动弹，设置里可重看
+   ========================================================= */
+const ONBOARD_STEPS=[
+  {t:'欢迎来到英语小探险！', e:'🦊', x:'嗨，小学霸！我是你的英语小向导——小狐狸。五年级的英语，我们玩着就学会啦！'},
+  {t:'📘 先「学一学」', e:'📚', x:'背单词、练句型、学语法。把课本里的本事，先稳稳学到手。'},
+  {t:'🎯 再「练一练」', e:'✏️', x:'听说读写四项训练、单元测试，还有专属「错题本」——错过的题会陪你重练到会为止。'},
+  {t:'🎮 边玩边记', e:'🏝️', x:'趣味闯关地图、单词小游戏、60 秒限时挑战。在玩里不知不觉就巩固啦！'},
+  {t:'📊 看看我的成长', e:'🏆', x:'成就墙、学习进度、单词图鉴随时看。每天完成「今日目标」还有小庆祝哦～'}
+];
+let obIdx=0;
+function openOnboard(){ obIdx=0; renderOnboard(); const m=document.getElementById('onboardMask'); if(m) m.classList.add('show'); }
+function renderOnboard(){
+  const s=ONBOARD_STEPS[obIdx]; if(!s) return;
+  const t=document.getElementById('obTitle'); if(t) t.textContent=s.t;
+  const em=document.getElementById('obEmoji'); if(em) em.textContent=s.e;
+  const tx=document.getElementById('obText'); if(tx) tx.textContent=s.x;
+  const dots=document.getElementById('obDots');
+  if(dots) dots.innerHTML=ONBOARD_STEPS.map((_,i)=>'<span class="ob-dot'+(i===obIdx?' on':'')+'"></span>').join('');
+  const prev=document.getElementById('obPrev'); if(prev) prev.style.visibility = obIdx===0?'hidden':'visible';
+  const next=document.getElementById('obNext'); if(next) next.textContent = obIdx===ONBOARD_STEPS.length-1 ? '🚀 开始我的英语冒险' : '下一步';
+}
+function obStep(d){
+  if(d>0 && obIdx===ONBOARD_STEPS.length-1){ closeOnboard(); return; }
+  obIdx=Math.max(0, Math.min(ONBOARD_STEPS.length-1, obIdx+d));
+  renderOnboard();
+}
+function closeOnboard(){
+  const m=document.getElementById('onboardMask'); if(m) m.classList.remove('show');
+  if(!STATE.onboarded){ STATE.onboarded=true; saveState(); }
+}
+
+/* =========================================================
    错题本（独立模块：列表 + 逐题重做）
    ========================================================= */
 function renderWrongbook(){
@@ -4399,6 +4465,8 @@ curUnitId=UNITS[0].id;
 updateBookUI();
 refreshTop();
 renderHero();
+// 首次使用指引：第一次打开自动弹出，看过即不再弹（设置里可重看）
+if(!STATE.onboarded){ openOnboard(); }
 </script>
 </body>
 </html>
