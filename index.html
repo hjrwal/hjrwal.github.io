@@ -761,7 +761,6 @@
         <div class="tile c-sky" onclick="go('vocab')"><span class="ic">📚</span><h3>词汇练习</h3><p>闪卡 + 听写测验</p></div>
         <div class="tile c-grape" onclick="go('sentences')"><span class="ic">💬</span><h3>句型练习</h3><p>核心句型跟读</p></div>
         <div class="tile c-sun" onclick="go('grammar')"><span class="ic">🧩</span><h3>语法小课堂</h3><p>讲解 + 小练习</p></div>
-        <div class="tile" style="border-color:#cfd6e6" onclick="speak('Hello! Let us learn English together!')"><span class="ic">🔊</span><h3>点我听英语</h3><p>试试发音</p></div>
       </div>
     </div>
     <div class="home-group">
@@ -864,7 +863,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">40</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">41</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -893,6 +892,7 @@ update → controllerchange
       <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
       <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染，不闪空白）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
       <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
+      <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1885,7 +1885,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 40;
+const APP_VERSION = 41;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
