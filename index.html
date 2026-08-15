@@ -1690,7 +1690,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 27;
+const APP_VERSION = 28;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2482,11 +2482,31 @@ function renderTestQ(){
     html+=`<div class="test-q">“${q.w.zh}” 的英文是？</div><div class="opts two" id="tOpts"></div>`;
     area.innerHTML=html;
     const box=document.getElementById('tOpts');
+    let firstWrong=false; // 错了重选直到对；首次错入错题本+累加弱项（不调 commitTest）
     opts.forEach(o=>{ const el=document.createElement('div'); el.className='opt'; el.textContent=o;
-      el.onclick=()=>{ if(testLocked)return; testLocked=true; lockOpts(box);
+      el.onclick=()=>{
+        if(el.disabled) return;
         const ok=norm(o)===norm(q.w.en);
-        if(ok) el.classList.add('correct'); else { el.classList.add('wrong'); const c=[...box.children].find(x=>norm(x.textContent)===norm(q.w.en)); if(c)c.classList.add('correct'); }
-        commitTest(ok, q.w.en); };
+        if(ok){
+          [...box.children].forEach(c=>{ c.disabled=true; if(norm(c.textContent)===norm(q.w.en)) c.classList.add('correct'); });
+          commitTest(true, q.w.en);
+        } else {
+          el.disabled=true; el.classList.add('wrong');
+          if(!firstWrong){
+            firstWrong=true;
+            addTestWrong(q.w.en, curUnitId);
+            STATE.weak.sel=(STATE.weak.sel||0)+1;
+            const wu=STATE.weakByUnit[curUnitId]=STATE.weakByUnit[curUnitId]||{sel:0,spell:0,sent:0};
+            wu.sel=(wu.sel||0)+1;
+            saveState();
+          }
+          toast('😅 还不对，再想想');
+          // 所有选项都点完还没选对：自动提交（错题已入，commitTest 走 testIdx++）
+          if([...box.children].every(c=>c.disabled)){
+            setTimeout(()=>commitTest(false, q.w.en), 600);
+          }
+        }
+      };
       box.appendChild(el); });
   } else if(q.type==='zh'){
     testLocked=false;
@@ -2494,11 +2514,30 @@ function renderTestQ(){
     html+=`<div class="test-q">“${q.w.en}” 的意思是？</div><div class="opts two" id="tOpts"></div>`;
     area.innerHTML=html;
     const box=document.getElementById('tOpts');
+    let firstWrong=false; // 同 en 题：错了重选直到对；首次错入错题本+累加弱项（不调 commitTest）
     opts.forEach(o=>{ const el=document.createElement('div'); el.className='opt'; el.textContent=o;
-      el.onclick=()=>{ if(testLocked)return; testLocked=true; lockOpts(box);
+      el.onclick=()=>{
+        if(el.disabled) return;
         const ok=norm(o)===norm(q.w.zh);
-        if(ok) el.classList.add('correct'); else { el.classList.add('wrong'); const c=[...box.children].find(x=>norm(x.textContent)===norm(q.w.zh)); if(c)c.classList.add('correct'); }
-        commitTest(ok, q.w.en); };
+        if(ok){
+          [...box.children].forEach(c=>{ c.disabled=true; if(norm(c.textContent)===norm(q.w.zh)) c.classList.add('correct'); });
+          commitTest(true, q.w.en);
+        } else {
+          el.disabled=true; el.classList.add('wrong');
+          if(!firstWrong){
+            firstWrong=true;
+            addTestWrong(q.w.en, curUnitId);
+            STATE.weak.sel=(STATE.weak.sel||0)+1;
+            const wu=STATE.weakByUnit[curUnitId]=STATE.weakByUnit[curUnitId]||{sel:0,spell:0,sent:0};
+            wu.sel=(wu.sel||0)+1;
+            saveState();
+          }
+          toast('😅 还不对，再想想');
+          if([...box.children].every(c=>c.disabled)){
+            setTimeout(()=>commitTest(false, q.w.en), 600);
+          }
+        }
+      };
       box.appendChild(el); });
   } else if(q.type==='spell'){
     html+=`<div class="test-q">拼写：“${q.w.zh}”</div>
@@ -2918,18 +2957,50 @@ function startLevel(id){
   }
   next();
 }
+// 闯关选择题：错了不立刻判分，让用户重选直到对；首次选错入错题本+累加弱项，答对才进入下一题
 function fillLevelOpts(opts, answer, done){
   const box=document.getElementById('lopts'); box.innerHTML='';
+  let firstWrong=false; // 第一次错：已入错题本，避免后续 recordWord(true) 把它移出
   opts.forEach(o=>{
     const el=document.createElement('div'); el.className='opt'; el.textContent=o;
     el.onclick=()=>{
+      if(el.disabled) return;
       const ok=norm(o)===norm(answer);
-      recordWord(curUnitId, answer, ok);
-      [...box.children].forEach(c=>{c.disabled=true; if(norm(c.textContent)===norm(answer))c.classList.add('correct');});
-      if(!ok){ el.classList.add('wrong'); levelWrong.sel++; }
-      if(ok){ levelCorrect++; awardStars(1); }
-      toast(ok?'🎉 答对 +1⭐':'😅 正确：'+answer);
-      setTimeout(done, 700);
+      if(ok){
+        [...box.children].forEach(c=>{
+          c.disabled=true;
+          if(norm(c.textContent)===norm(answer)) c.classList.add('correct');
+        });
+        if(firstWrong){
+          // 已入错题本：不能再 recordWord(true)，否则会从错题本把该项移出
+          bumpGoal(true);
+          toast('🎉 终于选对啦');
+        } else {
+          recordWord(curUnitId, answer, true);
+          bumpGoal(true);
+          toast('🎉 答对 +1⭐');
+        }
+        levelCorrect++; awardStars(1);
+        setTimeout(done, 700);
+      } else {
+        el.disabled=true; el.classList.add('wrong');
+        if(!firstWrong){
+          firstWrong=true;
+          // 手动入错题本 + 累加弱项（不走 recordWord，避免 recordWord(true) 副作用）
+          const u=curUnit();
+          const qw=u.words.find(w=>w.en===answer);
+          const realId=curUnitId;
+          const en=answer, zh=qw?qw.zh:'';
+          if(!STATE.wrong.some(w=>w.en===en&&w.unit===realId)){
+            STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
+          }
+          STATE.weakByUnit[realId]=STATE.weakByUnit[realId]||{sel:0,spell:0,sent:0};
+          STATE.weakByUnit[realId].sel=(STATE.weakByUnit[realId].sel||0)+1;
+          saveState();
+        }
+        levelWrong.sel++;
+        toast('😅 还不对，再想想');
+      }
     };
     box.appendChild(el);
   });
