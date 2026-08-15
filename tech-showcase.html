@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 26,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v27',// 与 sw.js 的 CACHE 保持一致
+    version: 27,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v28',// 与 sw.js 的 CACHE 保持一致
     words:   341,       // 核心词数
     audio:   671,       // 预录音频数
     audioMB: 9.5,       // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    26,        // 迭代版本数
+    iter:    27,        // 迭代版本数
     updated: '2026-08-15'
   };
 </script>
@@ -332,6 +332,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
       <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
       <div class="it"><b>v26 · 连词成句防抄</b><span>答题时隐藏上方完整英文，只留中文提示+听原句，杜绝直接抄答案</span></div>
+      <div class="it"><b>v27 · 修复返回地图</b><span>关卡屏改用独立 #lvlArea 渲染，不再覆盖整 #adventure section，「返回地图」按钮恢复正常</span></div>
       </div>
     </div>
   </section>

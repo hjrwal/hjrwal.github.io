@@ -880,10 +880,11 @@ update → controllerchange
       <button class="back" onclick="go('home')">← 返回</button>
       <span class="muted">趣味闯关</span>
     </div>
-    <div class="panel">
+    <div class="panel" id="mapPanel">
       <div class="row spread"><h2 class="sec">🗺️ 探险地图</h2><span class="muted">集满每关 ⭐ 解锁下一岛</span></div>
       <div class="map" id="map"></div>
     </div>
+    <div id="lvlArea" style="display:none"></div>
   </section>
 
   <!-- PROGRESS -->
@@ -1689,7 +1690,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 26;
+const APP_VERSION = 27;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1969,7 +1970,7 @@ function go(name){
   if(name==='vocab') initVocab();
   if(name==='sentences') initSentences();
   if(name==='skills') initSkills();
-  if(name==='adventure') renderMap();
+  if(name==='adventure'){ showMap(); }
   if(name==='progress') renderProgress();
   if(name==='wrongbook') renderWrongbook();
   if(name==='grammar') initGrammar();
@@ -2821,10 +2822,23 @@ function renderMap(){
     MAP_PREV_PASS[u.id]=prevPass; // 记录本次状态，供下次对比
   });
 }
+// 「🗺️ 返回地图」：从关卡结算/题目面板回到关卡地图。清理 #lvlArea、显示 #mapPanel、重新渲染地图
+function showMap(){
+  const la=document.getElementById('lvlArea');
+  if(la){ la.innerHTML=''; la.style.display='none'; }
+  const mp=document.getElementById('mapPanel');
+  if(mp) mp.style.display='';
+  renderMap();
+}
 let levelWrong={sel:0,sent:0}; // 闯关本关错次（按题型）：驱动弱项统计 + 结算反馈
 function startLevel(id){
   touchDay();
   levelWrong={sel:0,sent:0};
+  // 关卡屏与地图屏互斥：进入关卡时隐藏地图面板，渲染到独立 #lvlArea（之前覆盖整 #adventure 会破坏 #map 导致「返回地图」失效）
+  document.getElementById('mapPanel').style.display='none';
+  const lvlArea=document.getElementById('lvlArea');
+  lvlArea.style.display='block';
+  lvlArea.innerHTML='';
   const u=UNITS.find(x=>x.id===id);
   // 生成 6 题：听音选词/看义选词/拼写/听音选义/连词成句/句型
   const questions=[];
@@ -2839,7 +2853,7 @@ function startLevel(id){
   questions.sort(()=>Math.random()-0.5);
   let qi=0;
   levelCorrect=0;
-  const area=document.getElementById('adventure');
+  const area=lvlArea;
   function next(){
     if(qi>=questions.length){ finish(); return; }
     const q=questions[qi];
@@ -2897,7 +2911,7 @@ function startLevel(id){
       <p class="muted">答对 ${levelCorrect}/${questions.length} 题 · 获得 ${stars} ⭐</p>
       ${breakdown}${guide}
       <div class="row" style="margin-top:10px;justify-content:center">
-        <button class="btn grape" onclick="go('adventure')">🗺️ 返回地图</button>
+        <button class="btn grape" onclick="showMap()">🗺️ 返回地图</button>
         <button class="btn sky" onclick="startLevel('${id}')">🔄 再闯一次</button>
         ${practiceBtn}
       </div></div>`;
