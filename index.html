@@ -338,6 +338,9 @@
   .badge{display:inline-block; background:var(--sun); color:#6b4e00; border-radius:12px; padding:4px 10px; font-weight:800; font-size:12px; margin:3px;}
   .word-read{font-size:30px; font-weight:800; text-align:center; margin:10px 0;}
   .word-read .hl{color:var(--coral-d); background:#fff2c9; border-radius:8px; padding:0 4px;}
+  /* 连词成句答题时：上方英文隐藏为"听原句"占位，防抄答案 */
+  .word-read.hidden-quiz{font-size:16px; font-weight:600; color:var(--muted); font-style:italic;
+    background:#fff7ed; border:1px dashed var(--coral); border-radius:12px; padding:10px 14px; word-break:normal;}
   .report{font-size:14px; line-height:1.7;}
   .report li{margin-bottom:4px;}
   .filebox{margin-top:10px;}
@@ -833,6 +836,7 @@ update → controllerchange
     <div class="panel">
       <h2 class="sec">🔗 连词成句</h2>
       <p class="muted" id="scTip">点击下方单词，按顺序组成上面的句子。</p>
+      <button class="btn ghost sm" onclick="if(curSent) speak(curSent.en)">🔊 听原句</button>
       <div class="basket" id="scBasket"></div>
       <div class="pool" id="scPool"></div>
       <div class="row" style="margin-top:12px;">
@@ -1685,7 +1689,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 25;
+const APP_VERSION = 26;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2169,10 +2173,29 @@ function showSent(){
   document.getElementById('sentZh').textContent=curSent.zh;
 }
 let curSent=null;
-function nextSent(){ sentIdx++; showSent(); buildSentence(); }
-function prevSent(){ sentIdx--; if(sentIdx<0) sentIdx=curUnit().sentences.length-1; showSent(); buildSentence(); }
+function nextSent(){ sentIdx++; showSent(); showSentEnFull(); buildSentence(); }
+function prevSent(){ sentIdx--; if(sentIdx<0) sentIdx=curUnit().sentences.length-1; showSent(); showSentEnFull(); buildSentence(); }
+// 「上一句/下一句」按钮：用户明确想看完整句，恢复显示英文
+function showSentEnFull(){
+  const enEl=document.getElementById('sentEn');
+  if(enEl && curSent){
+    enEl.textContent=curSent.en;
+    enEl.classList.remove('hidden-quiz');
+  }
+}
+// 「连词成句」答题中：上方核心句型只留中文提示，英文改成"请听原句"占位，避免直接抄答案
+function hideSentEnForQuiz(){
+  const enEl=document.getElementById('sentEn');
+  const zhEl=document.getElementById('sentZh');
+  if(enEl){
+    enEl.textContent='🔊 请听原句后，按中文组句（不许偷看 👀）';
+    enEl.classList.add('hidden-quiz');
+  }
+  if(zhEl && curSent){ zhEl.textContent='按顺序组成：'+curSent.zh; }
+}
 function buildSentence(){
   if(!curSent) return;
+  hideSentEnForQuiz();
   const words=curSent.en.split(/\s+/);
   const pool=shuffle(words.slice());
   const basket=document.getElementById('scBasket'); basket.innerHTML=''; basket.classList.remove('wrong','ok');
