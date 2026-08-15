@@ -642,7 +642,7 @@
     </div>
 
     <div class="tech-hero">
-      <span class="vbadge" id="techVer">v23</span>
+      <span class="vbadge" id="techVer">v25</span>
       <h1>💡 技术亮点</h1>
       <p class="sub">五年级英语小探险家 · 架构设计与工程实践</p>
     </div>
@@ -694,7 +694,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">24</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">25</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -707,6 +707,7 @@ update → controllerchange
       <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
       <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
       <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
+      <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1684,7 +1685,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 24;
+const APP_VERSION = 25;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -1982,7 +1983,6 @@ function refreshTop(){
 }
 const TIPS=['试试先学 Unit 1 词汇 📚','今天闯一关吧 🏝️','读一句英文给自己听 📖','复习一下错题本 📒'];
 document.getElementById('dailyTip').textContent = TIPS[new Date().getDate()%TIPS.length];
-renderHero();
 
 /* =========================================================
    词汇练习
@@ -3475,6 +3475,7 @@ if(STATE.settings.book==='xia'){ UNITS=BOOK_XIA; }
 curUnitId=UNITS[0].id;
 updateBookUI();
 refreshTop();
+renderHero();
 </script>
 </body>
 </html>
