@@ -288,6 +288,50 @@
   .isle .stars .st.on:nth-child(2){animation-delay:.12s;}
   .isle .stars .st.on:nth-child(3){animation-delay:.24s;}
   @keyframes starPop{0%{transform:scale(0) rotate(-40deg); opacity:0}60%{transform:scale(1.4) rotate(8deg)}100%{transform:scale(1) rotate(0)}}
+  /* ===== 趣味闯关 v29：任务卡 / 狐狸标记 / 迷你玩法 / BOSS ===== */
+  .level-card-mask{position:fixed; inset:0; background:rgba(40,30,70,.45); display:flex; align-items:center; justify-content:center; z-index:80; opacity:0; transition:opacity .25s; padding:20px;}
+  .level-card-mask.show{opacity:1;}
+  .level-card{background:var(--card); border-radius:24px; padding:22px; max-width:340px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(80,60,160,.35); transform:translateY(14px) scale(.96); transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+  .level-card-mask.show .level-card{transform:none;}
+  .level-card .lc-em{font-size:60px;}
+  .level-card h2{margin:6px 0;}
+  .level-card .lc-stars{font-size:26px; color:#ffb400; letter-spacing:4px; margin:4px 0;}
+  .level-card .lc-task{background:var(--soft); border-radius:14px; padding:10px; margin:10px 0; font-weight:800; color:#5a4b8a;}
+  .level-card .lc-badges{font-size:12px; color:var(--muted); margin-bottom:4px;}
+  .fox-marker{position:absolute; left:-6px; top:-12px; font-size:22px; animation:bob 1.6s ease-in-out infinite; filter:drop-shadow(0 2px 3px rgba(0,0,0,.2)); z-index:3;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .isle.frontier{box-shadow:var(--frontier,0 0 0 3px rgba(255,179,71,.55)), var(--shadow);}
+  .moles{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:8px 0;}
+  .mole{background:var(--soft); border:2px solid var(--line); border-radius:18px; padding:14px 8px; font-weight:800; cursor:pointer; font-size:15px; display:flex; flex-direction:column; align-items:center; gap:4px; transition:transform .12s; color:#5a4b8a;}
+  .mole:active{transform:scale(.94);}
+  .mole .me{font-size:34px;}
+  .mole.hit{background:#e6f7ec; border-color:#36c46b; animation:whackHit .5s;}
+  .mole.miss{opacity:.4;}
+  @keyframes whackHit{0%{transform:scale(1)}40%{transform:scale(1.25) rotate(-6deg)}100%{transform:scale(1)}}
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
+  .match-card{background:#fff; border:2px solid var(--grape); border-radius:12px; padding:10px 8px; font-weight:700; cursor:pointer; font-size:14px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:2px; color:#5a4b8a;}
+  .match-card.mc-m{border-color:var(--sky);}
+  .match-card.sel{outline:3px solid #ffb400; transform:scale(1.03);}
+  .match-card.matched{background:#e6f7ec; border-color:#36c46b; opacity:.85;}
+  .match-card.wrong{background:#fff0f0; border-color:#d33; animation:shake .4s;}
+  .match-card .m-emoji{font-size:24px;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .find-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:8px 0;}
+  .find-card{background:var(--soft); border:2px solid var(--line); border-radius:16px; padding:12px 4px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; font-weight:800; font-size:13px; transition:transform .12s; color:#5a4b8a;}
+  .find-card:active{transform:scale(.94);}
+  .find-card .fe{font-size:30px;}
+  .find-card.found{background:#e6f7ec; border-color:#36c46b; animation:whackHit .5s;}
+  .find-card.miss{opacity:.35;}
+  .boss-top{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
+  .boss-emoji{font-size:48px; animation:bossIdle 1.4s ease-in-out infinite;}
+  .boss-emoji.defeated{animation:bossDead .8s forwards;}
+  @keyframes bossIdle{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+  @keyframes bossDead{to{transform:scale(.6) rotate(20deg); opacity:0;}}
+  .hp{flex:1;}
+  .hp-label{font-size:12px; color:var(--muted); font-weight:700; margin-bottom:3px;}
+  .hp-bar{height:14px; border-radius:999px; background:#ffe1e1; overflow:hidden; border:2px solid #ffb3b3;}
+  .hp-bar i{display:block; height:100%; background:linear-gradient(90deg,#ff6b6b,#ff3b3b); transition:width .4s;}
+  .boss-win{box-shadow:0 0 0 3px rgba(255,179,71,.5), var(--shadow);}
   /* progress bars */
   .heat-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:8px;}
   .heat-cell{border-radius:12px; padding:10px 8px; text-align:center; cursor:pointer; border:2px solid rgba(0,0,0,.05); transition:transform .15s, box-shadow .15s;}
@@ -1690,7 +1734,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 28;
+const APP_VERSION = 29;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2834,32 +2878,53 @@ const LEVEL_PASS=0.6;
 let MAP_PREV_PASS={};
 function renderMap(){
   const map=document.getElementById('map'); map.innerHTML='';
+  let frontierIdx=UNITS.findIndex(u=>unitStat(u.id).levelStars<3);
+  if(frontierIdx<0) frontierIdx=UNITS.length-1;
   UNITS.forEach((u,i)=>{
     const st=unitStat(u.id);
-    // 解锁逻辑：第一关默认解锁；前一关得星>=1 解锁下一关
     const prevPass = i===0 || unitStat(UNITS[i-1].id).levelStars>=1;
-    // 对比上一次渲染：之前锁定、现在解锁 → 播放解锁动画
     const wasLocked = MAP_PREV_PASS.hasOwnProperty(u.id) && MAP_PREV_PASS[u.id]===false;
     const justUnlocked = wasLocked && prevPass;
     const el=document.createElement('div');
-    el.className='isle'+(prevPass?'':' locked')+(st.levelStars>=1?' passed':'')+(justUnlocked?' isle-unlock':'');
+    el.className='isle'+(prevPass?'':' locked')+(st.levelStars>=1?' passed':'')+(justUnlocked?' isle-unlock':'')+(i===frontierIdx?' frontier':'');
+    if(u.color) el.style.borderColor=u.color;
     let starsHtml='';
     for(let k=0;k<3;k++){ starsHtml+=`<span class="st${k<st.levelStars?' on':''}">${k<st.levelStars?'★':'☆'}</span>`; }
-    el.innerHTML=`<div class="em">${u.emoji}</div>
+    el.innerHTML=`<div class="em">${u.emoji}</div>${i===frontierIdx?'<span class="fox-marker">🦊</span>':''}
       <div class="meta"><b>${u.title}</b><small>${u.words.length} 词 · ${u.sentences.length} 句型</small>
         <div class="lvl-bar"><i style="width:${Math.round(st.levelStars/3*100)}%"></i></div></div>
       <div class="stars">${starsHtml}</div>${justUnlocked?'<span class="unlock-ribbon">🔓 新解锁</span>':''}`;
     if(prevPass){
       const b=document.createElement('button'); b.className='btn grape'; b.textContent='开始闯关 ▶';
-      b.onclick=()=>startLevel(u.id);
+      b.onclick=()=>openLevelCard(u.id);
       el.appendChild(b);
     } else {
       const b=document.createElement('span'); b.className='muted'; b.textContent='🔒 先过上一关';
       el.appendChild(b);
     }
     map.appendChild(el);
-    MAP_PREV_PASS[u.id]=prevPass; // 记录本次状态，供下次对比
+    MAP_PREV_PASS[u.id]=prevPass;
   });
+}
+function openLevelCard(id){
+  const u=UNITS.find(x=>x.id===id); if(!u) return;
+  const st=unitStat(id);
+  const mask=document.createElement('div'); mask.className='level-card-mask';
+  mask.innerHTML=`<div class="level-card">
+    <div class="lc-em">${u.emoji}</div>
+    <h2>${u.title}</h2>
+    <p class="muted">${u.words.length} 词 · ${u.sentences.length} 句型</p>
+    <div class="lc-stars">${'★'.repeat(st.levelStars)}${'☆'.repeat(3-st.levelStars)}</div>
+    <div class="lc-task">🎯 本关任务<br>闯过 6 道小游戏，击败单元 BOSS！</div>
+    <div class="lc-badges">🎮 听音打地鼠 · 🧩 拼词 · 🔗 连连看 · 🔍 捉迷藏 · ✍️ 连词成句</div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button class="btn sky" onclick="closeLevelCard()">再看看</button>
+      <button class="btn grape lg" onclick="closeLevelCard();startLevel('${id}')">🚀 出发！</button>
+    </div></div>`;
+  document.body.appendChild(mask);
+  requestAnimationFrame(()=>mask.classList.add('show'));
+  mask.onclick=(e)=>{ if(e.target===mask) mask.remove(); };
+  window.closeLevelCard=()=>mask.remove();
 }
 // 「🗺️ 返回地图」：从关卡结算/题目面板回到关卡地图。清理 #lvlArea、显示 #mapPanel、重新渲染地图
 function showMap(){
@@ -2869,149 +2934,314 @@ function showMap(){
   if(mp) mp.style.display='';
   renderMap();
 }
-let levelWrong={sel:0,sent:0}; // 闯关本关错次（按题型）：驱动弱项统计 + 结算反馈
+let levelWrong={sel:0,spell:0,sent:0}; // 闯关本关错次（按题型）：驱动弱项统计 + 结算反馈
+let levelQi=0, levelTotal=0, levelTotalNormal=0; // 关卡题目进度（供题面“第 X/Y”显示）
+// 迷你玩法类型 → 弱项维度：句子/BOSS 归 'sent'，拼词/归类归 'spell'，其余（选择/听音/连连看/捉迷藏）归 'sel'
+function weakKeyOf(type){ return (type==='sentence'||type==='boss')?'sent':(type==='puzzle'||type==='sort')?'spell':'sel'; }
+// 首次错：入错题本 + 累加弱项（不走 recordWord，避免 recordWord(true) 把该项移出）
+function levelFirstWrong(en, zh, type){
+  const realId=curUnitId;
+  if(!STATE.wrong.some(w=>w.en===en&&w.unit===realId)){
+    STATE.wrong.push({en, zh:zh||'', unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
+  }
+  STATE.weakByUnit[realId]=STATE.weakByUnit[realId]||{sel:0,spell:0,sent:0};
+  const k=weakKeyOf(type);
+  STATE.weakByUnit[realId][k]=(STATE.weakByUnit[realId][k]||0)+1;
+  saveState();
+}
+// 关卡单题统一判定：ok=是否答对；首次错入错题本，答对计分。返回 resolve(ok, [错词en],[错词zh]) 供调用方传具体错词
+function makeResolver(type, en, zh, done){
+  let firstWrong=false;
+  return function(ok, wEn, wZh){
+    if(ok){
+      if(firstWrong){ bumpGoal(true); toast('🎉 终于对啦！'); }
+      else { recordWord(curUnitId, en, true); bumpGoal(true); toast('🎉 答对 +1⭐'); }
+      levelCorrect++; awardStars(1);
+      setTimeout(done, 700);
+    } else {
+      const we=(wEn!=null)?wEn:en, wz=(wZh!=null)?wZh:zh;
+      if(!firstWrong){ firstWrong=true; levelFirstWrong(we, wz, type); }
+      levelWrong[weakKeyOf(type)]=(levelWrong[weakKeyOf(type)]||0)+1;
+      toast('😅 还不对，再想想');
+    }
+  };
+}
+// 组题：从单元词库/句型中抽取多种迷你玩法，最后接 BOSS
+function buildLevelQuestions(u){
+  const qs=[];
+  const wsample=shuffle(u.words.slice()).slice(0,6);
+  // 1-2 看义选词（4 选 1）
+  wsample.slice(0,2).forEach(w=>qs.push({type:'choose', en:w.en, zh:w.zh, emoji:EMOJI_MAP[w.en]||'🔤', distract:sample(u.words,w,3).map(x=>x.en)}));
+  // 1 连词成句
+  const sents=shuffle(u.sentences.slice()).slice(0,2);
+  if(sents[0]) qs.push({type:'sentence', en:sents[0].en, zh:sents[0].zh});
+  // 1 听音打地鼠
+  const wW=wsample[2]||wsample[0];
+  qs.push({type:'whack', answer:{en:wW.en, zh:wW.zh, emoji:EMOJI_MAP[wW.en]||'🔤'}, options:[wW.en, ...sample(u.words,wW,3).map(x=>x.en)]});
+  // 1 拼词
+  const wP=wsample[3]||wsample[0];
+  qs.push({type:'puzzle', answer:{en:wP.en, zh:wP.zh, emoji:EMOJI_MAP[wP.en]||'🔤'}});
+  // 1 连连看（2 对：单词 ↔ 意思）
+  const mWords=shuffle(u.words.slice()).slice(0,2).map(w=>({en:w.en, zh:w.zh, emoji:EMOJI_MAP[w.en]||'🔤'}));
+  if(mWords.length>=2) qs.push({type:'match', pairs:mWords});
+  // 1 单词捉迷藏
+  const wF=wsample[4]||wsample[0];
+  qs.push({type:'find', answer:{en:wF.en, zh:wF.zh, emoji:EMOJI_MAP[wF.en]||'🔤'}, distractors:sample(u.words,wF,5).map(x=>x.en)});
+  const normal=shuffle(qs);
+  normal.push({type:'boss', u});
+  return normal;
+}
 function startLevel(id){
   touchDay();
-  levelWrong={sel:0,sent:0};
-  // 关卡屏与地图屏互斥：进入关卡时隐藏地图面板，渲染到独立 #lvlArea（之前覆盖整 #adventure 会破坏 #map 导致「返回地图」失效）
+  levelWrong={sel:0,spell:0,sent:0};
+  curUnitId=id;
+  // 关卡屏与地图屏互斥：进入关卡时隐藏地图面板，渲染到独立 #lvlArea
   document.getElementById('mapPanel').style.display='none';
   const lvlArea=document.getElementById('lvlArea');
   lvlArea.style.display='block';
   lvlArea.innerHTML='';
   const u=UNITS.find(x=>x.id===id);
-  // 生成 6 题：听音选词/看义选词/拼写/听音选义/连词成句/句型
-  const questions=[];
-  const wsample=shuffle(u.words.slice()).slice(0,4);
-  wsample.forEach(w=>{
-    questions.push({type:'choose', en:w.en, zh:w.zh, distract:sample(u.words,w,3).map(x=>x.en)});
-  });
-  // 加 2 个句型题
-  shuffle(u.sentences.slice()).slice(0,2).forEach(s=>{
-    questions.push({type:'sentence', en:s.en, zh:s.zh});
-  });
-  questions.sort(()=>Math.random()-0.5);
-  let qi=0;
-  levelCorrect=0;
+  const questions=buildLevelQuestions(u);
+  levelTotal=questions.length;
+  levelTotalNormal=Math.max(1, questions.length-1);
+  levelQi=0; levelCorrect=0;
   const area=lvlArea;
   function next(){
-    if(qi>=questions.length){ finish(); return; }
-    const q=questions[qi];
-    if(q.type==='choose'){
-      const opts=shuffle([q.en,...q.distract]);
-      area.innerHTML=`<div class="panel"><div class="qprompt">第 ${qi+1}/${questions.length} 题 · “${q.zh}” 的英文是？</div>
-        <div class="opts two" id="lopts"></div></div>`;
-      fillLevelOpts(opts, q.en, ()=>next());
-    } else {
-      const parts=q.en.split(/\s+/);
-      const pool=shuffle(parts.slice());
-      area.innerHTML=`<div class="panel"><div class="qprompt">第 ${qi+1}/${questions.length} 题 · 连词成句：“${q.zh}”</div>
-        <div class="basket" id="lb"></div><div class="pool" id="lp"></div>
-        <button class="btn grass lg" style="margin-top:10px" onclick="checkLevelSent('${q.en.replace(/'/g,"\\'")}')">✔ 检查</button></div>`;
-      pool.forEach(w=>{
-        const t=document.createElement('div'); t.className='token'; t.textContent=w;
-        t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
-          const s=document.createElement('span'); s.className='token in'; s.textContent=w;
-          s.onclick=()=>{s.remove();t.classList.remove('used');}; document.getElementById('lb').appendChild(s); };
-        document.getElementById('lp').appendChild(t);
-      });
-      window.__levelNext=next;
-    }
-    qi++;
-  }
-  function finish(){
-    const ratio=levelCorrect/questions.length;
-    const stars = ratio>=0.9?3 : ratio>=LEVEL_PASS?2 : ratio>=0.4?1:0;
-    const st=unitStat(id);
-    const hadNoStar = st.levelStars<1; // 解锁判定用：本次前该关是否 0 星
-    st.levelStars=Math.max(st.levelStars, stars);
-    let unlockedName=null;
-    if(stars>=1 && UNITS.indexOf(u)<UNITS.length-1){
-      const nx=UNITS[UNITS.indexOf(u)+1];
-      unitStat(nx.id).unlocked=true;
-      if(hadNoStar) unlockedName=nx.emoji+' '+nx.title; // 之前未解锁 → 本次新解锁
-    }
-    // 闯关错题也计入弱项（按单元+题型），与单元测试一起驱动首页推荐
-    if(levelWrong.sel||levelWrong.sent){
-      const wu=STATE.weakByUnit[id]=STATE.weakByUnit[id]||{sel:0,spell:0,sent:0};
-      wu.sel=(wu.sel||0)+levelWrong.sel; wu.sent=(wu.sent||0)+levelWrong.sent;
-    }
-    awardStars(stars);
-    saveState();
-    if(unlockedName) setTimeout(()=>toast('🔓 解锁新关卡：'+unlockedName), 900);
-    if(stars>0){ confetti(); starBurst(stars); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
-    const wrongTot=levelWrong.sel+levelWrong.sent;
-    const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 句子题 ${levelWrong.sent}</p>`:'';
-    const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
-    const practiceBtn=stars===0?`<button class="btn sun" onclick="goVocabUnit('${id}')">📚 先练这关单词</button>`:'';
-    area.innerHTML=`<div class="panel center">
-      <div style="font-size:60px">${stars>0?'🎉':'💪'}</div>
-      <h2>${stars>0?'闯关成功！':'再接再厉！'}</h2>
-      <div class="stars" style="font-size:30px">${'★'.repeat(stars)+'☆'.repeat(3-stars)}</div>
-      <p class="muted">答对 ${levelCorrect}/${questions.length} 题 · 获得 ${stars} ⭐</p>
-      ${breakdown}${guide}
-      <div class="row" style="margin-top:10px;justify-content:center">
-        <button class="btn grape" onclick="showMap()">🗺️ 返回地图</button>
-        <button class="btn sky" onclick="startLevel('${id}')">🔄 再闯一次</button>
-        ${practiceBtn}
-      </div></div>`;
+    if(levelQi>=questions.length){ finish(); return; }
+    const q=questions[levelQi];
+    if(q.type==='boss'){ renderBoss(u, ()=>finish()); return; }
+    const dispatch={choose:renderChoose, sentence:renderSentence, whack:renderWhack, puzzle:renderPuzzle, match:renderMatch, find:renderFind};
+    dispatch[q.type](q, ()=>{ levelQi++; next(); });
   }
   next();
 }
-// 闯关选择题：错了不立刻判分，让用户重选直到对；首次选错入错题本+累加弱项，答对才进入下一题
-function fillLevelOpts(opts, answer, done){
-  const box=document.getElementById('lopts'); box.innerHTML='';
-  let firstWrong=false; // 第一次错：已入错题本，避免后续 recordWord(true) 把它移出
+// 4 选 1：看中文选英文
+function renderChoose(q, done){
+  const area=document.getElementById('lvlArea');
+  const opts=shuffle([q.en,...q.distract]);
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🎯 “${q.zh}” 用英语怎么说？</div>
+    <div class="opts two" id="lopts"></div></div>`;
+  const resolve=makeResolver('choose', q.en, q.zh, done);
+  const box=document.getElementById('lopts');
   opts.forEach(o=>{
     const el=document.createElement('div'); el.className='opt'; el.textContent=o;
     el.onclick=()=>{
       if(el.disabled) return;
-      const ok=norm(o)===norm(answer);
-      if(ok){
-        [...box.children].forEach(c=>{
-          c.disabled=true;
-          if(norm(c.textContent)===norm(answer)) c.classList.add('correct');
-        });
-        if(firstWrong){
-          // 已入错题本：不能再 recordWord(true)，否则会从错题本把该项移出
-          bumpGoal(true);
-          toast('🎉 终于选对啦');
-        } else {
-          recordWord(curUnitId, answer, true);
-          bumpGoal(true);
-          toast('🎉 答对 +1⭐');
-        }
-        levelCorrect++; awardStars(1);
-        setTimeout(done, 700);
-      } else {
-        el.disabled=true; el.classList.add('wrong');
-        if(!firstWrong){
-          firstWrong=true;
-          // 手动入错题本 + 累加弱项（不走 recordWord，避免 recordWord(true) 副作用）
-          const u=curUnit();
-          const qw=u.words.find(w=>w.en===answer);
-          const realId=curUnitId;
-          const en=answer, zh=qw?qw.zh:'';
-          if(!STATE.wrong.some(w=>w.en===en&&w.unit===realId)){
-            STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
-          }
-          STATE.weakByUnit[realId]=STATE.weakByUnit[realId]||{sel:0,spell:0,sent:0};
-          STATE.weakByUnit[realId].sel=(STATE.weakByUnit[realId].sel||0)+1;
-          saveState();
-        }
-        levelWrong.sel++;
-        toast('😅 还不对，再想想');
-      }
+      const ok=norm(o)===norm(q.en);
+      if(ok){ [...box.children].forEach(c=>{ c.disabled=true; if(norm(c.textContent)===norm(q.en)) c.classList.add('correct'); }); resolve(true); }
+      else { el.disabled=true; el.classList.add('wrong'); resolve(false); }
     };
     box.appendChild(el);
   });
 }
-function checkLevelSent(ans){
-  const got=[...document.querySelectorAll('#lb .in')].map(e=>e.textContent).join(' ');
-  const ok=norm(got)===norm(ans);
-  recordWord(curUnitId, ans, ok);
-  toast(ok?'🎉 正确 +1⭐':'💡 正确：'+ans);
-  if(ok){ levelCorrect++; awardStars(1); } else { levelWrong.sent++; }
-  setTimeout(window.__levelNext||(()=>go('adventure')), 700);
+// 连词成句
+function renderSentence(q, done){
+  const area=document.getElementById('lvlArea');
+  const parts=q.en.split(/\s+/);
+  const pool=shuffle(parts.slice());
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 连词成句：“${q.zh}”</div>
+    <div class="basket" id="lb"></div><div class="pool" id="lp"></div>
+    <button class="btn grass lg" style="margin-top:10px" onclick="__lvlSentCheck('${q.en.replace(/'/g,"\\'")}')">✔ 检查</button></div>`;
+  pool.forEach(w=>{
+    const t=document.createElement('div'); t.className='token'; t.textContent=w;
+    t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+      const s=document.createElement('span'); s.className='token in'; s.textContent=w;
+      s.onclick=()=>{s.remove();t.classList.remove('used');}; document.getElementById('lb').appendChild(s); };
+    document.getElementById('lp').appendChild(t);
+  });
+  const resolve=makeResolver('sentence', q.en, q.zh, done);
+  window.__lvlSentCheck=(ans)=>{
+    const got=[...document.querySelectorAll('#lb .in')].map(e=>e.textContent).join(' ');
+    const ok=norm(got)===norm(ans);
+    if(ok){ resolve(true); }
+    else { const b=document.getElementById('lb'); b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),500); resolve(false); }
+  };
+}
+// 听音打地鼠：听词，敲对应地鼠
+function renderWhack(q, done){
+  const area=document.getElementById('lvlArea');
+  const answer=q.answer;
+  const opts=shuffle(q.options);
+  area.innerHTML=`<div class="panel center"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🔨 听音打地鼠！</div>
+    <button class="btn sky lg" style="margin:4px 0 10px" onclick="__whackPlay()">🔊 再听一次</button>
+    <div class="moles" id="moles"></div>
+    <p class="muted">听到哪个词，就敲哪个地鼠！</p></div>`;
+  const resolve=makeResolver('whack', answer.en, answer.zh, done);
+  const m=document.getElementById('moles');
+  opts.forEach(o=>{
+    const w=curUnit().words.find(x=>x.en===o)||{en:o, zh:''};
+    const d=document.createElement('button'); d.className='mole'; d.innerHTML=`<span class="me">${EMOJI_MAP[o]||'🔤'}</span><span class="mt">${o}</span>`;
+    d.onclick=()=>{
+      if(d.disabled) return;
+      const ok=norm(o)===norm(answer.en);
+      if(ok){ d.classList.add('hit'); [...m.children].forEach(c=>c.disabled=true); resolve(true); }
+      else { d.disabled=true; d.classList.add('miss'); resolve(false); }
+    };
+    m.appendChild(d);
+  });
+  window.__whackPlay=()=>speak(answer.en);
+  speak(answer.en);
+}
+// 拼词：字母乱序，按序点出正确单词
+function renderPuzzle(q, done){
+  const area=document.getElementById('lvlArea');
+  const answer=q.answer;
+  const letters=shuffle(answer.en.split(''));
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 拼词：“${q.zh}” ${answer.emoji||''}</div>
+    <button class="btn sky" style="margin-bottom:8px" onclick="__puzzlePlay()">🔊 听一听</button>
+    <div class="basket" id="pb"></div><div class="pool" id="pp"></div>
+    <button class="btn grass lg" style="margin-top:10px" onclick="__puzzleCheck()">✔ 检查</button></div>`;
+  const resolve=makeResolver('puzzle', answer.en, q.zh, done);
+  const basket=document.getElementById('pb');
+  letters.forEach(ch=>{
+    const t=document.createElement('div'); t.className='token'; t.textContent=ch;
+    t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+      const s=document.createElement('span'); s.className='token in'; s.textContent=ch;
+      s.onclick=()=>{s.remove();t.classList.remove('used');}; basket.appendChild(s); };
+    document.getElementById('pp').appendChild(t);
+  });
+  window.__puzzlePlay=()=>speak(answer.en);
+  window.__puzzleCheck=()=>{ const got=[...basket.children].map(e=>e.textContent).join(''); const ok=norm(got)===norm(answer.en);
+    if(ok){ resolve(true); } else { basket.classList.add('wrong'); setTimeout(()=>basket.classList.remove('wrong'),500); resolve(false); } };
+  speak(answer.en);
+}
+// 连连看：点单词再点它的意思
+function renderMatch(q, done){
+  const area=document.getElementById('lvlArea');
+  const pairs=q.pairs;
+  let deck=[];
+  pairs.forEach((p,i)=>{ deck.push({kind:'w',en:p.en,zh:p.zh,pid:i,emoji:p.emoji}); deck.push({kind:'m',en:p.en,zh:p.zh,pid:i,emoji:p.emoji}); });
+  deck=shuffle(deck);
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🔗 连连看：点一个单词，再点它的意思</div><div class="match-grid" id="mg"></div></div>`;
+  const resolve=makeResolver('match', pairs[0].en, pairs[0].zh, done);
+  const mg=document.getElementById('mg');
+  let sel=null, matched=0;
+  deck.forEach(c=>{
+    const b=document.createElement('button'); b.className='match-card '+(c.kind==='w'?'mc-w':'mc-m'); b.dataset.en=c.en; b.dataset.pid=c.pid;
+    b.innerHTML = c.kind==='w' ? c.en : (`<span class="m-emoji">${c.emoji||'🔤'}</span><span>${c.zh}</span>`);
+    b.onclick=()=>{
+      if(b.disabled) return;
+      if(!sel){ sel=b; b.classList.add('sel'); return; }
+      if(sel===b){ sel.classList.remove('sel'); sel=null; return; }
+      if(String(sel.dataset.pid)===String(b.dataset.pid) && sel.classList.contains('mc-w')!==b.classList.contains('mc-w')){
+        sel.disabled=true; b.disabled=true; sel.classList.add('matched'); b.classList.add('matched'); sel.classList.remove('sel'); sel=null;
+        matched++;
+        if(matched>=pairs.length) resolve(true);
+      } else {
+        const we=sel.dataset.en;
+        sel.classList.remove('sel'); sel.classList.add('wrong'); b.classList.add('wrong');
+        setTimeout(()=>{ sel.classList.remove('wrong'); b.classList.remove('wrong'); }, 450);
+        resolve(false, we, '');
+        sel=null;
+      }
+    };
+    mg.appendChild(b);
+  });
+}
+// 单词捉迷藏：网格里找出目标词
+function renderFind(q, done){
+  const area=document.getElementById('lvlArea');
+  const answer=q.answer;
+  const all=shuffle([answer.en, ...q.distractors]);
+  area.innerHTML=`<div class="panel center"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🔍 捉迷藏：找出 “${answer.zh}” ${answer.emoji||''}</div>
+    <button class="btn sky lg" style="margin:4px 0 10px" onclick="__findPlay()">🔊 听一听</button>
+    <div class="find-grid" id="fg"></div>
+    <p class="muted">在卡片里找到它，点一下！</p></div>`;
+  const resolve=makeResolver('find', answer.en, answer.zh, done);
+  const fg=document.getElementById('fg');
+  all.forEach(o=>{
+    const w=curUnit().words.find(x=>x.en===o)||{en:o, zh:''};
+    const b=document.createElement('button'); b.className='find-card'; b.innerHTML=`<span class="fe">${EMOJI_MAP[o]||'🔤'}</span><span class="ft">${o}</span>`;
+    b.onclick=()=>{ if(b.disabled) return; const ok=norm(o)===norm(answer.en);
+      if(ok){ b.classList.add('found'); [...fg.children].forEach(c=>c.disabled=true); resolve(true); }
+      else { b.disabled=true; b.classList.add('miss'); resolve(false); } };
+    fg.appendChild(b);
+  });
+  window.__findPlay=()=>speak(answer.en);
+  speak(answer.en);
+}
+// 单元 BOSS 战：连对 3 句连词成句，掉光血条即击败（额外奖励星）
+function renderBoss(u, done){
+  const area=document.getElementById('lvlArea');
+  const sents=shuffle(u.sentences.slice()).slice(0,3);
+  if(sents.length===0){ done(); return; }
+  const bossEmojis=['👹','👺','🐉','👾','🦖','🐲'];
+  const boss=bossEmojis[(u.id.charCodeAt(1)||0)%bossEmojis.length]||'👹';
+  let hp=sents.length, idx=0, hits=0;
+  function render(){
+    if(idx>=sents.length){
+      const win=hits>=sents.length;
+      if(win){
+        awardStars(1); confetti(); starBurst(2); foxSay('🏆 你击败了 BOSS！获得额外 ⭐！');
+        area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss}</div><h2>🏆 BOSS 被击败！</h2><p class="muted">额外获得 1 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
+      } else {
+        foxSay('💪 BOSS 逃走了，多练练句型再来！');
+        area.innerHTML=`<div class="panel center"><div class="boss-emoji">${boss}</div><h2>BOSS 还没倒下…</h2><p class="muted">连对 ${hits}/${sents.length} 句，再练练句型！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
+      }
+      window.__bossDone=done;
+      return;
+    }
+    const s=sents[idx];
+    const parts=s.en.split(/\s+/);
+    const pool=shuffle(parts.slice());
+    area.innerHTML=`<div class="panel boss-fight"><div class="boss-top"><span class="boss-emoji">${boss}</span>
+      <div class="hp"><div class="hp-label">BOSS 生命 ${hp}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(hp/sents.length*100)}%"></i></div></div></div>
+      <div class="qprompt">⚔️ 第 ${idx+1}/${sents.length} 击 · 连词成句：“${s.zh}”</div>
+      <div class="basket" id="bb"></div><div class="pool" id="bp"></div>
+      <button class="btn grass lg" style="margin-top:10px" onclick="__bossCheck('${s.en.replace(/'/g,"\\'")}')">💥 攻击！</button></div>`;
+    pool.forEach(w=>{ const t=document.createElement('div'); t.className='token'; t.textContent=w;
+      t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+        const sp=document.createElement('span'); sp.className='token in'; sp.textContent=w;
+        sp.onclick=()=>{sp.remove();t.classList.remove('used');}; document.getElementById('bb').appendChild(sp); };
+      document.getElementById('bp').appendChild(t); });
+    window.__bossCheck=(ans)=>{
+      const got=[...document.querySelectorAll('#bb .in')].map(e=>e.textContent).join(' ');
+      const ok=norm(got)===norm(ans);
+      if(ok){ hits++; hp--; idx++; toast('💥 命中！BOSS 掉血'); render(); }
+      else { const b=document.getElementById('bb'); b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),500); toast('🛡️ BOSS 挡下了，再试试'); }
+    };
+  }
+  render();
+}
+function finish(){
+  const id=curUnitId;
+  const u=UNITS.find(x=>x.id===id);
+  const ratio=levelCorrect/levelTotalNormal;
+  const stars = ratio>=0.9?3 : ratio>=LEVEL_PASS?2 : ratio>=0.4?1:0;
+  const st=unitStat(id);
+  const hadNoStar = st.levelStars<1; // 解锁判定用：本次前该关是否 0 星
+  st.levelStars=Math.max(st.levelStars, stars);
+  let unlockedName=null;
+  if(stars>=1 && UNITS.indexOf(u)<UNITS.length-1){
+    const nx=UNITS[UNITS.indexOf(u)+1];
+    unitStat(nx.id).unlocked=true;
+    if(hadNoStar) unlockedName=nx.emoji+' '+nx.title; // 之前未解锁 → 本次新解锁
+  }
+  // 闯关错题也计入弱项（按单元+题型，含拼写维度），与单元测试一起驱动首页推荐
+  if(levelWrong.sel||levelWrong.spell||levelWrong.sent){
+    const wu=STATE.weakByUnit[id]=STATE.weakByUnit[id]||{sel:0,spell:0,sent:0};
+    wu.sel=(wu.sel||0)+levelWrong.sel; wu.spell=(wu.spell||0)+levelWrong.spell; wu.sent=(wu.sent||0)+levelWrong.sent;
+  }
+  awardStars(stars);
+  saveState();
+  if(unlockedName) setTimeout(()=>toast('🔓 解锁新关卡：'+unlockedName), 900);
+  if(stars>0){ confetti(); starBurst(stars); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
+  const wrongTot=levelWrong.sel+levelWrong.spell+levelWrong.sent;
+  const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 拼写 ${levelWrong.spell} · 句子题 ${levelWrong.sent}</p>`:'';
+  const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
+  const practiceBtn=stars===0?`<button class="btn sun" onclick="goVocabUnit('${id}')">📚 先练这关单词</button>`:'';
+  const area=document.getElementById('lvlArea');
+  area.innerHTML=`<div class="panel center">
+    <div style="font-size:60px">${stars>0?'🎉':'💪'}</div>
+    <h2>${stars>0?'闯关成功！':'再接再厉！'}</h2>
+    <div class="stars" style="font-size:30px">${'★'.repeat(stars)+'☆'.repeat(3-stars)}</div>
+    <p class="muted">答对 ${levelCorrect}/${levelTotalNormal} 题 · 获得 ${stars} ⭐</p>
+    ${breakdown}${guide}
+    <div class="row" style="margin-top:10px;justify-content:center">
+      <button class="btn grape" onclick="showMap()">🗺️ 返回地图</button>
+      <button class="btn sky" onclick="startLevel('${id}')">🔄 再闯一次</button>
+      ${practiceBtn}
+    </div></div>`;
 }
 
 /* =========================================================
