@@ -1011,58 +1011,59 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">63</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">64</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
     <div class="tl">
-      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
-      <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v61 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
-      <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
-      <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use 改 height=63 y=51、onboard SVG 改 width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
-      <div class="it"><b>v59 · chip 点击不再触发自动滚动</b><span>用户反馈：单元测验屏点任意单元 chip 会「自动滚动到下方题目」。根因：buildUnitChips() 用 div+onclick 创建 chip，无 tabindex 也未阻止 mousedown，浏览器在 mousedown 时让 div 获得焦点、随后把焦点元素 scroll into view，于是页面被弹到下方 #testArea 题目区（与 v58 听说读写是同类病灶，但 v58 是结构性下渲染、v59 是 chip 本身的可点击性）。修法：chip 创建时加 el.onmousedown=(e)=&gt;e.preventDefault()，阻止 mousedown 获得焦点，从根上消除浏览器的 scroll-into-view。一次修复覆盖 vocab/sent/skill/test 四屏所有 chip</span></div>
-      <div class="it"><b>v58 · 听说读写改为就地渲染（根治自动滚动）</b><span>用户反馈：听说读写板块点 听/说/读/写 任意一个，会「自动滚到下方题目」。根因：原结构把四个技能按钮和 #skillArea 题目面板分成上下两个 panel，点按钮后题目在下方渲染，手机浏览器把新内容带入视口造成「被弹下去」观感（代码无 scrollIntoView）。修法：把两个 panel 合并为单个 #skillStage，renderSkillHome() 在 #skillStage 内渲染四个技能 tile（无语音识别环境时隐藏「说」），startSkill(mode) 在 #skillStage 内「就地」渲染对应题目，并在每道题顶部加「← 返回选技能」按钮（onclick=renderSkillHome）。题目现在出现在你正看着的位置，不再向下滚动</span></div>
-      <div class="it"><b>v57 · 做题/学词进度条</b><span>用户要求「做题目和学词语时都要有进度条」。①词汇闪卡（学词语）面板顶部新增进度条 + 「第 X/Y 词」文案，showCard() 实时更新（pct = cardIdx/总词数，与单元测试屏一致的 0-based 进度）。②闯关（做题目）每个非 BOSS 题目渲染后，在 #lvlArea 顶部重新插入进度条（pct = levelQi/levelTotalNormal），next() 内新增 updateLvlProgress() 辅助函数；BOSS 关本身有血量条作进度指示，不重复加。单元测试屏原本就有 .test-prog 进度条，继续沿用。三处进度条共用 .test-prog 样式（葡萄→天空渐变），保证视觉一致</span></div>
-      <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
-      <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
-      <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 `UNITS.find` 查找 `STATE.weakByUnit` 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 `ALL_UNITS.find` 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
-      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏会掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
-      <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
-      <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
-      <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度：设置里「年级（五/六）+ 册（上/下）」双切换，全模块（闯关/错题/测试/热力/语法）按年级生效；词库扩至 22 单元（五年级 12 + 六年级 10），六年级 10 单元 PEP 核心词含音标与例句，并预录 edge-tts 音频；语法小课堂新增 3 条六年级专题（一般将来时 / 过去时深化 / 比较级深化）并随年级切换显示</span></div>
-      <div class="it"><b>v49 · 狐狸换「大眼萌系」方案</b><span>用户从 5 种方案中选定 B·大眼萌系：眼睛放大更圆（≈直径 12 的瞳孔 + 双高光闪点）、脸相对更小、腮红更明显（椭圆柔粉），整体像盲盒公仔。仍是全站共用的 #i-fox 符号一处更新，顶栏/故事书封面/加载/首次指引同步换新</span></div>
-      <div class="it"><b>v48 · 重画狐狸主角 SVG</b><span>用户反馈原狐狸「太丑」：上宽下尖的水滴团 + 细尖耳比例怪。重画为圆润脸庞、清晰三角耳带内耳、大眼带高光、腮红与小鼻子 + 微笑的呆萌狐狸，配色收敛到暖橙/奶油/暖棕墨，全站共用符号一处同步更新</span></div>
-      <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
-      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转，像翻开的卡片）并加弹性按压态（缩放回弹 + 阴影收紧），整体更有「翻开一本绘本」的专属仪式感</span></div>
-      <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
-      <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>整体按 iOS 原生质感重构：配色降饱和（语义色收敛、新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃（backdrop-filter）；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 个主入口 + 顶部齿轮的 emoji 全部换统一线性图标（狐狸吉祥物与装饰性 emoji 保留）</span></div>
-      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
-      <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
-      <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
-      <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
-      <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染，不闪空白）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
-      <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
-      <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
-      <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
-      <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
-      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
-      <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
-      <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
-      <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
-      <div class="it"><b>v30 · 修复拼词玩法 "undefined"</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
-      <div class="it"><b>v29 · 趣味闯关大改造</b><span>世界地图加狐狸当前位置标记+关卡任务卡；新增听音打地鼠/拼词/连连看/捉迷藏 4 种迷你玩法，每关收尾接单元 BOSS 血条战</span></div>
-      <div class="it"><b>v28 · 选择题改错重做</b><span>闯关+单元测试的 4 选 1 题改为「错了重选直到对」，第一次选错即入错题本+累加弱项</span></div>
-      <div class="it"><b>v27 · 修复返回地图</b><span>关卡屏改用独立 #lvlArea 渲染，不再覆盖整 #adventure section，「返回地图」按钮恢复正常</span></div>
-      <div class="it"><b>v26 · 连词成句防抄</b><span>答题时隐藏上方完整英文，只留中文提示+听原句，杜绝直接抄答案</span></div>
-      <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
-      <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
-      <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
-      <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
-      <div class="it"><b>v18 · 可视化</b><span>关卡路线 · 弱项热力图 · Hero 进度环</span></div>
-      <div class="it"><b>v14 · 弱项系统</b><span>题型统计 · 弱项推荐 · 通关星爆</span></div>
-      <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
-      <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
+      <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
+      <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
+      <div class="it"><b>v14 · 弱项系统</b><span>题型统计 · 弱项推荐 · 通关星爆</span></div>
+      <div class="it"><b>v18 · 可视化</b><span>关卡路线 · 弱项热力图 · Hero 进度环</span></div>
+      <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
+      <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
+      <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
+      <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
+      <div class="it"><b>v26 · 连词成句防抄</b><span>答题时隐藏上方完整英文，只留中文提示+听原句，杜绝直接抄答案</span></div>
+      <div class="it"><b>v27 · 修复返回地图</b><span>关卡屏改用独立 #lvlArea 渲染，不再覆盖整 #adventure section，「返回地图」按钮恢复正常</span></div>
+      <div class="it"><b>v28 · 选择题改错重做</b><span>闯关+单元测试的 4 选 1 题改为「错了重选直到对」，第一次选错即入错题本+累加弱项</span></div>
+      <div class="it"><b>v29 · 趣味闯关大改造</b><span>世界地图加狐狸当前位置标记+关卡任务卡；新增听音打地鼠/拼词/连连看/捉迷藏 4 种迷你玩法，每关收尾接单元 BOSS 血条战</span></div>
+      <div class="it"><b>v30 · 修复拼词玩法 "undefined"</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
+      <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
+      <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
+      <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
+      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
+      <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
+      <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
+      <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
+      <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
+      <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染，不闪空白）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
+      <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
+      <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
+      <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
+      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
+      <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>整体按 iOS 原生质感重构：配色降饱和（语义色收敛、新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃（backdrop-filter）；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 个主入口 + 顶部齿轮的 emoji 全部换统一线性图标（狐狸吉祥物与装饰性 emoji 保留）</span></div>
+      <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
+      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转，像翻开的卡片）并加弹性按压态（缩放回弹 + 阴影收紧），整体更有「翻开一本绘本」的专属仪式感</span></div>
+      <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
+      <div class="it"><b>v48 · 重画狐狸主角 SVG</b><span>用户反馈原狐狸「太丑」：上宽下尖的水滴团 + 细尖耳比例怪。重画为圆润脸庞、清晰三角耳带内耳、大眼带高光、腮红与小鼻子 + 微笑的呆萌狐狸，配色收敛到暖橙/奶油/暖棕墨，全站共用符号一处同步更新</span></div>
+      <div class="it"><b>v49 · 狐狸换「大眼萌系」方案</b><span>用户从 5 种方案中选定 B·大眼萌系：眼睛放大更圆（≈直径 12 的瞳孔 + 双高光闪点）、脸相对更小、腮红更明显（椭圆柔粉），整体像盲盒公仔。仍是全站共用的 #i-fox 符号一处更新，顶栏/故事书封面/加载/首次指引同步换新</span></div>
+      <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度：设置里「年级（五/六）+ 册（上/下）」双切换，全模块（闯关/错题/测试/热力/语法）按年级生效；词库扩至 22 单元（五年级 12 + 六年级 10），六年级 10 单元 PEP 核心词含音标与例句，并预录 edge-tts 音频；语法小课堂新增 3 条六年级专题（一般将来时 / 过去时深化 / 比较级深化）并随年级切换显示</span></div>
+      <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
+      <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
+      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏会掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
+      <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 `UNITS.find` 查找 `STATE.weakByUnit` 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 `ALL_UNITS.find` 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
+      <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
+      <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
+      <div class="it"><b>v57 · 做题/学词进度条</b><span>用户要求「做题目和学词语时都要有进度条」。①词汇闪卡（学词语）面板顶部新增进度条 + 「第 X/Y 词」文案，showCard() 实时更新（pct = cardIdx/总词数，与单元测试屏一致的 0-based 进度）。②闯关（做题目）每个非 BOSS 题目渲染后，在 #lvlArea 顶部重新插入进度条（pct = levelQi/levelTotalNormal），next() 内新增 updateLvlProgress() 辅助函数；BOSS 关本身有血量条作进度指示，不重复加。单元测试屏原本就有 .test-prog 进度条，继续沿用。三处进度条共用 .test-prog 样式（葡萄→天空渐变），保证视觉一致</span></div>
+      <div class="it"><b>v58 · 听说读写改为就地渲染（根治自动滚动）</b><span>用户反馈：听说读写板块点 听/说/读/写 任意一个，会「自动滚到下方题目」。根因：原结构把四个技能按钮和 #skillArea 题目面板分成上下两个 panel，点按钮后题目在下方渲染，手机浏览器把新内容带入视口造成「被弹下去」观感（代码无 scrollIntoView）。修法：把两个 panel 合并为单个 #skillStage，renderSkillHome() 在 #skillStage 内渲染四个技能 tile（无语音识别环境时隐藏「说」），startSkill(mode) 在 #skillStage 内「就地」渲染对应题目，并在每道题顶部加「← 返回选技能」按钮（onclick=renderSkillHome）。题目现在出现在你正看着的位置，不再向下滚动</span></div>
+      <div class="it"><b>v59 · chip 点击不再触发自动滚动</b><span>用户反馈：单元测验屏点任意单元 chip 会「自动滚动到下方题目」。根因：buildUnitChips() 用 div+onclick 创建 chip，无 tabindex 也未阻止 mousedown，浏览器在 mousedown 时让 div 获得焦点、随后把焦点元素 scroll into view，于是页面被弹到下方 #testArea 题目区（与 v58 听说读写是同类病灶，但 v58 是结构性下渲染、v59 是 chip 本身的可点击性）。修法：chip 创建时加 el.onmousedown=(e)=&gt;e.preventDefault()，阻止 mousedown 获得焦点，从根上消除浏览器的 scroll-into-view。一次修复覆盖 vocab/sent/skill/test 四屏所有 chip</span></div>
+      <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use 改 height=63 y=51、onboard SVG 改 width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
+      <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
+      <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v61 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
+      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
+      <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2481,7 +2482,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 63;
+const APP_VERSION = 64;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
