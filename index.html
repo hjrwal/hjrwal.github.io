@@ -820,20 +820,20 @@
     <symbol id="i-library" viewBox="0 0 24 24"><path d="M5 4h4v16H5z"/><path d="M10 4h4v16h-4z"/><path d="M15.5 5l3.8.9L16.5 20l-3.8-.9z"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.9 1.9M17.1 17.1 19 19M19 5l-1.9 1.9M6.9 17.1 5 19"/></symbol>
     <symbol id="i-fox" viewBox="0 0 64 64">
-      <path d="M16 22 L11 7 L28 17 Z" fill="#E8743B"/>
-      <path d="M48 22 L53 7 L36 17 Z" fill="#E8743B"/>
-      <path d="M18 21 L14 11 L26 17 Z" fill="#FBE3CF"/>
-      <path d="M46 21 L50 11 L38 17 Z" fill="#FBE3CF"/>
-      <path d="M32 15 C20 15 14 23 15 33 C16 45 23 55 32 55 C41 55 48 45 49 33 C50 23 44 15 32 15 Z" fill="#EE7C44"/>
-      <path d="M32 31 C26 31 22 37 23 43 C24 51 28 56 32 56 C36 56 40 51 41 43 C42 37 38 31 32 31 Z" fill="#FFF6EC"/>
-      <circle cx="25" cy="33" r="3.3" fill="#3A2B22"/>
-      <circle cx="39" cy="33" r="3.3" fill="#3A2B22"/>
-      <circle cx="25.8" cy="32.2" r="1" fill="#fff"/>
-      <circle cx="39.8" cy="32.2" r="1" fill="#fff"/>
-      <path d="M29 42 h6 l-3 5 Z" fill="#3A2B22"/>
-      <path d="M28 49 Q32 53 36 49" fill="none" stroke="#3A2B22" stroke-width="1.8" stroke-linecap="round"/>
-      <circle cx="20" cy="40" r="2.6" fill="#F2A08C" opacity=".7"/>
-      <circle cx="44" cy="40" r="2.6" fill="#F2A08C" opacity=".7"/>
+      <path d="M15 20 L10 6 L29 14 Z" fill="#EF824A"/>
+      <path d="M49 20 L54 6 L35 14 Z" fill="#EF824A"/>
+      <path d="M17 18 L13 9 L26 14 Z" fill="#FCE0CB"/>
+      <path d="M47 18 L51 9 L38 14 Z" fill="#FCE0CB"/>
+      <path d="M32 11 C18 11 11 19 11 31 C11 42 21 50 32 54 C43 50 53 42 53 31 C53 19 46 11 32 11 Z" fill="#EF824A"/>
+      <path d="M32 30 C26 30 22 35 22 41 C22 48 27 53 32 53 C37 53 42 48 42 41 C42 35 38 30 32 30 Z" fill="#FFF7EE"/>
+      <circle cx="24" cy="26" r="3.7" fill="#3A2B22"/>
+      <circle cx="40" cy="26" r="3.7" fill="#3A2B22"/>
+      <circle cx="25.2" cy="24.9" r="1.2" fill="#fff"/>
+      <circle cx="41.2" cy="24.9" r="1.2" fill="#fff"/>
+      <circle cx="19.5" cy="38" r="2.7" fill="#F4A18C" opacity=".75"/>
+      <circle cx="44.5" cy="38" r="2.7" fill="#F4A18C" opacity=".75"/>
+      <path d="M29 44 h6 l-3 4 Z" fill="#3A2B22"/>
+      <path d="M32 48 v2 M29.5 50 Q32 53 34.5 50" fill="none" stroke="#3A2B22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
   </defs>
 </svg>
@@ -984,7 +984,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">47</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">48</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1018,6 +1018,7 @@ update → controllerchange
       <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
       <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>整体按 iOS 原生质感重构：配色降饱和（语义色收敛、新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃（backdrop-filter）；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 个主入口 + 顶部齿轮的 emoji 全部换统一线性图标（狐狸吉祥物与装饰性 emoji 保留）</span></div>
       <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
+      <div class="it"><b>v48 · 重画狐狸主角 SVG</b><span>用户反馈原狐狸「太丑」：上宽下尖的水滴团 + 细尖耳比例怪。重画为圆润脸庞、清晰三角耳带内耳、大眼带高光、腮红与小鼻子 + 微笑的呆萌狐狸，配色收敛到暖橙/奶油/暖棕墨，全站共用符号一处同步更新</span></div>
       <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转，像翻开的卡片）并加弹性按压态（缩放回弹 + 阴影收紧），整体更有「翻开一本绘本」的专属仪式感</span></div>
       <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
     </div>
@@ -2047,7 +2048,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 47;
+const APP_VERSION = 48;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
