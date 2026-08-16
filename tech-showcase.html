@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 45,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v46',// 与 sw.js 的 CACHE 保持一致
+    version: 46,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v47',// 与 sw.js 的 CACHE 保持一致
     words:   341,       // 核心词数
     audio:   671,       // 预录音频数
     audioMB: 9.5,       // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    45,        // 迭代版本数
+    iter:    46,        // 迭代版本数
     updated: '2026-08-16'
   };
 </script>
@@ -350,6 +350,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
       <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配）</span></div>
       <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>按 iOS 原生质感重构：配色降饱和（新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 主入口 + 顶部齿轮的 emoji 全换统一线性图标（狐狸吉祥物与装饰 emoji 保留）</span></div>
+      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转）并加弹性按压态，整体更有「翻开一本绘本」的专属仪式感</span></div>
       <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
       </div>
     </div>
