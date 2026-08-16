@@ -81,21 +81,36 @@
   .group-title .em{font-size:18px;}
   .group-title .ln{flex:1; height:3px; background:linear-gradient(90deg,var(--fox),transparent); border-radius:3px; opacity:.55;}
   /* 首页 Hero 欢迎卡 */
-  .hero{display:flex; align-items:center; gap:14px; position:relative; overflow:hidden; cursor:pointer;
-    background:linear-gradient(135deg, var(--brand-d), var(--brand));
-    border-radius:var(--r); padding:16px 18px; margin-bottom:14px; color:#fff;
-    box-shadow:var(--sh-3);}
-  .hero::after{content:''; position:absolute; right:-26px; top:-44px; width:120px; height:120px;
-    background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.45), rgba(255,255,255,.08) 70%); border-radius:50%; pointer-events:none;}
-  .hero::before{content:''; position:absolute; left:0; right:0; top:0; height:46%;
-    background:linear-gradient(180deg, rgba(255,255,255,.18), transparent); pointer-events:none;}
-  .hero-ava{flex:0 0 auto; width:66px; height:66px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative;
-    background:rgba(255,255,255,.28); box-shadow:0 5px 14px rgba(120,70,30,.20);}
-  .hero-ava::before{content:''; position:absolute; inset:-6px; border-radius:50%; background:rgba(255,255,255,.20);}
-  .hero-ava .fox-char{width:56px; height:56px; position:relative; z-index:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));}
-  .hero-txt{flex:1; min-width:0;}
-  .hero-hi{font-size:19px; font-weight:900; letter-spacing:.3px; line-height:1.2;}
-  .hero-sub{font-size:13px; font-weight:700; opacity:.95; margin-top:3px;}
+  /* 故事书封面式 HERO */
+  .hero.storybook{position:relative; overflow:hidden; cursor:pointer; margin-bottom:16px; padding:0;
+    background:linear-gradient(180deg,#FFF7E8 0%, var(--paper) 44%);
+    border:2px solid var(--line);
+    border-radius:26px 24px 22px 26px/24px 26px 24px 22px;
+    box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.55), inset 0 0 0 7.5px rgba(200,150,90,.16);}
+  .book-scene{position:relative; height:120px; overflow:hidden;
+    background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
+  .scene-svg{position:absolute; inset:0; width:100%; height:100%;}
+  .sc-sun{fill:var(--amber);}
+  .sc-rays line{stroke:var(--amber); stroke-width:2.6; stroke-linecap:round; transform-origin:262px 30px; animation:spinSlow 26s linear infinite;}
+  @keyframes spinSlow{to{transform:rotate(360deg)}}
+  .sc-cloud{fill:#fff; opacity:.92;}
+  .sc-cloud-a{animation:drift 9s ease-in-out infinite;}
+  .sc-cloud-b{animation:drift 11s ease-in-out infinite reverse;}
+  @keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+  .sc-hill-far{fill:var(--forest); opacity:.5;}
+  .sc-hill-near{fill:var(--forest-d);}
+  .sc-fox{filter:drop-shadow(0 3px 4px rgba(80,50,20,.28)); animation:foxHill 3.6s ease-in-out infinite;}
+  @keyframes foxHill{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .book-body{padding:14px 16px 16px;}
+  .book-title{display:flex; align-items:center; gap:8px; font-size:21px; font-weight:900; color:var(--fox-d); letter-spacing:.5px; margin-bottom:11px;}
+  .bt-ribbon{background:var(--fox); color:#fff; font-size:13px; font-weight:800; padding:3px 10px; border-radius:999px; box-shadow:0 3px 8px rgba(232,116,59,.30);}
+  .speech{position:relative; background:#FFFDF8; border:2px solid var(--line); border-radius:16px; padding:11px 14px; margin-bottom:13px; box-shadow:var(--sh-1);}
+  .speech::before{content:''; position:absolute; left:34px; top:-9px; width:16px; height:16px; background:#FFFDF8; border-left:2px solid var(--line); border-top:2px solid var(--line); transform:rotate(45deg); border-radius:3px 0 0 0;}
+  .hero-hi{font-size:18px; font-weight:900; color:var(--ink); line-height:1.25;}
+  .hero-sub{font-size:13px; font-weight:700; color:var(--muted); margin-top:3px;}
+  .book-foot{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .hero-go{display:flex; flex-direction:column; align-items:center; gap:2px; flex:0 0 auto;}
+  .hero-ring-lb{font-size:11px; color:var(--muted); font-weight:800;}
   .rank-chip{display:flex; align-items:center; gap:6px; margin-top:8px; padding:5px 9px; border-radius:999px;
     background:color-mix(in srgb, var(--rc,#b87333) 18%, #fff); border:1px solid color-mix(in srgb, var(--rc,#b87333) 45%, #fff);
     cursor:pointer; width:fit-content; max-width:100%; font-weight:800; font-size:12px; color:#3a2e22;
@@ -164,11 +179,13 @@
   .radar-wrap{margin-top:12px; padding:10px; background:rgba(124,92,255,.06); border-radius:14px;}
   .radar-title{font-weight:800; font-size:14px; margin-bottom:4px;}
   /* 首页卡片错峰浮现 */
-  @keyframes tileIn{from{opacity:0; transform:translateY(16px) scale(.96)}to{opacity:1; transform:none}}
-  .home-group .grid .tile{animation:tileIn .42s both;}
+  @keyframes tileIn{from{opacity:0; transform:translateY(18px) scale(.94) rotate(-1.5deg)}to{opacity:1; transform:none}}
+  .home-group .grid .tile{animation:tileIn .45s both;}
   .home-group .grid .tile:nth-child(2){animation-delay:.05s}
   .home-group .grid .tile:nth-child(3){animation-delay:.10s}
   .home-group .grid .tile:nth-child(4){animation-delay:.15s}
+  .home-group .grid .tile:nth-child(5){animation-delay:.20s}
+  .home-group .grid .tile:nth-child(6){animation-delay:.25s}
   /* 窄屏（手机）适配 */
   @media(max-width:480px){
     .app{padding:10px 10px 84px;}
@@ -200,9 +217,9 @@
   .tile{
     background:var(--card); border-radius:20px 22px 18px 24px/22px 18px 24px 20px; padding:20px 14px; text-align:center;
     box-shadow:var(--sh-2); cursor:pointer; border:2px solid var(--line);
-    transition:transform .14s ease, box-shadow .14s ease, border-color .14s;
+    transition:transform .2s var(--ease-spring), box-shadow .2s var(--ease-out), border-color .14s;
   }
-  .tile:active{transform:scale(.96);}
+  .tile:active{transform:scale(.93) translateY(1px); box-shadow:var(--sh-1);}
   .tile .ic{font-size:46px; display:block; margin-bottom:8px; color:var(--tile-accent,var(--fox));}
   .tile h3{margin:0 0 4px; font-size:18px; font-weight:800;}
   .tile p{margin:0; font-size:12px; color:var(--muted);}
@@ -799,16 +816,35 @@
       <span class="t">当前浏览器<b>不支持英语朗读</b>。请用 <b>Chrome / Edge / 手机自带浏览器</b> 打开本页即可听发音（QQ 浏览器等内核不支持朗读）。</span>
       <button class="btn" onclick="copyLink()">📋 复制链接</button>
     </div>
-    <div class="hero" onclick="go('progress')">
-      <div class="hero-ava"><svg class="fox-char" viewBox="0 0 64 64"><use href="#i-fox"/></svg></div>
-      <div class="hero-txt">
-        <div class="hero-hi" id="heroHi">你好，小学霸！🌟</div>
-        <div class="hero-sub" id="heroSub">今天继续加油哦～</div>
-        <div class="rank-chip" id="heroRank" onclick="event.stopPropagation();openRank()"></div>
+    <div class="hero storybook" onclick="go('progress')">
+      <div class="book-scene" aria-hidden="true">
+        <svg class="scene-svg" viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice">
+          <circle class="sc-sun" cx="262" cy="30" r="16"/>
+          <g class="sc-rays">
+            <line x1="262" y1="6" x2="262" y2="0"/><line x1="286" y1="30" x2="292" y2="30"/>
+            <line x1="279" y1="13" x2="284" y2="8"/><line x1="279" y1="47" x2="284" y2="52"/>
+            <line x1="245" y1="13" x2="240" y2="8"/><line x1="245" y1="47" x2="240" y2="52"/>
+          </g>
+          <ellipse class="sc-cloud sc-cloud-a" cx="58" cy="30" rx="22" ry="10"/>
+          <ellipse class="sc-cloud sc-cloud-b" cx="120" cy="20" rx="15" ry="7"/>
+          <path class="sc-hill-far" d="M0 98 Q80 66 160 94 T320 86 V132 H0 Z"/>
+          <path class="sc-hill-near" d="M0 114 Q90 88 190 112 T320 106 V132 H0 Z"/>
+          <use href="#i-fox" class="sc-fox" x="34" y="54" width="56" height="56"/>
+        </svg>
       </div>
-      <div class="hero-go">
-        <div class="ring hero-ring" id="heroGoalRing" style="--p:0"><span id="heroGoalPct">0%</span></div>
-        <small class="hero-ring-lb">今日目标</small>
+      <div class="book-body">
+        <div class="book-title"><span class="bt-ribbon">五年级</span>英语冒险绘本</div>
+        <div class="speech">
+          <div class="hero-hi" id="heroHi">你好，小学霸！🌟</div>
+          <div class="hero-sub" id="heroSub">今天继续加油哦～</div>
+        </div>
+        <div class="book-foot">
+          <div class="rank-chip" id="heroRank" onclick="event.stopPropagation();openRank()"></div>
+          <div class="hero-go">
+            <div class="ring hero-ring" id="heroGoalRing" style="--p:0"><span id="heroGoalPct">0%</span></div>
+            <small class="hero-ring-lb">今日目标</small>
+          </div>
+        </div>
       </div>
     </div>
     <div class="home-group">
@@ -919,7 +955,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">45</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">46</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -952,6 +988,7 @@ update → controllerchange
       <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
       <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
       <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>整体按 iOS 原生质感重构：配色降饱和（语义色收敛、新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃（backdrop-filter）；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 个主入口 + 顶部齿轮的 emoji 全部换统一线性图标（狐狸吉祥物与装饰性 emoji 保留）</span></div>
+      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转，像翻开的卡片）并加弹性按压态（缩放回弹 + 阴影收紧），整体更有「翻开一本绘本」的专属仪式感</span></div>
       <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
@@ -1964,7 +2001,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 45;
+const APP_VERSION = 46;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
