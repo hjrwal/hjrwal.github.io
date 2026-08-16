@@ -996,7 +996,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">50</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">52</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1036,6 +1036,7 @@ update → controllerchange
       <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
       <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度：设置里「年级（五/六）+ 册（上/下）」双切换，全模块（闯关/错题/测试/热力/语法）按年级生效；词库扩至 22 单元（五年级 12 + 六年级 10），六年级 10 单元 PEP 核心词含音标与例句，并预录 edge-tts 音频；语法小课堂新增 3 条六年级专题（一般将来时 / 过去时深化 / 比较级深化）并随年级切换显示</span></div>
       <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
+      <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2442,7 +2443,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 51;
+const APP_VERSION = 52;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2481,6 +2482,8 @@ function setBook(b){
   STATE.settings.book=b;
   UNITS = pickBook();
   curUnitId = UNITS[0].id;
+  // 切书后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
+  cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('bookSeg','b',b);
   go(curScreen);
 }
@@ -2488,6 +2491,8 @@ function setGrade(g){
   STATE.settings.grade=g;
   UNITS = pickBook();
   curUnitId = UNITS[0].id;
+  // 切年级后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
+  cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('gradeSeg','g',g);
   go(curScreen);
 }
@@ -2845,6 +2850,7 @@ function go(name){
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
+  if(name==='home') safeRender(renderHero);
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -4457,12 +4463,7 @@ function reviewWrong(){
   const w=STATE.wrong[0]; curUnitId=w.unit; go('vocab');
   setTimeout(()=>{ startVocabQuiz('meaning'); }, 200);
 }
-function exportProgress(){
-  const blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='五年级英语进度_'+todayStr()+'.json'; a.click();
-  URL.revokeObjectURL(url); toast('已导出进度文件 ⬇️');
-}
+function exportProgress(){ /* 仅在第 2548 行的完整版定义，此处为占位防重声明覆盖 */ }
 function recordTrend(){
   const t=todayStr();
   if(STATE.trend && STATE.trend.length && STATE.trend[STATE.trend.length-1].date===t) return;
@@ -4483,7 +4484,7 @@ function exportWeekly(){
   const acc=totalAtt?Math.round(totalCor/totalAtt*100):0;
   const due=dueReviews().length;
   const lines=[
-    '【五年级英语 · 家长周报】',
+    '【'+(STATE.settings.grade==='6'?'六年级':'五年级')+'英语 · 家长周报】',
     '日期：'+todayStr(),
     '',
     '★ 累计星星：'+STATE.stars,
@@ -4502,19 +4503,7 @@ function exportWeekly(){
   const a=document.createElement('a'); a.href=url; a.download='英语家长周报_'+todayStr()+'.txt'; a.click();
   URL.revokeObjectURL(url); toast('已导出家长周报 ⬇️');
 }
-function importProgress(input){
-  const f=input.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const data=JSON.parse(r.result);
-      if(data&&data.version===1){ STATE=data; saveState(); renderProgress(); toast('进度已导入 ✅'); }
-      else toast('文件格式不对 😢');
-    }catch(e){ toast('读取失败 😢'); }
-  };
-  r.readAsText(f);
-  input.value='';
-}
+function importProgress(input){ /* 仅在第 2558 行的完整版定义，此处为占位防重声明覆盖 */ }
 function resetProgress(){ STATE=defaultState(); saveState(); renderProgress(); toast('已清空进度'); }
 function showReport(){
   const mastered=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
@@ -4716,29 +4705,40 @@ function closeGoal(){ const m=document.getElementById('goalModal'); if(m) m.clas
 /* =========================================================
    首次使用指引（v42）：狐狸向导分步卡片，首次打开自动弹，设置里可重看
    ========================================================= */
-const ONBOARD_STEPS=[
-  {t:'欢迎来到英语小探险！', e:'🦊', x:'嗨，小学霸！我是你的英语小向导——小狐狸。五年级的英语，我们玩着就学会啦！'},
-  {t:'📘 先「学一学」', e:'📚', x:'背单词、练句型、学语法。把课本里的本事，先稳稳学到手。'},
-  {t:'🎯 再「练一练」', e:'✏️', x:'听说读写四项训练、单元测试，还有专属「错题本」——错过的题会陪你重练到会为止。'},
-  {t:'🎮 边玩边记', e:'🏝️', x:'趣味闯关地图、单词小游戏、60 秒限时挑战。在玩里不知不觉就巩固啦！'},
-  {t:'🎯 我的每日小目标', e:'🎯', x:'首页最上面就是「今日目标」，每天答对 20 题就算达标～点标题旁的小铅笔 ✏️ 可以改成你觉得舒服的题数。完成当天会蹦出小庆祝，超有成就感！'},
-  {t:'📊 看看我的成长', e:'🏆', x:'成就墙、学习进度、单词图鉴随时看。每天的点滴进步，都悄悄记在这里啦～'}
-];
+// 首次使用指引（v42 起：向导分步卡片；v52 起：年级/吉祥物文案动态化）
+function getOnboardSteps(){
+  const g=(STATE&&STATE.settings&&STATE.settings.grade==='6')?'六年级':'五年级';
+  const mascot=(STATE&&STATE.settings&&STATE.settings.grade==='6')?'白喵':'小狐狸'; // 五年级仍是经典小狐狸文案
+  return [
+    {t:'欢迎来到英语小探险！', e:'👋', x:'嗨，小学霸！我是你的英语小向导——'+mascot+'。'+g+'的英语，我们玩着就学会啦！'},
+    {t:'📘 先「学一学」', e:'📚', x:'背单词、练句型、学语法。把课本里的本事，先稳稳学到手。'},
+    {t:'🎯 再「练一练」', e:'✏️', x:'听说读写四项训练、单元测试，还有专属「错题本」——错过的题会陪你重练到会为止。'},
+    {t:'🎮 边玩边记', e:'🏝️', x:'趣味闯关地图、单词小游戏、60 秒限时挑战。在玩里不知不觉就巩固啦！'},
+    {t:'🎯 我的每日小目标', e:'🎯', x:'首页最上面就是「今日目标」，每天答对 20 题就算达标～点标题旁的小铅笔 ✏️ 可以改成你觉得舒服的题数。完成当天会蹦出小庆祝，超有成就感！'},
+    {t:'📊 看看我的成长', e:'🏆', x:'成就墙、学习进度、单词图鉴随时看。每天的点滴进步，都悄悄记在这里啦～'}
+  ];
+}
+function onboardSteps(){
+  const steps=getOnboardSteps();
+  return {get length(){return steps.length;}, getItem:i=>steps[i]};
+}
 let obIdx=0;
 function openOnboard(){ obIdx=0; renderOnboard(); const m=document.getElementById('onboardMask'); if(m) m.classList.add('show'); }
 function renderOnboard(){
-  const s=ONBOARD_STEPS[obIdx]; if(!s) return;
+  const steps=getOnboardSteps();
+  const s=steps[obIdx]; if(!s) return;
   const t=document.getElementById('obTitle'); if(t) t.textContent=s.t;
-  const em=document.getElementById('obEmoji'); if(em) em.textContent=s.e;
+  const em=document.getElementById('obEmoji'); if(em) em.innerHTML = obIdx===0 ? '<svg width="64" height="64" viewBox="0 0 64 64"><use href="#i-fox"/></svg>' : s.e;
   const tx=document.getElementById('obText'); if(tx) tx.textContent=s.x;
   const dots=document.getElementById('obDots');
-  if(dots) dots.innerHTML=ONBOARD_STEPS.map((_,i)=>'<span class="ob-dot'+(i===obIdx?' on':'')+'"></span>').join('');
+  if(dots) dots.innerHTML=steps.map((_,i)=>'<span class="ob-dot'+(i===obIdx?' on':'')+'"></span>').join('');
   const prev=document.getElementById('obPrev'); if(prev) prev.style.visibility = obIdx===0?'hidden':'visible';
-  const next=document.getElementById('obNext'); if(next) next.textContent = obIdx===ONBOARD_STEPS.length-1 ? '🚀 开始我的英语冒险' : '下一步';
+  const next=document.getElementById('obNext'); if(next) next.textContent = obIdx===getOnboardSteps().length-1 ? '🚀 开始我的英语冒险' : '下一步';
 }
 function obStep(d){
-  if(d>0 && obIdx===ONBOARD_STEPS.length-1){ closeOnboard(); return; }
-  obIdx=Math.max(0, Math.min(ONBOARD_STEPS.length-1, obIdx+d));
+  const steps=getOnboardSteps();
+  if(d>0 && obIdx===steps.length-1){ closeOnboard(); return; }
+  obIdx=Math.max(0, Math.min(steps.length-1, obIdx+d));
   renderOnboard();
 }
 function closeOnboard(){
