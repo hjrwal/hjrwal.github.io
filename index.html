@@ -1011,11 +1011,12 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">62</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">63</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
     <div class="tl">
+      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
       <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v61 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
       <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
       <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use 改 height=63 y=51、onboard SVG 改 width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
@@ -1403,6 +1404,13 @@ update → controllerchange
       </div>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importProgress(this)">
       <p class="muted" style="margin:6px 0 0">导出可保存到手机/电脑；换机或清缓存后用「导入进度」恢复全部学习记录。</p>
+    </div>
+    <div class="set-row"><b>🔄 自动备份</b>
+      <div class="seg" id="abSeg">
+        <button data-ab="1" onclick="setAutoBackup(true)">开</button>
+        <button data-ab="0" onclick="setAutoBackup(false)">关</button>
+      </div>
+      <p class="muted" id="abStatus" style="margin:6px 0 0">今天还没自动备份</p>
     </div>
     <div class="set-row"><b>📖 新手引导</b>
       <button class="btn sky" style="flex:1" onclick="closeSettings(); openOnboard()">▶ 重新查看</button>
@@ -2473,7 +2481,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 62;
+const APP_VERSION = 63;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2549,6 +2557,8 @@ function openSettings(){
   syncSeg('themeSeg','t',STATE.settings.theme);
   syncSeg('rateSeg','r',STATE.settings.rate);
   syncSeg('fontSeg','f',STATE.settings.fontScale);
+  syncSeg('abSeg','ab', STATE.settings.autoBackup?'1':'0');
+  updateBackupStatus();
   document.getElementById('settingsModal').classList.add('show');
 }
 function setFont(s){
@@ -2567,13 +2577,13 @@ function closeSettings(){
   if(pendingScreenRefresh){ pendingScreenRefresh=false; go(curScreen); }
 }
 function defaultState(){
-  return { version:1, stars:0, streak:0, lastActive:'',
+  return { version:1, stars:0, streak:0, lastActive:'', _lastAutoBk:'',
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     rankIdx:0, codex:{}, bossSeen:{},
     onboarded:false,
-    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20} };
+    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true} };
 }
 function loadState(){
   try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1){
@@ -2596,9 +2606,10 @@ function loadState(){
     if(!s.settings.grade) s.settings.grade='5';
     return s;
   } }catch(e){}
+  _localEmpty=true;
   return defaultState();
 }
-function saveState(){ localStorage.setItem(KEY, JSON.stringify(STATE)); refreshTop(); }
+function saveState(){ const _j=JSON.stringify(STATE); try{ localStorage.setItem(KEY,_j); }catch(e){} idbPut(STATE); refreshTop(); maybeAutoBackup(); }
 function exportProgress(){
   try{
     const blob=new Blob([JSON.stringify(STATE)],{type:'application/json'});
@@ -2607,8 +2618,95 @@ function exportProgress(){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
     toast('已导出进度文件 📤');
-  }catch(e){ toast('导出失败：'+e.message); }
+  }catch(e){     toast('导出失败：'+e.message); }
 }
+
+// ====== 进度防丢失：IndexedDB 双写 + 自动备份文件 ======
+const IDB_NAME='english5_idb', IDB_STORE='state', IDB_KEY='state';
+let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
+function idbOpen(){
+  return new Promise((res)=>{
+    if(!('indexedDB' in window)){ res(null); return; }
+    try{
+      const r=indexedDB.open(IDB_NAME,1);
+      r.onupgradeneeded=()=>{ try{ r.result.createObjectStore(IDB_STORE); }catch(e){} };
+      r.onsuccess=()=>{ _idb=r.result; _idbReady=true; res(_idb); };
+      r.onerror=()=>{ res(null); };
+    }catch(e){ res(null); }
+  });
+}
+function idbPut(obj){
+  if(!_idbReady||!_idb) return;
+  try{ _idb.transaction(IDB_STORE,'readwrite').objectStore(IDB_STORE).put(obj,IDB_KEY); }catch(e){}
+}
+function idbGet(){
+  return new Promise((res)=>{
+    if(!_idbReady||!_idb){ res(null); return; }
+    try{
+      const rq=_idb.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(IDB_KEY);
+      rq.onsuccess=()=>res(rq.result||null);
+      rq.onerror=()=>res(null);
+    }catch(e){ res(null); }
+  });
+}
+function updateBackupStatus(){
+  const el=document.getElementById('abStatus');
+  if(el) el.textContent = STATE._lastAutoBk ? STATE._lastAutoBk : '今天还没自动备份';
+}
+function setAutoBackup(on){
+  STATE.settings.autoBackup = on ? true : false;
+  syncSeg('abSeg','ab', STATE.settings.autoBackup?'1':'0');
+  saveState();
+  updateBackupStatus();
+  toast(on?'已开启自动备份 💾':'已关闭自动备份');
+}
+function doAutoBackup(force){
+  if(STATE.settings.autoBackup===false && !force) return;
+  if(!force && STATE._lastAutoBk===todayStr()) return;
+  try{
+    const blob=new Blob([JSON.stringify(STATE)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url;
+    a.download='english5-自动备份-'+todayStr()+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    STATE._lastAutoBk=todayStr(); _autoBkCount=0;
+    try{ localStorage.setItem(KEY, JSON.stringify(STATE)); idbPut(STATE); }catch(e){}
+    if(!force) toast('已自动备份进度 💾');
+    updateBackupStatus();
+  }catch(e){}
+}
+function maybeAutoBackup(){
+  if(STATE.settings.autoBackup===false) return;
+  _autoBkCount++;
+  if(STATE._lastAutoBk===todayStr()) return;
+  if(_autoBkCount<3) return;
+  doAutoBackup();
+}
+// 初始化：打开 IndexedDB；若 localStorage 为空（清缓存/换浏览器），从 IDB 恢复
+idbOpen().then(()=>{
+  updateBackupStatus();
+  if(_localEmpty){
+    idbGet().then(stored=>{
+      if(stored && stored.version===1){
+        try{ localStorage.setItem(KEY, JSON.stringify(stored)); }catch(e){}
+        STATE = loadState();
+        saveState();
+        updateBackupStatus();
+        toast('已从 IndexedDB 恢复进度 🔄');
+        if(typeof go==='function') go(curScreen);
+      }
+    });
+  }
+});
+// 切后台/关页面时确保保存，并补一份当日备份（受自动备份开关控制）
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden'){
+    try{ saveState(); }catch(e){}
+    if(STATE.settings.autoBackup!==false && STATE._lastAutoBk!==todayStr()) doAutoBackup(false);
+  }
+});
+
 function importProgress(input){
   const f=input.files&&input.files[0]; if(!f) return;
   const r=new FileReader();
