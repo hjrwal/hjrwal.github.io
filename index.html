@@ -996,7 +996,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">54</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">55</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1039,6 +1039,7 @@ update → controllerchange
       <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
       <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏会掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
       <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 `UNITS.find` 查找 `STATE.weakByUnit` 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 `ALL_UNITS.find` 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
+      <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2445,7 +2446,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 54;
+const APP_VERSION = 55;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2488,8 +2489,13 @@ function setBook(b){
   // 切书后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
   cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('bookSeg','b',b);
-  // 设置打开时只更新状态+高亮（即时反馈），延后到关闭设置再统一重渲染隐藏背景，避免逐次点击都重渲染造成的卡顿
-  if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){ pendingScreenRefresh=true; return; }
+  // 设置中切换：立即关闭设置（所见即所得），关设后由 closeSettings 走统一重渲染当前屏，
+  // 避免每次点击都在遮罩下重渲染被遮住的背景屏造成卡顿感；且结果立刻可见
+  if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){
+    pendingScreenRefresh=true;
+    closeSettings();
+    return;
+  }
   go(curScreen);
 }
 function setGrade(g){
@@ -2499,8 +2505,13 @@ function setGrade(g){
   // 切年级后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
   cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('gradeSeg','g',g);
-  // 设置打开时只更新状态+高亮（即时反馈），延后到关闭设置再统一重渲染隐藏背景，避免逐次点击都重渲染造成的卡顿
-  if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){ pendingScreenRefresh=true; return; }
+  // 设置中切换：立即关闭设置（所见即所得），关设后由 closeSettings 走统一重渲染当前屏，
+  // 避免每次点击都在遮罩下重渲染被遮住的背景屏造成卡顿感；且结果立刻可见
+  if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){
+    pendingScreenRefresh=true;
+    closeSettings();
+    return;
+  }
   go(curScreen);
 }
 function setTheme(t){ STATE.settings.theme=t; applyTheme(t); saveState(); syncSeg('themeSeg','t',t); }
@@ -2620,7 +2631,8 @@ function recordWord(id, en, ok){
   } else {
     const ex=STATE.wrong.find(w=>w.en===en&&w.unit===realId);
     if(!ex){
-      const zh=(ALL_UNITS.find(x=>x.id===realId).words.find(w=>w.en===en)||{}).zh||'';
+      const _u=ALL_UNITS.find(x=>x.id===realId);
+      const zh=(_u?(_u.words.find(w=>w.en===en)||{}).zh:'')||'';
       STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
     }
   }
