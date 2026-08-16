@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 62,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v63',// 与 sw.js 的 CACHE 保持一致
+    version: 63,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v64',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    62,        // 迭代版本数
+    iter:    63,        // 迭代版本数
     updated: '2026-08-17'
   };
 </script>
@@ -254,7 +254,7 @@ master = solved / total <span class="c">// 进度条</span></pre>
       <div class="mcard"><div class="n"><span data-meta="audioMB">9.5</span><small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n" data-meta="deps">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n"><span data-meta="offline">100</span><small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n" data-meta="iter">22</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n" data-meta="iter">63</div><div class="l">迭代版本</div></div>
     </div>
   </section>
 
@@ -321,6 +321,7 @@ update  → <span class="k">controllerchange</span>
     <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
     <div class="card">
       <div class="tl">
+      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
       <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v62 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
       <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
       <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use height=63 y=51、onboard SVG width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
