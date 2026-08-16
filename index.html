@@ -875,7 +875,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">42</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">43</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -906,6 +906,7 @@ update → controllerchange
       <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
       <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
       <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
+      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1917,7 +1918,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 42;
+const APP_VERSION = 43;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4162,7 +4163,8 @@ const ONBOARD_STEPS=[
   {t:'📘 先「学一学」', e:'📚', x:'背单词、练句型、学语法。把课本里的本事，先稳稳学到手。'},
   {t:'🎯 再「练一练」', e:'✏️', x:'听说读写四项训练、单元测试，还有专属「错题本」——错过的题会陪你重练到会为止。'},
   {t:'🎮 边玩边记', e:'🏝️', x:'趣味闯关地图、单词小游戏、60 秒限时挑战。在玩里不知不觉就巩固啦！'},
-  {t:'📊 看看我的成长', e:'🏆', x:'成就墙、学习进度、单词图鉴随时看。每天完成「今日目标」还有小庆祝哦～'}
+  {t:'🎯 我的每日小目标', e:'🎯', x:'首页最上面就是「今日目标」，每天答对 20 题就算达标～点标题旁的小铅笔 ✏️ 可以改成你觉得舒服的题数。完成当天会蹦出小庆祝，超有成就感！'},
+  {t:'📊 看看我的成长', e:'🏆', x:'成就墙、学习进度、单词图鉴随时看。每天的点滴进步，都悄悄记在这里啦～'}
 ];
 let obIdx=0;
 function openOnboard(){ obIdx=0; renderOnboard(); const m=document.getElementById('onboardMask'); if(m) m.classList.add('show'); }
