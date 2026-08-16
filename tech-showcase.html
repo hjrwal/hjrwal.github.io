@@ -11,15 +11,15 @@
 -->
 <script>
   const META = {
-    version: 52,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v53',// 与 sw.js 的 CACHE 保持一致
+    version: 53,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v54',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    52,        // 迭代版本数
-    updated: '2026-08-16'
+    iter:    53,        // 迭代版本数
+    updated: '2026-08-17'
   };
 </script>
 <style>
@@ -358,6 +358,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度（五年级/六年级）与「册」维度组成双维切换，全模块自动适配；六年级上下册共 10 单元（上册 6 + 下册 4）核心词汇入册，核心词 341→545、预录音频 671→1151（13.6MB）；新增 3 条六年级重点语法（一般将来时/一般过去时深化/形容词比较级深化），随年级切换显示</span></div>
       <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
       <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
+      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
       </div>
     </div>
   </section>
