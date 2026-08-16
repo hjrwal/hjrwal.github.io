@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 42,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v43',// 与 sw.js 的 CACHE 保持一致
+    version: 43,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v44',// 与 sw.js 的 CACHE 保持一致
     words:   341,       // 核心词数
     audio:   671,       // 预录音频数
     audioMB: 9.5,       // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    42,        // 迭代版本数
+    iter:    43,        // 迭代版本数
     updated: '2026-08-16'
   };
 </script>
@@ -348,6 +348,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
       <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
       <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
+      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配）</span></div>
       </div>
     </div>
   </section>
