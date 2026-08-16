@@ -62,9 +62,9 @@
   .brand small{display:block; font-size:11px; color:var(--muted); font-weight:600;}
   .stats{margin-left:auto; display:flex; gap:8px;}
   .pill{
-    background:var(--sun); color:#6b4e00; font-weight:800; font-size:13px;
+    background:var(--amber); color:#6b4e00; font-weight:800; font-size:13px;
     padding:6px 12px; border-radius:999px; display:flex; align-items:center; gap:5px;
-    box-shadow:0 3px 10px rgba(255,180,40,.34);
+    box-shadow:0 3px 10px rgba(244,169,60,.34);
   }
   .pill.alt{background:var(--sky); color:#004a6b;}
   /* screens */
@@ -477,16 +477,29 @@
   .report li{margin-bottom:4px;}
   .filebox{margin-top:10px;}
 
-  /* 主题（明亮 / 护眼 / 暗色） */
+  /* 主题（明亮 / 护眼暖纸 / 暖夜绘本） */
   body.theme-sepia{ --ink:#5b4a2f; --muted:#9c8a63; --card:#fdf3df; --paper:#f6e9cf; --line:#e7d8b8; --soft:#f3e6c8; --shadow:0 6px 16px rgba(120,90,40,.10); --bg:#f3e7cd; --nav-bg:rgba(253,243,223,.86);
     background:radial-gradient(circle at 12% 8%, #f7eccb 0 12%, transparent 12.5%), radial-gradient(circle at 88% 12%, #fbeecb 0 14%, transparent 14.5%), radial-gradient(circle at 78% 92%, #f6dcc0 0 13%, transparent 13.5%), linear-gradient(160deg,#f7ecd2 0%, #f3e3c2 55%, #f7e7c8 100%);
   }
-  body.theme-dark{ --ink:#eef0ff; --muted:#a7abcd; --card:#262a40; --paper:#1c1f30; --line:#3a3f5c; --soft:#2f3450; --shadow:0 6px 18px rgba(0,0,0,.35); --bg:#15182a; --nav-bg:rgba(38,42,64,.72);
-    background:radial-gradient(circle at 12% 8%, #2a3050 0 12%, transparent 12.5%), radial-gradient(circle at 88% 12%, #2b3a55 0 14%, transparent 14.5%), radial-gradient(circle at 78% 92%, #322a4a 0 13%, transparent 13.5%), linear-gradient(160deg,#1a1d2e 0%, #20243a 55%, #181b2c 100%);
+  /* 暖夜绘本：深暖棕而非冷蓝，全程暖调一致 */
+  body.theme-dark{ --ink:#f5e9da; --muted:#bda78f; --card:#2c231c; --paper:#342a21; --line:#4a3a2c; --soft:#3a2e24; --shadow:0 8px 22px rgba(0,0,0,.5); --bg:#1f1812; --nav-bg:rgba(44,35,28,.82);
+    background:radial-gradient(circle at 12% 8%, #2a211a 0 12%, transparent 12.5%), radial-gradient(circle at 88% 12%, #2c231b 0 14%, transparent 14.5%), radial-gradient(circle at 78% 92%, #271f18 0 13%, transparent 13.5%), linear-gradient(160deg,#221a14 0%, #261e17 55%, #1c150f 100%);
   }
-  body.theme-dark .topbar{background:rgba(38,42,64,.72); border-color:rgba(120,130,170,.25);}
+  body.theme-dark .topbar{background:rgba(44,35,28,.82); border-color:rgba(232,116,59,.22);}
   body.theme-sepia .topbar{background:rgba(253,243,223,.86); border-color:rgba(180,160,110,.3);}
-  body.theme-dark .pill{color:#6b4e00;}
+  /* 暖夜下绘本封面变「夜读」暖棕封皮 */
+  body.theme-dark .hero.storybook{ background:linear-gradient(180deg,#3a2c20 0%, var(--paper) 40%); box-shadow:var(--sh-3), inset 0 0 0 6px rgba(60,46,34,.5), inset 0 0 0 7.5px rgba(232,116,59,.22);}
+  body.theme-dark .speech{background:#3a2e24; border-color:var(--line);}
+  body.theme-dark .speech::before{background:#3a2e24; border-color:var(--line);}
+  /* 暖夜下绘本插画改为黄昏暮色，狐狸依旧在岗 */
+  body.theme-dark .book-scene{ background:linear-gradient(180deg,#3a3150 0%, #46324a 100%);}
+  body.theme-dark .sc-cloud{fill:#cdd2e0; opacity:.55;}
+  body.theme-dark .sc-hill-far{fill:#2f5a44; opacity:.7;}
+  body.theme-dark .sc-hill-near{fill:#244634;}
+  body.theme-dark .pill{color:#5b3a00;}
+  /* 护眼暖纸下插画稍柔 */
+  body.theme-sepia .book-scene{ background:linear-gradient(180deg,#dcebd8 0%, #f0ead0 100%);}
+  body.theme-sepia .pill{color:#6b4e00;}
   .gear{margin-left:8px; border:none; background:var(--soft); border-radius:50%; width:42px; height:42px; font-size:20px; cursor:pointer; box-shadow:var(--shadow);}
   .gear:active{transform:scale(.92);}
   /* 弹窗（设置 / 复习） */
@@ -579,19 +592,35 @@
   .chip.on{background:linear-gradient(90deg,var(--grape),var(--sky)); color:#fff; border-color:rgba(255,255,255,.6); box-shadow:var(--shadow);}
   .num-in{width:72px; padding:7px 10px; border-radius:10px; border:2px solid var(--line); background:var(--card); color:var(--ink); font-size:15px; font-weight:800; text-align:center;}
   .num-in:focus{outline:none; border-color:var(--grape);}
-  /* 首次使用指引（v42） */
-  .onboard{text-align:center; max-width:340px; padding:26px 22px 18px;}
+  /* 首次使用指引（v42 · v47 改绘本封面风） */
+  .onboard{text-align:center; max-width:340px; padding:0; overflow:hidden;
+    border:2px solid var(--line); border-radius:26px 24px 22px 26px/24px 26px 24px 22px;
+    background:linear-gradient(180deg,#FFF7E8 0%, var(--paper) 42%);
+    box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.5), inset 0 0 0 7.5px rgba(200,150,90,.16);}
+  .ob-scene{position:relative; height:104px; overflow:hidden; background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
+  .ob-body{padding:14px 20px 18px;}
   .ob-fox{display:flex; justify-content:center; margin-bottom:2px; line-height:1;}
   .ob-fox .fox-char{width:92px; height:92px; animation:foxBob 1s var(--ease-spring) infinite; filter:drop-shadow(0 3px 5px rgba(0,0,0,.18));}
-  .ob-title{font-size:21px; font-weight:900; margin:6px 0 10px; color:var(--ink);}
-  .ob-emoji{font-size:50px; margin:2px 0 6px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.12));}
-  .ob-text{font-size:15px; font-weight:700; color:var(--muted); line-height:1.6; min-height:72px; margin:0 0 8px;}
-  .ob-dots{display:flex; gap:7px; justify-content:center; margin:8px 0 16px;}
+  .ob-title{font-size:20px; font-weight:900; margin:2px 0 8px; color:var(--fox-d); letter-spacing:.3px;}
+  .ob-emoji{font-size:40px; margin:2px 0 8px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.12));}
+  .ob-text{font-size:15px; font-weight:700; color:var(--ink); line-height:1.6; min-height:60px; margin:0 0 6px; text-align:left;
+    background:#FFFDF8; border:2px solid var(--line); border-radius:16px; padding:11px 14px; position:relative; box-shadow:var(--sh-1);}
+  .ob-text::before{content:''; position:absolute; left:34px; top:-9px; width:16px; height:16px; background:#FFFDF8; border-left:2px solid var(--line); border-top:2px solid var(--line); transform:rotate(45deg); border-radius:3px 0 0 0;}
+  .ob-dots{display:flex; gap:7px; justify-content:center; margin:8px 0 14px;}
   .ob-dot{width:8px; height:8px; border-radius:50%; background:var(--line); transition:.25s;}
-  .ob-dot.on{width:22px; border-radius:999px; background:linear-gradient(90deg,var(--grape),var(--sky));}
+  .ob-dot.on{width:22px; border-radius:999px; background:linear-gradient(90deg,var(--fox),var(--amber));}
   .ob-nav{justify-content:space-between; gap:10px;}
   .ob-nav .btn{flex:1; padding:12px 0; font-size:15px;}
   .ob-skip{display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-size:12px; font-weight:700; cursor:pointer; text-decoration:underline; font-family:inherit;}
+  /* 暖夜绘本下的指引封面 */
+  body.theme-dark .onboard{background:linear-gradient(180deg,#3a2c20 0%, var(--paper) 42%); box-shadow:var(--sh-3), inset 0 0 0 6px rgba(60,46,34,.5), inset 0 0 0 7.5px rgba(232,116,59,.22);}
+  body.theme-dark .ob-scene{background:linear-gradient(180deg,#3a3150 0%, #46324a 100%);}
+  body.theme-dark .ob-text{background:#3a2e24; border-color:var(--line);}
+  body.theme-dark .ob-text::before{background:#3a2e24; border-color:var(--line);}
+  body.theme-sepia .onboard{background:linear-gradient(180deg,#FBF1DA 0%, var(--paper) 42%);}
+  body.theme-sepia .ob-scene{background:linear-gradient(180deg,#dcebd8 0%, #f0ead0 100%);}
+  body.theme-sepia .ob-text{background:#fff7e6;}
+  body.theme-sepia .ob-text::before{background:#fff7e6;}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .floaty{animation:floaty 2.5s ease-in-out infinite;}
   /* 发音动画条 */
@@ -955,7 +984,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">46</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">47</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -988,6 +1017,7 @@ update → controllerchange
       <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
       <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
       <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>整体按 iOS 原生质感重构：配色降饱和（语义色收敛、新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃（backdrop-filter）；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 个主入口 + 顶部齿轮的 emoji 全部换统一线性图标（狐狸吉祥物与装饰性 emoji 保留）</span></div>
+      <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
       <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转，像翻开的卡片）并加弹性按压态（缩放回弹 + 阴影收紧），整体更有「翻开一本绘本」的专属仪式感</span></div>
       <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
     </div>
@@ -1355,16 +1385,32 @@ update → controllerchange
 <!-- 首次使用指引 -->
 <div class="modal-mask" id="onboardMask">
   <div class="modal onboard">
-    <div class="ob-fox"><svg class="fox-char" viewBox="0 0 64 64"><use href="#i-fox"/></svg></div>
-    <h2 class="ob-title" id="obTitle"></h2>
-    <div class="ob-emoji" id="obEmoji"></div>
-    <p class="ob-text" id="obText"></p>
-    <div class="ob-dots" id="obDots"></div>
-    <div class="row ob-nav">
-      <button class="btn ghost" id="obPrev" onclick="obStep(-1)">上一步</button>
-      <button class="btn grape" id="obNext" onclick="obStep(1)">下一步</button>
+    <div class="ob-scene" aria-hidden="true">
+      <svg class="scene-svg" viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice">
+        <circle class="sc-sun" cx="262" cy="30" r="16"/>
+        <g class="sc-rays">
+          <line x1="262" y1="6" x2="262" y2="0"/><line x1="286" y1="30" x2="292" y2="30"/>
+          <line x1="279" y1="13" x2="284" y2="8"/><line x1="279" y1="47" x2="284" y2="52"/>
+          <line x1="245" y1="13" x2="240" y2="8"/><line x1="245" y1="47" x2="240" y2="52"/>
+        </g>
+        <ellipse class="sc-cloud sc-cloud-a" cx="58" cy="30" rx="22" ry="10"/>
+        <ellipse class="sc-cloud sc-cloud-b" cx="120" cy="20" rx="15" ry="7"/>
+        <path class="sc-hill-far" d="M0 98 Q80 66 160 94 T320 86 V132 H0 Z"/>
+        <path class="sc-hill-near" d="M0 114 Q90 88 190 112 T320 106 V132 H0 Z"/>
+        <use href="#i-fox" class="sc-fox" x="34" y="54" width="56" height="56"/>
+      </svg>
     </div>
-    <button class="ob-skip" onclick="closeOnboard()">跳过指引</button>
+    <div class="ob-body">
+      <h2 class="ob-title" id="obTitle"></h2>
+      <div class="ob-emoji" id="obEmoji"></div>
+      <p class="ob-text" id="obText"></p>
+      <div class="ob-dots" id="obDots"></div>
+      <div class="row ob-nav">
+        <button class="btn ghost" id="obPrev" onclick="obStep(-1)">上一步</button>
+        <button class="btn grape" id="obNext" onclick="obStep(1)">下一步</button>
+      </div>
+      <button class="ob-skip" onclick="closeOnboard()">跳过指引</button>
+    </div>
   </div>
 </div>
 
@@ -2001,7 +2047,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 46;
+const APP_VERSION = 47;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4200,8 +4246,21 @@ function renderGoal(){
   renderHero();
 }
 function helloWord(){ const h=new Date().getHours(); return h<11?'早上好，':h<14?'中午好，':h<18?'下午好，':'晚上好，'; }
+const GREET_PHRASES={
+  morning:['早上好，小学霸！新的一天从英语开始啦 ☀️','早安，小学霸！今天也要闪闪发光 ✨','早上好呀，我们一起翻开新的一页 📖'],
+  noon:['中午好，小学霸！吃饱饱脑子更灵光 🍚','午后小憩一下，再战英语吧 ☀️','中午好呀，今天学的词都记住了吗？'],
+  afternoon:['下午好，小学霸！学习节奏刚刚好 🍃','放学啦，来闯几关放松一下吧 🎮','下午时光，最适合积累新单词啦 🌿'],
+  evening:['晚上好，小学霸！今天辛苦啦 🌙','夜深了，复习一下今天的收获吧 📚','晚上好呀，明天会更好，加油 💪']
+};
+function heroGreeting(){
+  const h=new Date().getHours();
+  const key=h<11?'morning':h<14?'noon':h<18?'afternoon':'evening';
+  const arr=GREET_PHRASES[key];
+  /* 按小时 + 已得星数轮换：同一小时内稳定，跨小时或进度变化会换句，更有陪伴感 */
+  return arr[(Math.floor(Date.now()/36e5)+STATE.stars)%arr.length];
+}
 function renderHero(){
-  const hi=document.getElementById('heroHi'); if(hi) hi.textContent=helloWord()+'小学霸！🌟';
+  const hi=document.getElementById('heroHi'); if(hi) hi.textContent=heroGreeting();
   const sub=document.getElementById('heroSub');
   if(sub) sub.textContent='已收集 ⭐ '+STATE.stars+' 颗 · 连续打卡 🔥'+STATE.streak+' 天';
   const rk=getRank(STATE.stars); const rc=document.getElementById('heroRank');
