@@ -54,11 +54,7 @@
     padding:10px 14px; box-shadow:var(--sh-2); margin-bottom:14px;
     position:sticky; top:8px; z-index:30;
   }
-  .mascot{font-size:30px; line-height:1; width:46px; height:46px; border-radius:50%; flex:0 0 auto;
-    display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(135deg,var(--sun),var(--coral));
-    border:3px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,.14);
-    animation:wob 3s ease-in-out infinite;}
+  .mascot{width:40px; height:40px; flex:0 0 auto; display:block; animation:wob 3s ease-in-out infinite;}
   @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   .brand{font-weight:900; font-size:18px; line-height:1.1;
     background:linear-gradient(135deg,var(--fox-d),var(--amber));
@@ -750,7 +746,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="mascot">🦊</div>
+    <svg class="mascot" viewBox="0 0 64 64"><use href="#i-fox"/></svg>
     <div class="brand">五年级英语小探险家<small id="brandSub">📗 五年级上册 · 听说读写闯关</small></div>
     <div class="stats">
       <div class="pill" id="topStars">⭐ 0</div>
