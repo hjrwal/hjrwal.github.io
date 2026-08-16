@@ -996,7 +996,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">52</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">53</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1037,6 +1037,7 @@ update → controllerchange
       <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度：设置里「年级（五/六）+ 册（上/下）」双切换，全模块（闯关/错题/测试/热力/语法）按年级生效；词库扩至 22 单元（五年级 12 + 六年级 10），六年级 10 单元 PEP 核心词含音标与例句，并预录 edge-tts 音频；语法小课堂新增 3 条六年级专题（一般将来时 / 过去时深化 / 比较级深化）并随年级切换显示</span></div>
       <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
       <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
+      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏会掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2443,11 +2444,12 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 52;
+const APP_VERSION = 53;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
 let curScreen='home'; // 当前屏幕，用于切换教材后重新渲染
+let pendingScreenRefresh=false; // 设置中切换年/册时，延后到关闭设置再统一重渲染当前屏（避免逐次点击都重渲染隐藏背景造成卡顿）
 
 /* 设置：教材 / 主题 / 语速 */
 function applyTheme(t){
@@ -2485,6 +2487,8 @@ function setBook(b){
   // 切书后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
   cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('bookSeg','b',b);
+  // 设置打开时只更新状态+高亮（即时反馈），延后到关闭设置再统一重渲染隐藏背景，避免逐次点击都重渲染造成的卡顿
+  if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){ pendingScreenRefresh=true; return; }
   go(curScreen);
 }
 function setGrade(g){
@@ -2494,6 +2498,8 @@ function setGrade(g){
   // 切年级后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
   cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('gradeSeg','g',g);
+  // 设置打开时只更新状态+高亮（即时反馈），延后到关闭设置再统一重渲染隐藏背景，避免逐次点击都重渲染造成的卡顿
+  if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){ pendingScreenRefresh=true; return; }
   go(curScreen);
 }
 function setTheme(t){ STATE.settings.theme=t; applyTheme(t); saveState(); syncSeg('themeSeg','t',t); }
@@ -2516,7 +2522,11 @@ function applyFont(){
   const app=document.querySelector('.app');
   if(app) app.style.zoom = (STATE.settings.fontScale||1);
 }
-function closeSettings(){ document.getElementById('settingsModal').classList.remove('show'); }
+function closeSettings(){
+  const m=document.getElementById('settingsModal'); if(m) m.classList.remove('show');
+  // 设置期间若切换过年/册，关闭时统一重渲染一次当前屏（仅一次，无需逐次点击都重渲染，消除卡顿、退出即切换）
+  if(pendingScreenRefresh){ pendingScreenRefresh=false; go(curScreen); }
+}
 function defaultState(){
   return { version:1, stars:0, streak:0, lastActive:'',
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
