@@ -11,33 +11,37 @@
 <link rel="apple-touch-icon" href="icon.png">
 <style>
   :root{
-    --sky:#3aa9e0; --sky-d:#1f8fc4;
-    --sun:#f0b429; --sun-d:#d99a12;
-    --grass:#3fae57; --grass-d:#2c8f43;
-    --coral:#f06a5b; --coral-d:#d94f40;
-    --grape:#7c6cf0; --grape-d:#6347d8;
-    --brand:#6d5dfb; --brand-d:#5642e6;
-    --ink:#1d1d2b; --paper:#ffffff; --muted:#71718a;
-    --bg:#f2f3f7; --card:#ffffff;
-    --line:#e7e7ef; --soft:#f4f4fb;
-    --r:18px; --r-sm:12px; --r-md:18px; --r-lg:24px;
-    --nav-bg:rgba(255,255,255,.72);
+    /* 狐狸绘本风 · 暖色签名系 */
+    --fox:#E8743B; --fox-d:#C9551F; --fox-l:#F6B68C;
+    --amber:#F4A93C; --amber-d:#D98A1E;
+    --forest:#4E9D6C; --forest-d:#3A7D54;
+    --berry:#E26D5C; --berry-d:#C9503E;
+    --sky:#4A9DB5; --sky-d:#2F7C92;
+    --grape:#8A6FD0; --grape-d:#6E54BD;
+    --brand:#E8743B; --brand-d:#C9551F;
+    --ink:#3A2B22; --paper:#FFFCF5; --muted:#9A8B78;
+    --bg:#FCF3E2; --card:#FFFCF5;
+    --line:#ECDCC4; --soft:#FBEFDC;
+    --r:20px; --r-sm:13px; --r-md:20px; --r-lg:26px;
+    --nav-bg:rgba(255,252,245,.82);
     /* 统一缓动曲线 */
     --ease-spring:cubic-bezier(.34,1.56,.64,1);
     --ease-out:cubic-bezier(.22,.61,.36,1);
     --ease-io:cubic-bezier(.4,0,.2,1);
-    /* 中性分层阴影：低透明度、近黑、克制扩散，营造原生 App 质感 */
-    --sh-1:0 1px 3px rgba(17,17,30,.06), 0 1px 2px rgba(17,17,30,.04);
-    --sh-2:0 4px 14px rgba(17,17,30,.08);
-    --sh-3:0 12px 34px rgba(17,17,30,.12);
-    --shadow:0 4px 14px rgba(17,17,30,.08);
+    /* 暖调柔和阴影：保留原生 App 质感，但更暖更柔，像绘本纸面 */
+    --sh-1:0 1px 3px rgba(120,80,40,.07), 0 1px 2px rgba(120,80,40,.05);
+    --sh-2:0 5px 16px rgba(120,80,40,.10);
+    --sh-3:0 14px 36px rgba(120,80,40,.14);
+    --shadow:0 5px 16px rgba(120,80,40,.10);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; height:100%;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",Roboto,system-ui,sans-serif;
     color:var(--ink);
-    background:var(--bg);
+    background:
+      radial-gradient(circle at 1.5px 1.5px, rgba(180,130,80,.05) 1.5px, transparent 2px) 0 0/26px 26px,
+      var(--bg);
     background-attachment:fixed;
     overflow-x:hidden;
   }
@@ -46,7 +50,7 @@
   .topbar{
     display:flex; align-items:center; gap:10px;
     background:var(--nav-bg); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
-    border:1px solid rgba(0,0,0,.06); border-radius:var(--r);
+    border:1px solid rgba(200,150,90,.20); border-radius:var(--r);
     padding:10px 14px; box-shadow:var(--sh-2); margin-bottom:14px;
     position:sticky; top:8px; z-index:30;
   }
@@ -57,7 +61,7 @@
     animation:wob 3s ease-in-out infinite;}
   @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   .brand{font-weight:900; font-size:18px; line-height:1.1;
-    background:linear-gradient(135deg,var(--grape-d),var(--sky-d));
+    background:linear-gradient(135deg,var(--fox-d),var(--amber));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
   .brand small{display:block; font-size:11px; color:var(--muted); font-weight:600;}
   .stats{margin-left:auto; display:flex; gap:8px;}
@@ -79,7 +83,7 @@
   .home-group{margin-top:2px;}
   .group-title{display:flex; align-items:center; gap:8px; margin:18px 4px 10px; font-size:14px; font-weight:800; color:var(--ink); letter-spacing:.3px;}
   .group-title .em{font-size:18px;}
-  .group-title .ln{flex:1; height:3px; background:linear-gradient(90deg,var(--grape),transparent); border-radius:3px; opacity:.5;}
+  .group-title .ln{flex:1; height:3px; background:linear-gradient(90deg,var(--fox),transparent); border-radius:3px; opacity:.55;}
   /* 首页 Hero 欢迎卡 */
   .hero{display:flex; align-items:center; gap:14px; position:relative; overflow:hidden; cursor:pointer;
     background:linear-gradient(135deg, var(--brand-d), var(--brand));
@@ -89,9 +93,10 @@
     background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.45), rgba(255,255,255,.08) 70%); border-radius:50%; pointer-events:none;}
   .hero::before{content:''; position:absolute; left:0; right:0; top:0; height:46%;
     background:linear-gradient(180deg, rgba(255,255,255,.18), transparent); pointer-events:none;}
-  .hero-ava{flex:0 0 auto; width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.26); border:3px solid rgba(255,255,255,.6); box-shadow:0 4px 10px rgba(0,0,0,.15);}
-  .hero-ava .mascot{width:auto; height:auto; border:none; box-shadow:none; background:none;}
+  .hero-ava{flex:0 0 auto; width:66px; height:66px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative;
+    background:rgba(255,255,255,.28); box-shadow:0 5px 14px rgba(120,70,30,.20);}
+  .hero-ava::before{content:''; position:absolute; inset:-6px; border-radius:50%; background:rgba(255,255,255,.20);}
+  .hero-ava .fox-char{width:56px; height:56px; position:relative; z-index:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));}
   .hero-txt{flex:1; min-width:0;}
   .hero-hi{font-size:19px; font-weight:900; letter-spacing:.3px; line-height:1.2;}
   .hero-sub{font-size:13px; font-weight:700; opacity:.95; margin-top:3px;}
@@ -156,7 +161,7 @@
   .review-callout .rc-txt{flex:1; font-size:15px;}
   .review-callout .rc-txt b{font-size:18px;}
   .review-callout .rc-go{font-size:13px; color:var(--brand); font-weight:800; white-space:nowrap;}
-  .review-callout.due{background:linear-gradient(135deg,#fff3e0,#ffe8ee); border-color:rgba(240,106,91,.35); box-shadow:0 6px 18px rgba(240,106,91,.18); animation:rcPulse 1.6s ease-in-out infinite;}
+  .review-callout.due{background:linear-gradient(135deg,#fff1e2,#ffe9df); border-color:rgba(232,116,59,.35); box-shadow:0 6px 18px rgba(232,116,59,.18); animation:rcPulse 1.6s ease-in-out infinite;}
   @keyframes rcPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.015);}}
   .eval-wave{width:100%; height:56px; background:#f5f3ff; border-radius:12px; display:block; margin:4px 0;}
   .sub-eval{margin-top:6px;}
@@ -197,17 +202,17 @@
     .ex{font-size:14px;}
   }
   .tile{
-    background:var(--card); border-radius:var(--r); padding:18px 14px; text-align:center;
-    box-shadow:var(--shadow); cursor:pointer; border:3px solid transparent;
-    transition:transform .12s, border-color .12s;
+    background:var(--card); border-radius:20px 22px 18px 24px/22px 18px 24px 20px; padding:20px 14px; text-align:center;
+    box-shadow:var(--sh-2); cursor:pointer; border:2px solid var(--line);
+    transition:transform .14s ease, box-shadow .14s ease, border-color .14s;
   }
   .tile:active{transform:scale(.96);}
-  .tile .ic{font-size:46px; display:block; margin-bottom:8px;}
+  .tile .ic{font-size:46px; display:block; margin-bottom:8px; color:var(--tile-accent,var(--fox));}
   .tile h3{margin:0 0 4px; font-size:18px; font-weight:800;}
   .tile p{margin:0; font-size:12px; color:var(--muted);}
-  .c-sky{border-color:var(--sky);} .c-sun{border-color:var(--sun);}
-  .c-grass{border-color:var(--grass);} .c-coral{border-color:var(--coral);}
-  .c-grape{border-color:var(--grape);}
+  .c-sky{--tile-accent:var(--sky);} .c-sun{--tile-accent:var(--amber);}
+  .c-grass{--tile-accent:var(--forest);} .c-coral{--tile-accent:var(--berry);}
+  .c-grape{--tile-accent:var(--grape);}
   /* generic panel */
   .panel{
     background:var(--card); border-radius:var(--r); padding:18px;
@@ -226,9 +231,9 @@
   @media(hover:hover){
     .btn:hover{transform:translateY(-2px); filter:brightness(1.02); box-shadow:0 10px 24px rgba(17,17,30,.14);}
   }
-  .btn.sky{background:#3aa9e0;} .btn.sun{background:#f0b429; color:#6b4e00;}
-  .btn.grass{background:#3fae57;} .btn.coral{background:#f06a5b;}
-  .btn.grape{background:#7c6cf0;} .btn.ghost{background:#ececf2; color:var(--ink);}
+  .btn.sky{background:var(--sky);} .btn.sun{background:var(--amber); color:#6b4500;}
+  .btn.grass{background:var(--forest);} .btn.coral{background:var(--berry);}
+  .btn.grape{background:var(--grape);} .btn.ghost{background:var(--soft); color:var(--ink);}
   .btn.lg{font-size:18px; padding:16px 22px; width:100%;}
   .btn.sm{font-size:13px; padding:8px 12px;}
   .btn:disabled{opacity:.5; cursor:not-allowed;}
@@ -421,8 +426,8 @@
     position:fixed; left:0; right:0; bottom:0; z-index:40;
     display:flex; justify-content:center; gap:6px; padding:8px;
     background:var(--nav-bg); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%);
-    border-top:1px solid rgba(0,0,0,.06);
-    box-shadow:0 -2px 16px rgba(0,0,0,.06);
+    border-top:1px solid rgba(200,150,90,.22);
+    box-shadow:0 -2px 16px rgba(120,80,40,.08);
   }
   .nav button{
     flex:1; max-width:96px; border:none; background:transparent; border-radius:14px;
@@ -432,15 +437,17 @@
   }
   .nav button .e{font-size:22px;}
   .nav button.on{background:var(--brand); color:#fff;
-    box-shadow:0 6px 16px rgba(109,93,251,.30); transform:translateY(-3px);
-    border:1px solid rgba(255,255,255,.35);}
+    box-shadow:0 6px 16px rgba(232,116,59,.34); transform:translateY(-3px);
+    border:1px solid rgba(255,255,255,.4);}
   .nav button.on .e{transform:scale(1.2); transition:transform .12s;}
   /* 线性图标（内联 SVG sprite，替代廉价感 emoji 入口图标） */
-  .svg-ic{stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
+  .svg-ic{stroke:currentColor; fill:none; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
   .tile .ic.svg-ic{width:42px; height:42px;}
   .nav button .e.svg-ic{width:22px; height:22px;}
   .gear .svg-ic{width:22px; height:22px; transition:transform .25s ease;}
   .gear:active .svg-ic{transform:rotate(35deg);}
+  /* 狐狸主角插画（内联 SVG，离线可用） */
+  .fox-char{display:block; flex:0 0 auto;}
   /* misc */
   .back{display:inline-flex; align-items:center; gap:6px; background:var(--card); border:2px solid var(--line);
     border-radius:999px; padding:8px 14px; font-weight:700; cursor:pointer; color:var(--ink); font-family:inherit;}
@@ -484,7 +491,7 @@
 
   /* ============ 界面美化升级（v3） ============ */
   .tile{position:relative; overflow:hidden; padding:20px 14px;}
-  .tile::before{content:""; position:absolute; left:0; top:0; right:0; height:6px; opacity:.9;}
+  .tile::before{content:""; position:absolute; left:0; top:0; right:0; height:7px; background:var(--tile-accent,var(--fox)); opacity:.95; border-radius:0 0 10px 8px/0 0 12px 10px;}
   .c-sky::before{background:linear-gradient(90deg,#5ed2ff,#1f9fe0);}
   .c-sun::before{background:linear-gradient(90deg,#ffe07a,#f5b400);}
   .c-grass::before{background:linear-gradient(90deg,#8de897,#36b24a);}
@@ -493,18 +500,16 @@
   .tile .ic{transition:transform .18s ease;}
   .tile:hover .ic, .tile:active .ic{transform:scale(1.18) rotate(-8deg);}
   .tile h3{transition:color .15s;}
-  .tile:hover h3{color:var(--sky-d);}
+  .tile:hover h3{color:var(--fox-d);}
   .tile .count-dot{
     position:absolute; top:10px; right:10px; background:var(--coral); color:#fff;
     min-width:22px; height:22px; border-radius:999px; font-size:12px; font-weight:800;
     display:flex; align-items:center; justify-content:center; padding:0 6px;
     box-shadow:0 3px 8px rgba(239,86,72,.4); animation:pop .3s ease;
   }
-  .btn.sky{background:linear-gradient(180deg,#5ec8f2,#1a93d6);}
-  .btn.sun{background:linear-gradient(180deg,#ffce5e,#ecab00);}
-  .btn.grass{background:linear-gradient(180deg,#62cf74,#2c9e44);}
-  .btn.coral{background:linear-gradient(180deg,#ff9385,#ec5648);}
-  .btn.grape{background:linear-gradient(180deg,#b08aff,#7b46e0);}
+  .btn.sky{background:var(--sky);} .btn.sun{background:var(--amber); color:#6b4500;}
+  .btn.grass{background:var(--forest);} .btn.coral{background:var(--berry);}
+  .btn.grape{background:var(--grape);}
   .flash{position:relative; background:
     radial-gradient(circle at 8% 12%, rgba(62,198,255,.10) 0 40px, transparent 41px),
     radial-gradient(circle at 92% 88%, rgba(169,123,255,.10) 0 40px, transparent 41px),
@@ -563,7 +568,8 @@
   .num-in:focus{outline:none; border-color:var(--grape);}
   /* 首次使用指引（v42） */
   .onboard{text-align:center; max-width:340px; padding:26px 22px 18px;}
-  .ob-fox{font-size:54px; animation:foxBob 1s var(--ease-spring) infinite; margin-bottom:2px; line-height:1;}
+  .ob-fox{display:flex; justify-content:center; margin-bottom:2px; line-height:1;}
+  .ob-fox .fox-char{width:92px; height:92px; animation:foxBob 1s var(--ease-spring) infinite; filter:drop-shadow(0 3px 5px rgba(0,0,0,.18));}
   .ob-title{font-size:21px; font-weight:900; margin:6px 0 10px; color:var(--ink);}
   .ob-emoji{font-size:50px; margin:2px 0 6px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.12));}
   .ob-text{font-size:15px; font-weight:700; color:var(--muted); line-height:1.6; min-height:72px; margin:0 0 8px;}
@@ -601,7 +607,7 @@
   .loading{position:fixed; inset:0; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px;
     background:rgba(255,253,247,.84); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
   .loading.show{display:flex;}
-  .loading .fox-spin{font-size:56px; animation:foxBob .9s var(--ease-spring) infinite;}
+  .loading .fox-spin{width:76px; height:76px; animation:foxBob .9s var(--ease-spring) infinite;}
   .loading p{margin:0; color:var(--muted); font-weight:800; letter-spacing:.5px;}
   @keyframes foxBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(5deg)}}
   /* 掌握度环 */
@@ -771,6 +777,22 @@
     <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4.5h8V8a4 4 0 0 1-8 0z"/><path d="M8 5.5H5V8a3 3 0 0 0 3 3"/><path d="M16 5.5h3V8a3 3 0 0 1-3 3"/><path d="M12 12v4"/><path d="M9.5 20h5"/><path d="M10 16h4v4h-4z"/></symbol>
     <symbol id="i-library" viewBox="0 0 24 24"><path d="M5 4h4v16H5z"/><path d="M10 4h4v16h-4z"/><path d="M15.5 5l3.8.9L16.5 20l-3.8-.9z"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.9 1.9M17.1 17.1 19 19M19 5l-1.9 1.9M6.9 17.1 5 19"/></symbol>
+    <symbol id="i-fox" viewBox="0 0 64 64">
+      <path d="M16 22 L11 7 L28 17 Z" fill="#E8743B"/>
+      <path d="M48 22 L53 7 L36 17 Z" fill="#E8743B"/>
+      <path d="M18 21 L14 11 L26 17 Z" fill="#FBE3CF"/>
+      <path d="M46 21 L50 11 L38 17 Z" fill="#FBE3CF"/>
+      <path d="M32 15 C20 15 14 23 15 33 C16 45 23 55 32 55 C41 55 48 45 49 33 C50 23 44 15 32 15 Z" fill="#EE7C44"/>
+      <path d="M32 31 C26 31 22 37 23 43 C24 51 28 56 32 56 C36 56 40 51 41 43 C42 37 38 31 32 31 Z" fill="#FFF6EC"/>
+      <circle cx="25" cy="33" r="3.3" fill="#3A2B22"/>
+      <circle cx="39" cy="33" r="3.3" fill="#3A2B22"/>
+      <circle cx="25.8" cy="32.2" r="1" fill="#fff"/>
+      <circle cx="39.8" cy="32.2" r="1" fill="#fff"/>
+      <path d="M29 42 h6 l-3 5 Z" fill="#3A2B22"/>
+      <path d="M28 49 Q32 53 36 49" fill="none" stroke="#3A2B22" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="20" cy="40" r="2.6" fill="#F2A08C" opacity=".7"/>
+      <circle cx="44" cy="40" r="2.6" fill="#F2A08C" opacity=".7"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -782,7 +804,7 @@
       <button class="btn" onclick="copyLink()">📋 复制链接</button>
     </div>
     <div class="hero" onclick="go('progress')">
-      <div class="hero-ava"><span class="mascot">🦊</span></div>
+      <div class="hero-ava"><svg class="fox-char" viewBox="0 0 64 64"><use href="#i-fox"/></svg></div>
       <div class="hero-txt">
         <div class="hero-hi" id="heroHi">你好，小学霸！🌟</div>
         <div class="hero-sub" id="heroSub">今天继续加油哦～</div>
@@ -901,7 +923,7 @@ update → controllerchange
       <div class="mcard"><div class="n">9.5<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">44</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">45</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -934,6 +956,7 @@ update → controllerchange
       <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
       <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配，进度点/按钮自动扩展）</span></div>
       <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>整体按 iOS 原生质感重构：配色降饱和（语义色收敛、新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃（backdrop-filter）；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 个主入口 + 顶部齿轮的 emoji 全部换统一线性图标（狐狸吉祥物与装饰性 emoji 保留）</span></div>
+      <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：建立暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1299,7 +1322,7 @@ update → controllerchange
 <!-- 首次使用指引 -->
 <div class="modal-mask" id="onboardMask">
   <div class="modal onboard">
-    <div class="ob-fox">🦊</div>
+    <div class="ob-fox"><svg class="fox-char" viewBox="0 0 64 64"><use href="#i-fox"/></svg></div>
     <h2 class="ob-title" id="obTitle"></h2>
     <div class="ob-emoji" id="obEmoji"></div>
     <p class="ob-text" id="obText"></p>
@@ -1945,7 +1968,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 44;
+const APP_VERSION = 45;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
