@@ -507,6 +507,13 @@
   .modal-mask.show{display:flex;}
   .modal{background:var(--card); border-radius:var(--r); padding:20px; max-width:380px; width:100%; box-shadow:0 16px 40px rgba(0,0,0,.3);}
   .modal h2.sec{margin-bottom:6px;}
+  /* 单元词汇熟悉完成 · 表扬弹窗 */
+  .vdone{text-align:center; padding:26px 22px;}
+  .vd-emo{font-size:68px; line-height:1; margin-bottom:6px; animation:pop .5s ease, wob 2.6s ease-in-out .5s infinite; transform-origin:50% 80%;}
+  .vdone h2.sec{text-align:center; font-size:22px;}
+  .vd-text{color:var(--ink); font-weight:700; margin:8px 0 18px; font-size:15px;}
+  .vd-btns{display:flex; gap:10px;}
+  .vd-btns .btn{flex:1; font-size:15px; padding:13px 8px;}
   .seg{display:flex; gap:8px; margin:8px 0 4px;}
   .seg button{flex:1; border:2px solid var(--line); background:var(--soft); border-radius:14px; padding:12px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink);}
   .seg button.on{background:var(--grape); color:#fff; border-color:var(--grape);}
@@ -996,7 +1003,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">55</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">56</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1040,6 +1047,7 @@ update → controllerchange
       <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏会掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
       <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 `UNITS.find` 查找 `STATE.weakByUnit` 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 `ALL_UNITS.find` 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
       <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
+      <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1405,6 +1413,19 @@ update → controllerchange
 <div class="modal-mask" id="rankModal" onclick="if(event.target===this)closeRank()"></div>
 <div class="modal-mask" id="wordModal" onclick="if(event.target===this)closeWord()"></div>
 <div class="modal-mask" id="goalModal" onclick="if(event.target===this)closeGoal()"></div>
+
+<!-- 单元词汇熟悉完成 · 表扬弹窗 -->
+<div class="modal-mask" id="vocabDoneModal" onclick="if(event.target===this)vocabDoneClose()">
+  <div class="modal vdone">
+    <div class="vd-emo">🎉</div>
+    <h2 class="sec">太棒啦！</h2>
+    <p class="vd-text" id="vdText"></p>
+    <div class="vd-btns">
+      <button class="btn ghost" onclick="vocabRedo()">🔄 重新学习</button>
+      <button class="btn grape" id="vdNextBtn" onclick="vocabNextUnit()">➡️ 下一个单元</button>
+    </div>
+  </div>
+</div>
 
 <!-- 首次使用指引 -->
 <div class="modal-mask" id="onboardMask">
@@ -2446,7 +2467,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 55;
+const APP_VERSION = 56;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2996,10 +3017,55 @@ function flipCard(){
 }
 function cardResult(ok){
   recordWord(curUnitId, curWord.en, ok);
-  cardIdx++; showCard();
+  const u=curUnit();
+  const wasLast = (cardIdx === u.words.length - 1); // 当前卡是单元最后一张
+  cardIdx++;
+  if(wasLast){
+    // 整个单元的词汇都熟悉完了 → 表扬动画 + 双按钮（重新学习 / 下一个单元）
+    finishVocabUnit(u);
+    return;
+  }
+  showCard();
   toast(ok?'😎 太棒了！+1⭐':'💪 继续加油！');
   if(ok) awardStars(1);
   touchDay();
+}
+/* 单元词汇熟悉完成：表扬动画 + 选择（重新学习 / 下一个单元） */
+function finishVocabUnit(u){
+  collectUnit(u.id); // 整单元点亮图鉴
+  const m=document.getElementById('vocabDoneModal');
+  const idx=UNITS.indexOf(u);
+  const next=UNITS[idx+1];
+  document.getElementById('vdText').textContent='「'+u.emoji+' '+u.title+'」的全部词汇都熟悉完啦！';
+  const nb=document.getElementById('vdNextBtn');
+  if(next){
+    nb.style.display='';
+    nb.textContent='➡️ 下一个：'+next.emoji+' '+(next.title.split(' ')[0]);
+  } else {
+    nb.style.display='none'; // 已是最后一个单元，隐藏“下一个”
+  }
+  m.classList.add('show');
+  celebrate(); // 彩带 + 星爆 + 叮声
+}
+function vocabRedo(){
+  document.getElementById('vocabDoneModal').classList.remove('show');
+  cardIdx=0; showCard();
+  toast('🔄 重新学习这一单元～');
+}
+function vocabNextUnit(){
+  const u=curUnit();
+  const next=UNITS[UNITS.indexOf(u)+1];
+  document.getElementById('vocabDoneModal').classList.remove('show');
+  if(next){
+    curUnitId=next.id;
+    buildUnitChips('vocabUnits', onVocabUnitPick);
+  }
+  cardIdx=0; showCard();
+  if(next) toast('➡️ 进入 '+next.emoji+' '+next.title);
+}
+function vocabDoneClose(){
+  document.getElementById('vocabDoneModal').classList.remove('show');
+  cardIdx=0; showCard();
 }
 function startVocabQuiz(mode){
   curQuizMode=mode;
