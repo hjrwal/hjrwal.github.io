@@ -1003,7 +1003,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">56</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">57</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1048,6 +1048,7 @@ update → controllerchange
       <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 `UNITS.find` 查找 `STATE.weakByUnit` 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 `ALL_UNITS.find` 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
       <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
       <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
+      <div class="it"><b>v57 · 做题/学词进度条</b><span>用户要求「做题目和学词语时都要有进度条」。①词汇闪卡（学词语）面板顶部新增进度条 + 「第 X/Y 词」文案，showCard() 实时更新（pct = cardIdx/总词数，与单元测试屏一致的 0-based 进度）。②闯关（做题目）每个非 BOSS 题目渲染后，在 #lvlArea 顶部重新插入进度条（pct = levelQi/levelTotalNormal），next() 内新增 updateLvlProgress() 辅助函数；BOSS 关本身有血量条作进度指示，不重复加。单元测试屏原本就有 .test-prog 进度条，继续沿用。三处进度条共用 .test-prog 样式（葡萄→天空渐变），保证视觉一致</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1121,6 +1122,8 @@ update → controllerchange
           <button class="btn sky" id="speakCard" onclick="listenWord()">🔊 听</button>
         </div>
       </div>
+      <div class="test-prog" id="vocabProg" style="margin:2px 0 8px;"><i id="vocabProgFill" style="width:0%"></i></div>
+      <p class="muted" id="vocabProgTxt" style="margin:-2px 0 10px;font-size:12px;"></p>
       <div class="flash">
         <div class="word" id="cardWord">—</div>
         <div class="meta">
@@ -2467,7 +2470,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 56;
+const APP_VERSION = 57;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3005,6 +3008,10 @@ function showCard(){
   const exWrap=document.getElementById('cardExWrap'); const exEl=document.getElementById('cardEx');
   if(curWord.ex){ exEl.textContent='📖 '+curWord.ex; exWrap.classList.remove('hidden'); }
   else { exWrap.classList.add('hidden'); }
+  // 学词语进度条：第 X/Y 词 + 进度填充（0-based，与单元测试屏一致）
+  const _total=u.words.length;
+  const _vp=document.getElementById('vocabProgFill'); if(_vp) _vp.style.width=Math.round(cardIdx/_total*100)+'%';
+  const _vt=document.getElementById('vocabProgTxt'); if(_vt) _vt.textContent='第 '+(cardIdx+1)+' / '+_total+' 词';
 }
 function listenWord(){
   speak(curWord.en);
@@ -4124,12 +4131,22 @@ function startLevel(id){
       if(q.type==='boss'){ renderBoss(u, ()=>finish()); return; }
       const dispatch={choose:renderChoose, sentence:renderSentence, whack:renderWhack, puzzle:renderPuzzle, match:renderMatch, find:renderFind};
       dispatch[q.type](q, ()=>{ levelQi++; next(); });
+      updateLvlProgress(); // 每题渲染后在 #lvlArea 顶部插入进度条（BOSS 关用自身血量条，不重复加）
     }
     next();
     // 保证加载动画至少可见 700ms，避免一闪而过
     const remain=Math.max(0, 700-(Date.now()-startedAt));
     if(remain>0){ setTimeout(()=>hideLoading(), remain); } else { hideLoading(); }
   }, 60);
+}
+// 闯关进度条：每个非 BOSS 题目渲染后，在 #lvlArea 顶部插入进度条（复用 .test-prog 样式）。
+// 因每个 render* 会整体重写 #lvlArea，故每次重新插入；BOSS 关用自身血量条作进度指示，不在此加。
+function updateLvlProgress(){
+  const area=document.getElementById('lvlArea'); if(!area) return;
+  const denom=Math.max(1, levelTotalNormal);
+  const pct=Math.round((levelQi/denom)*100);
+  const old=document.getElementById('lvlProg'); if(old) old.remove();
+  area.insertAdjacentHTML('afterbegin', `<div class="test-prog" id="lvlProg" style="margin:0 0 12px;"><i style="width:${pct}%"></i></div>`);
 }
 // 4 选 1：看中文选英文
 function renderChoose(q, done){
