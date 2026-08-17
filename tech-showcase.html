@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 65,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v66',// 与 sw.js 的 CACHE 保持一致
+    version: 66,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v67',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    65,        // 迭代版本数
+    iter:    66,        // 迭代版本数
     updated: '2026-08-17'
   };
 </script>
@@ -383,6 +383,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
       <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
       <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
+      <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
       </div>
     </div>
   </section>
