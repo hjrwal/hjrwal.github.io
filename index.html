@@ -311,14 +311,15 @@
   }
   input.type:focus{border-color:var(--sky);}
   /* sentence builder */
-  .basket{display:flex; flex-wrap:wrap; gap:10px 12px; min-height:54px; padding:12px 14px; background:var(--soft); border-radius:16px; border:2px dashed var(--grape); justify-content:center;}
+  .basket{display:flex; flex-wrap:wrap; gap:10px 12px; min-height:54px; padding:12px 14px; background:var(--soft); border-radius:16px; border:2.5px dashed var(--grape); justify-content:center;}
   .basket.wrong{border-style:solid; border-color:#d33; background:#fff0f0;}
   .basket.ok{border-style:solid; border-color:var(--grass); background:#eafff0;}
   .pool{display:flex; flex-wrap:wrap; gap:10px 12px; margin-top:14px; justify-content:center;}
-  .token{background:#fff; border:2px solid var(--grape); border-radius:14px; padding:10px 16px; font-weight:700; cursor:pointer; font-size:16px; margin:3px 0; transition:transform .14s ease, box-shadow .14s ease;}
-  .token:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(120,80,180,.18);}
+  .token{background:#fff; border:2.5px solid var(--grape); border-radius:14px; padding:10px 16px; font-weight:700; cursor:pointer; font-size:16px; margin:3px 0; box-shadow:0 3px 0 var(--grape-d), 0 4px 8px rgba(120,80,180,.15); transition:transform .14s ease, box-shadow .14s ease;}
+  .token:hover{transform:translateY(-2px); box-shadow:0 5px 0 var(--grape-d), 0 6px 12px rgba(120,80,180,.22);}
+  .token:active{transform:translateY(1px); box-shadow:0 1px 0 var(--grape-d);}
   .token.used{opacity:.35; pointer-events:none;}
-  .token.in{background:var(--grape); color:#fff;}
+  .token.in{background:var(--grape); color:#fff; box-shadow:0 3px 0 var(--grape-d), 0 4px 8px rgba(120,80,180,.15);}
   /* adventure map */
   .map{display:flex; flex-direction:column; gap:10px;}
   .isle{
@@ -1014,7 +1015,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">69</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">70</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1079,6 +1080,7 @@ update → controllerchange
       <div class="it"><b>v67 · 连词成句/拼词词块更疏朗</b><span>用户反馈连词成句/拼词词块挤在一起、视觉粘连。优化：词块上下间距从 8px 增至 10-12px（含 flex-wrap 行间距）、左右间距 12px、padding 从 8×12 增至 10×16、加 hover 微弹起；basket/pool 内容居中、单元测试的 lt/build-slot 同步加宽。整体更易点、不粘连，长词（如 weekend）不再被挤压到跟邻词视觉重叠。</span></div>
       <div class="it"><b>v68 · 单元测试词块自适应不溢出</b><span>单元测试「连词成句」用 .lt 固定 42×50 框，长词（如 maths/English/weekend）装不下溢出到邻词视觉粘连。改 .lt 为 min-width:42 + padding:0 10（自适应横向撑开）、font-size 22→18、white-space:nowrap；build-slot 内边距同步加。短词仍是 42px 方块，长词自动变宽不挤压。</span></div>
       <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
+      <div class="it"><b>v70 · 词块视觉语言统一（.token = .lt）</b><span>统一闯关/BOSS 的 .token 与单元测试/拼词的 .lt 两套词块视觉：.token 改用 2.5px 深紫边框 + 3D 实心底线(0 3px 0 grape-d)+ 紫色光晕 + hover 抬升/active 按下，风格与 .lt 的「糖果块」一致；.basket 虚线边框 2px→2.5px 与 .build-slot 对齐。全站词块观感统一，且不影响布局（box-shadow 不占排版空间、border 仅 +0.5px）。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2500,7 +2502,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 69;
+const APP_VERSION = 70;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
