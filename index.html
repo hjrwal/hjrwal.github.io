@@ -1011,7 +1011,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">65</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">66</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1072,6 +1072,7 @@ update → controllerchange
       <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
       <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
       <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
+      <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2490,7 +2491,10 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 65;
+/* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
+   否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
+let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
+const APP_VERSION = 66;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2596,9 +2600,12 @@ function defaultState(){
 }
 function loadState(){
   try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1){
+    if(!s.settings) s.settings={};
     if(!s.daily) s.daily={date:'',count:0};
     if(!s.chBest) s.chBest=0;
     if(!s.wrongFixed) s.wrongFixed=0;
+    if(!s.wrong) s.wrong=[];
+    if(!s.units) s.units={};
     if(!s.trend) s.trend=[];
     if(!s.tests) s.tests={};
     if(!s.gameWins) s.gameWins=0;
@@ -2608,6 +2615,8 @@ function loadState(){
     if(!s.ab) s.ab={sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}};
     if(!s.settings.fontScale) s.settings.fontScale=1;
     if(!s.settings.dailyGoal) s.settings.dailyGoal=20;
+    if(typeof s.settings.autoBackup!=='boolean') s.settings.autoBackup=true;
+    if(!s.settings.timelineOrder) s.settings.timelineOrder='asc';
     if(typeof s.rankIdx!=='number') s.rankIdx=0;
     if(!s.codex) s.codex={};
     if(!s.bossSeen) s.bossSeen={};
@@ -2632,7 +2641,6 @@ function exportProgress(){
 
 // ====== 进度防丢失：IndexedDB 双写 + 自动备份文件 ======
 const IDB_NAME='english5_idb', IDB_STORE='state', IDB_KEY='state';
-let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
 function idbOpen(){
   return new Promise((res)=>{
     if(!('indexedDB' in window)){ res(null); return; }
@@ -3884,7 +3892,7 @@ function abilityRadar(){
   const vals=axes.map(([nm,o])=> o.t? o.c/o.t : 0);
   ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   for(let i=0;i<n;i++){ const a=ang(i); const x=cx+Math.cos(a)*R, y=cy+Math.sin(a)*R; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.strokeStyle='rgba(124,92,255,.22)'; ctx.stroke();
-    const lx=cx+Math.cos(a)*(R+14), ly=cy+Math.sin(a)*(R+14); ctx.fillStyle='#555'; ctx.fillText(nm, lx, ly); }
+    const lx=cx+Math.cos(a)*(R+14), ly=cy+Math.sin(a)*(R+14); ctx.fillStyle='#555'; ctx.fillText(axes[i][0], lx, ly); }
   ctx.beginPath(); for(let i=0;i<n;i++){ const a=ang(i); const rr=R*vals[i]; const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr; i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.closePath();
   ctx.fillStyle='rgba(124,92,255,.22)'; ctx.fill(); ctx.strokeStyle='#7c5cff'; ctx.lineWidth=2; ctx.stroke();
   for(let i=0;i<n;i++){ const a=ang(i); const rr=R*vals[i]; const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fillStyle='#7c5cff'; ctx.fill(); }
@@ -4706,7 +4714,7 @@ function reviewWrong(){
   const w=STATE.wrong[0]; curUnitId=w.unit; go('vocab');
   setTimeout(()=>{ startVocabQuiz('meaning'); }, 200);
 }
-function exportProgress(){ /* 仅在第 2548 行的完整版定义，此处为占位防重声明覆盖 */ }
+/* exportProgress 已在上方完整定义（含下载 JSON），此处仅留注释占位，空函数声明会覆盖完整版故删除 */
 function recordTrend(){
   const t=todayStr();
   if(STATE.trend && STATE.trend.length && STATE.trend[STATE.trend.length-1].date===t) return;
@@ -4746,7 +4754,7 @@ function exportWeekly(){
   const a=document.createElement('a'); a.href=url; a.download='英语家长周报_'+todayStr()+'.txt'; a.click();
   URL.revokeObjectURL(url); toast('已导出家长周报 ⬇️');
 }
-function importProgress(input){ /* 仅在第 2558 行的完整版定义，此处为占位防重声明覆盖 */ }
+/* importProgress 已在上方完整定义（含 FileReader 读取 JSON 并恢复 STATE），此处仅留注释占位，空函数声明会覆盖完整版故删除 */
 function resetProgress(){ STATE=defaultState(); saveState(); renderProgress(); toast('已清空进度'); }
 function showReport(){
   const mastered=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
