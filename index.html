@@ -1011,10 +1011,17 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">64</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">65</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin:6px 0 12px;">
+      <span class="muted">时间线排序</span>
+      <div class="seg" id="tlOrderSeg" style="margin:0; flex:0 0 auto; width:210px;">
+        <button data-tl="asc" onclick="setTimelineOrder('asc')">低 → 高</button>
+        <button data-tl="desc" onclick="setTimelineOrder('desc')">高 → 低</button>
+      </div>
+    </div>
     <div class="tl">
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -1064,6 +1071,7 @@ update → controllerchange
       <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v61 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
       <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
       <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
+      <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2482,7 +2490,7 @@ ALL_UNITS.forEach(u=>{ u.words.forEach(w=>EN2UNIT[w.en]=u.id); u.sentences.forEa
    状态与持久化
    ========================================================= */
 const KEY='english5_state_v1';
-const APP_VERSION = 64;
+const APP_VERSION = 65;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2584,7 +2592,7 @@ function defaultState(){
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     rankIdx:0, codex:{}, bossSeen:{},
     onboarded:false,
-    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true} };
+    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc'} };
 }
 function loadState(){
   try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1){
@@ -2983,6 +2991,26 @@ function norm(s){ return (s||'').toLowerCase().replace(/[^a-z\s]/g,'').replace(/
    ========================================================= */
 function renderTech(){
   const v=document.getElementById('techVer'); if(v) v.textContent='v'+APP_VERSION;
+  const order=(STATE.settings && STATE.settings.timelineOrder)||'asc';
+  syncSeg('tlOrderSeg','tl',order);
+  sortTimeline(order);
+}
+function sortTimeline(order){
+  const tl=document.querySelector('#tech .tl'); if(!tl) return;
+  const items=Array.from(tl.querySelectorAll('.it'));
+  items.sort((a,b)=>{
+    const na=parseInt((a.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
+    const nb=parseInt((b.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
+    return order==='asc'? na-nb : nb-na;
+  });
+  items.forEach(it=>tl.appendChild(it));
+}
+function setTimelineOrder(order){
+  if(!STATE.settings) STATE.settings={};
+  STATE.settings.timelineOrder=order;
+  syncSeg('tlOrderSeg','tl',order);
+  sortTimeline(order);
+  saveState();
 }
 // 错误边界（D3）：单屏渲染出错只显示「重试」面板，不整页白屏；并吞掉良性资源错误
 function safeRender(fn){
