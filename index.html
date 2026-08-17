@@ -1018,7 +1018,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">76</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">77</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1089,6 +1089,7 @@ update → controllerchange
       <div class="it"><b>v73 · 星星只来自做题</b><span>用户要求「只有做题目能加星星」。移除词汇卡片熟悉（cardResult，点「认识/不认识」）的加星，其余加星途径保持不变：单元测试/拼写/连词成句/填空/跟读/语法/重做/挑战赛等做题途径照常加星，趣味闯关小游戏（拼词游戏/听音选词/看图选词/连连看）与单元 BOSS 血条战也保留加星。词汇卡反馈文案改为「太棒了，记住啦！」不再显示 +1⭐。</span></div>
       <div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管，体验差。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first（保证新版本立即覆盖）、其它资源继续 cache-first（离线能力不丢）；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此每次发版用户不需要硬刷，新版本在后台自动接管实时生效。</span></div>
       <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
+      <div class="it"><b>v77 · 单元测试弹窗合并（选题型与题目同一层）</b><span>用户反馈点「开始单元测试」后经历两次弹窗（先选题型、再弹题目），步骤偏多。本次合并为同一层弹窗的两个步骤：删除独立的 #pickTypeModal 与 openPickType/closePickType，把「选题型」渲染进 #testModalBody 作为第 1 步（含 4 类题型 chip、全选/清空、沿用上次选择 lastTestTypes），点「开始 10 题」后原地切换为第 2 步题目（renderTestQ 直接覆盖同一 body），不再开关第二个弹窗；薄弱练习包与「再做一次」沿用 lastTestTypes 跳过选型步；取消 / ✕ 仍整体关闭并回到来源页。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1112,7 +1113,7 @@ update → controllerchange
       <h2 class="sec">🧪 开始测验</h2>
       <p class="muted">选一个单元，做 10 道题（听音/选词/拼写/连词），完成后给分并自动收集错题。</p>
       <div class="chips" id="testUnits"></div>
-      <button class="btn grape lg" style="margin-top:10px; width:100%" onmousedown="event.preventDefault()" onclick="openPickType()">▶ 开始单元测试</button>
+      <button class="btn grape lg" style="margin-top:10px; width:100%" onmousedown="event.preventDefault()" onclick="openUnitTest()">▶ 开始单元测试</button>
       <button class="btn ghost" style="margin-top:8px; width:100%" onclick="genPracticePack()">📦 薄弱练习包（按弱项智能组题）</button>
     </div>
     <div id="testArea"></div>
@@ -1454,8 +1455,7 @@ update → controllerchange
 <div class="modal-mask" id="wordModal" onclick="if(event.target===this)closeWord()"></div>
 <div class="modal-mask" id="goalModal" onclick="if(event.target===this)closeGoal()"></div>
 
-<!-- v74 单元测试 · 选题型中间层（取代直接 startTest） -->
-<div class="modal-mask" id="pickTypeModal" onclick="if(event.target===this)closePickType()"></div>
+<!-- v74+v76 单元测试 · 选题型与题目合并为同一弹窗（先选型、再答题） -->
 
 <!-- v76 单元测试 · 题目弹窗（取代整屏切换到 test 屏） -->
 <div class="modal-mask" id="testModal" onclick="if(event.target===this)closeTestModal()">
@@ -2524,7 +2524,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 76;
+const APP_VERSION = 77;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3949,7 +3949,7 @@ function finishTest(){
     </div>
     <div class="row" style="justify-content:center;margin-top:10px">
       ${hasWrong?'<button class="btn coral" onclick="closeTestModal();reviewWrong()">🔁 重做错题</button>':''}
-      <button class="btn grape" onclick="startTest()">🔄 再做一次</button>
+      <button class="btn grape" onclick="startTest(lastTestTypes)">🔄 再做一次</button>
       <button class="btn sky" onclick="closeTestModal()">🏠 首页</button>
     </div>
     ${packMode?(remain>0
@@ -5043,9 +5043,10 @@ const PICK_TYPES = [
   {t:'spell', em:'✍️🔊',    nm:'听发音·拼写',   sub:'手写英文'},
   {t:'sent',  em:'🧩',      nm:'连词·成句',     sub:'打散重组'}
 ];
-function openPickType(){
-  const m=document.getElementById('pickTypeModal');
-  if(!m) return;
+function openUnitTest(){ openTestModal(); renderPickStep(); }
+function renderPickStep(){
+  const body=document.getElementById('testModalBody');
+  if(!body) return;
   // 选区状态：默认沿用上次（首次进入用全部 4 类）
   const init = (lastTestTypes && lastTestTypes.length) ? lastTestTypes.slice() : PICK_TYPES.map(x=>x.t);
   // 渲染 4 个 chip：选中态 class="on"
@@ -5057,24 +5058,18 @@ function openPickType(){
       +`<span class="muted" style="margin-left:6px;font-size:11px">${p.sub}</span>`
       +`</div>`;
   }).join('');
-  m.innerHTML =
-    `<div class="modal">
-      <div class="row spread">
-        <h2 class="sec" style="margin:0">🎯 选你今天的题型</h2>
-        <button class="back" onclick="closePickType()">✕</button>
-      </div>
-      <p class="muted" style="margin:8px 0 2px">点下面的题型挑想练的（可多选，至少 1 种）</p>
-      <div class="chip-row" id="pickChips" style="margin-top:10px">${chips}</div>
-      <div class="row" style="gap:8px;margin-top:10px">
-        <button class="btn ghost" style="flex:1" onclick="fillAllPickType(true)">全选</button>
-        <button class="btn ghost" style="flex:1" onclick="fillAllPickType(false)">清空</button>
-      </div>
-      <div class="row" style="justify-content:flex-end;margin-top:14px;gap:8px">
-        <button class="btn ghost" onclick="closePickType()">取消</button>
-        <button class="btn grape lg" id="pickStartBtn" onclick="confirmPickType()">▶ 开始 10 题</button>
-      </div>
-    </div>`;
-  m.classList.add('show');
+  body.innerHTML =
+    `<h2 class="sec" style="margin:0 0 4px">🎯 选你今天的题型</h2>`
+    +`<p class="muted" style="margin:6px 0 2px">点下面的题型挑想练的（可多选，至少 1 种）</p>`
+    +`<div class="chip-row" id="pickChips" style="margin-top:10px">${chips}</div>`
+    +`<div class="row" style="gap:8px;margin-top:10px">`
+    +`  <button class="btn ghost" style="flex:1" onclick="fillAllPickType(true)">全选</button>`
+    +`  <button class="btn ghost" style="flex:1" onclick="fillAllPickType(false)">清空</button>`
+    +`</div>`
+    +`<div class="row" style="justify-content:flex-end;margin-top:14px;gap:8px">`
+    +`  <button class="btn ghost" onclick="closeTestModal()">取消</button>`
+    +`  <button class="btn grape lg" id="pickStartBtn" onclick="confirmPickType()">▶ 开始 10 题</button>`
+    +`</div>`;
   refreshPickStartBtn();
 }
 function togglePickType(t, el){
@@ -5101,10 +5096,8 @@ function refreshPickStartBtn(){
 function confirmPickType(){
   const types = pickedTypes();
   if(!types.length){ toast('请至少选 1 种题型'); return; }
-  closePickType();
   startTest(types);
 }
-function closePickType(){ const m=document.getElementById('pickTypeModal'); if(m) m.classList.remove('show'); }
 
 /* v76 单元测试 · 题目弹窗开关（取代整屏切到 test 屏） */
 let testModalReturnTo='home';
