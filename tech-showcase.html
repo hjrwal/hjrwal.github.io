@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 68,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v69',// 与 sw.js 的 CACHE 保持一致
+    version: 69,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v70',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    68,        // 迭代版本数
+    iter:    69,        // 迭代版本数
     updated: '2026-08-17'
   };
 </script>
@@ -386,6 +386,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
       <div class="it"><b>v67 · 连词成句/拼词词块更疏朗</b><span>用户反馈连词成句/拼词词块挤在一起、视觉粘连。优化：词块上下间距从 8px 增至 10-12px（含 flex-wrap 行间距）、左右间距 12px、padding 从 8×12 增至 10×16、加 hover 微弹起；basket/pool 内容居中、单元测试的 lt/build-slot 同步加宽。整体更易点、不粘连，长词（如 weekend）不再被挤压到跟邻词视觉重叠。</span></div>
       <div class="it"><b>v68 · 单元测试词块自适应不溢出</b><span>单元测试「连词成句」用 .lt 固定 42×50 框，长词（如 maths/English/weekend）装不下溢出到邻词视觉粘连。改 .lt 为 min-width:42 + padding:0 10（自适应横向撑开）、font-size 22→18、white-space:nowrap；build-slot 内边距同步加。短词仍是 42px 方块，长词自动变宽不挤压。</span></div>
+      <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
       </div>
     </div>
   </section>
