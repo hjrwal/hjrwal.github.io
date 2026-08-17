@@ -211,7 +211,7 @@
     .btn{padding:11px 14px; font-size:14px;}
     .btn.lg{font-size:17px; padding:14px 18px;}
     .toast{font-size:19px; padding:14px 20px;}
-    .token{font-size:15px; padding:7px 10px;}
+    .token{font-size:15px; padding:9px 14px;}
     .ex{font-size:14px;}
   }
   .tile{
@@ -311,11 +311,12 @@
   }
   input.type:focus{border-color:var(--sky);}
   /* sentence builder */
-  .basket{display:flex; flex-wrap:wrap; gap:8px; min-height:54px; padding:10px; background:var(--soft); border-radius:16px; border:2px dashed var(--grape);}
+  .basket{display:flex; flex-wrap:wrap; gap:10px 12px; min-height:54px; padding:12px 14px; background:var(--soft); border-radius:16px; border:2px dashed var(--grape); justify-content:center;}
   .basket.wrong{border-style:solid; border-color:#d33; background:#fff0f0;}
   .basket.ok{border-style:solid; border-color:var(--grass); background:#eafff0;}
-  .pool{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
-  .token{background:#fff; border:2px solid var(--grape); border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; font-size:16px;}
+  .pool{display:flex; flex-wrap:wrap; gap:10px 12px; margin-top:14px; justify-content:center;}
+  .token{background:#fff; border:2px solid var(--grape); border-radius:14px; padding:10px 16px; font-weight:700; cursor:pointer; font-size:16px; margin:3px 0; transition:transform .14s ease, box-shadow .14s ease;}
+  .token:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(120,80,180,.18);}
   .token.used{opacity:.35; pointer-events:none;}
   .token.in{background:var(--grape); color:#fff;}
   /* adventure map */
@@ -672,11 +673,11 @@
   .test-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--grape),var(--sky)); transition:width .3s;}
   .test-score{text-align:center; font-size:46px; font-weight:800; color:var(--grape-d);}
   /* 游戏 */
-  .letter-pool{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0;}
+  .letter-pool{display:flex; flex-wrap:wrap; gap:10px 12px; justify-content:center; margin:12px 0;}
   .lt{width:42px; height:50px; border-radius:12px; background:var(--card); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; cursor:pointer; box-shadow:var(--shadow);}
   .lt.used{opacity:.25; pointer-events:none;}
   .lt.in{background:var(--soft); border-color:var(--grape); color:var(--grape-d);}
-  .build-slot{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; min-height:56px; margin:8px 0; padding:8px; border:2px dashed var(--line); border-radius:14px;}
+  .build-slot{display:flex; gap:8px 10px; flex-wrap:wrap; justify-content:center; min-height:56px; margin:8px 0; padding:10px 12px; border:2px dashed var(--line); border-radius:14px;}
   .build-slot.wrong{border-color:#d33; background:#fff0f0;}
   .choice-emoji{font-size:64px; text-align:center; line-height:1.2; margin:6px 0;}
   .choice-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:12px;}
@@ -1011,7 +1012,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">66</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">67</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1073,6 +1074,7 @@ update → controllerchange
       <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
       <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
       <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
+      <div class="it"><b>v67 · 连词成句/拼词词块更疏朗</b><span>用户反馈连词成句/拼词词块挤在一起、视觉粘连。优化：词块上下间距从 8px 增至 10-12px（含 flex-wrap 行间距）、左右间距 12px、padding 从 8×12 增至 10×16、加 hover 微弹起；basket/pool 内容居中、单元测试的 lt/build-slot 同步加宽。整体更易点、不粘连，长词（如 weekend）不再被挤压到跟邻词视觉重叠。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2494,7 +2496,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 66;
+const APP_VERSION = 67;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
