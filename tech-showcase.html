@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 64,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v65',// 与 sw.js 的 CACHE 保持一致
+    version: 65,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v66',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    64,        // 迭代版本数
+    iter:    65,        // 迭代版本数
     updated: '2026-08-17'
   };
 </script>
@@ -130,6 +130,11 @@
     .grid2,.mgrid{grid-template-columns:1fr;}
     .hero h2{font-size:27px;}
   }
+  .tl-seg{display:flex; justify-content:space-between; align-items:center; margin:6px 0 14px;}
+  .tl-seg .muted{font-size:14px;}
+  .tl-seg .seg{display:flex; gap:8px; width:220px; margin:0;}
+  .tl-seg .seg button{flex:1; border:2px solid var(--line); background:var(--panel); border-radius:12px; padding:10px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink); transition:.15s;}
+  .tl-seg .seg button.on{background:var(--indigo); color:#fff; border-color:var(--indigo);}
 </style>
 </head>
 <body>
@@ -319,7 +324,14 @@ update  → <span class="k">controllerchange</span>
   <!-- 6. TIMELINE -->
   <section class="sec">
     <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
-    <div class="card">
+      <div class="card">
+      <div class="tl-seg">
+        <span class="muted">时间线排序</span>
+        <div class="seg" id="tlOrderSeg">
+          <button data-tl="asc" onclick="tsSetTimelineOrder('asc')">低 → 高</button>
+          <button data-tl="desc" onclick="tsSetTimelineOrder('desc')">高 → 低</button>
+        </div>
+      </div>
       <div class="tl">
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
         <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
@@ -370,6 +382,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v62 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
       <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
       <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
+      <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
       </div>
     </div>
   </section>
@@ -389,6 +402,31 @@ update  → <span class="k">controllerchange</span>
     if (META[k] === undefined) return;
     el.textContent = (k === 'version' ? 'v' : '') + META[k];
   });
+
+  // 版本演进时间线：升降序可切换，偏好存 localStorage
+  function tsSortTimeline(order){
+    var tl=document.querySelector('.tl'); if(!tl) return;
+    var items=Array.prototype.slice.call(tl.querySelectorAll('.it'));
+    items.sort(function(a,b){
+      var na=parseInt((a.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
+      var nb=parseInt((b.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
+      return order==='asc'? na-nb : nb-na;
+    });
+    items.forEach(function(it){ tl.appendChild(it); });
+  }
+  function tsSetTimelineOrder(order){
+    try{ localStorage.setItem('tech_tl_order', order); }catch(e){}
+    var seg=document.getElementById('tlOrderSeg');
+    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
+    tsSortTimeline(order);
+  }
+  (function(){
+    var order='asc';
+    try{ order=localStorage.getItem('tech_tl_order')||'asc'; }catch(e){}
+    tsSortTimeline(order);
+    var seg=document.getElementById('tlOrderSeg');
+    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
+  })();
 </script>
 </body>
 </html>
