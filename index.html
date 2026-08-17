@@ -509,6 +509,9 @@
   .modal-mask.show{display:flex;}
   .modal{background:var(--card); border-radius:var(--r); padding:20px; max-width:380px; width:100%; box-shadow:0 16px 40px rgba(0,0,0,.3);}
   .modal h2.sec{margin-bottom:6px;}
+  /* v76 单元测试 · 题目弹窗（取代整屏 test 屏） */
+  .test-modal{max-width:460px; padding:18px 18px 14px;}
+  .test-modal-body{max-height:calc(100vh - 130px); overflow:auto; -webkit-overflow-scrolling:touch;}
   /* 单元词汇熟悉完成 · 表扬弹窗 */
   .vdone{text-align:center; padding:26px 22px;}
   .vd-emo{font-size:68px; line-height:1; margin-bottom:6px; animation:pop .5s ease, wob 2.6s ease-in-out .5s infinite; transform-origin:50% 80%;}
@@ -1015,7 +1018,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">75</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">76</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1085,6 +1088,7 @@ update → controllerchange
       <div class="it"><b>v72 · 段位体系重做：终极神话封顶 + 无限星阶</b><span>用户希望高段位更有追求、不轻易封顶。体系改为：命名阶梯 8 阶（🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→🌈终极神话）在 100⭐ 封顶为「终极神话」；终极神话之后进入无限星阶，每满 100⭐ 升 1 星（200⭐=终极神话1星、300⭐=终极神话2星…永无止境）。getRank 改为纯数据驱动：命名阶梯按 RANKS 阈值计算，超过 100⭐ 用 floor((stars-100)/100) 合成「终极神话N星」；段位弹窗路线图、首页进度条、升级撒花均自动适配无限星阶。旧存档按累计⭐ 实时重映射，无需迁移。</span></div>
       <div class="it"><b>v73 · 星星只来自做题</b><span>用户要求「只有做题目能加星星」。移除词汇卡片熟悉（cardResult，点「认识/不认识」）的加星，其余加星途径保持不变：单元测试/拼写/连词成句/填空/跟读/语法/重做/挑战赛等做题途径照常加星，趣味闯关小游戏（拼词游戏/听音选词/看图选词/连连看）与单元 BOSS 血条战也保留加星。词汇卡反馈文案改为「太棒了，记住啦！」不再显示 +1⭐。</span></div>
       <div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管，体验差。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first（保证新版本立即覆盖）、其它资源继续 cache-first（离线能力不丢）；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此每次发版用户不需要硬刷，新版本在后台自动接管实时生效。</span></div>
+      <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1452,6 +1456,17 @@ update → controllerchange
 
 <!-- v74 单元测试 · 选题型中间层（取代直接 startTest） -->
 <div class="modal-mask" id="pickTypeModal" onclick="if(event.target===this)closePickType()"></div>
+
+<!-- v76 单元测试 · 题目弹窗（取代整屏切换到 test 屏） -->
+<div class="modal-mask" id="testModal" onclick="if(event.target===this)closeTestModal()">
+  <div class="modal test-modal">
+    <div class="row spread" style="margin-bottom:8px">
+      <b style="font-size:16px">📝 单元测试</b>
+      <button class="back" onclick="closeTestModal()">✕ 退出</button>
+    </div>
+    <div class="test-modal-body" id="testModalBody"></div>
+  </div>
+</div>
 
 <!-- 单元词汇熟悉完成 · 表扬弹窗 -->
 <div class="modal-mask" id="vocabDoneModal" onclick="if(event.target===this)vocabDoneClose()">
@@ -2509,7 +2524,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 75;
+const APP_VERSION = 76;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3772,12 +3787,13 @@ function startTest(types){
   }
   testQs = shuffle(questions).slice(0, T);
   testIdx=0; testCorrect=0; testTypeStat={};
+  openTestModal();
   renderTestQ();
   if(document.activeElement) document.activeElement.blur();
 }
 function lockOpts(box){ [...box.children].forEach(c=>{ c.style.pointerEvents='none'; }); }
 function renderTestQ(){
-  const area=document.getElementById('testArea');
+  const area=document.getElementById('testModalBody');
   if(!area) return;
   if(testIdx>=testQs.length){ finishTest(); return; }
   const q=testQs[testIdx];
@@ -3915,7 +3931,7 @@ function finishTest(){
   STATE.tests[curUnitId]=Math.max(STATE.tests[curUnitId]||0, score);
   saveState();
   if(score>=60) collectUnit(curUnitId);
-  const area=document.getElementById('testArea');
+  const area=document.getElementById('testModalBody');
   const hasWrong = STATE.wrong.some(w=>w.unit===curUnitId);
   const ts=testTypeStat||{};
   const selC=(ts.en?ts.en.c:0)+(ts.zh?ts.zh.c:0), selT=(ts.en?ts.en.t:0)+(ts.zh?ts.zh.t:0);
@@ -3932,9 +3948,9 @@ function finishTest(){
       <div id="abRead" class="muted" style="font-size:13px"></div>
     </div>
     <div class="row" style="justify-content:center;margin-top:10px">
-      ${hasWrong?'<button class="btn coral" onclick="reviewWrong()">🔁 重做错题</button>':''}
+      ${hasWrong?'<button class="btn coral" onclick="closeTestModal();reviewWrong()">🔁 重做错题</button>':''}
       <button class="btn grape" onclick="startTest()">🔄 再做一次</button>
-      <button class="btn sky" onclick="go('home')">🏠 首页</button>
+      <button class="btn sky" onclick="closeTestModal()">🏠 首页</button>
     </div>
     ${packMode?(remain>0
       ? `<div class="row" style="justify-content:center;margin-top:8px"><button class="btn sun" onclick="packAdvance()">➡️ 下一个弱项单元（${remain} 个）</button></div>`
@@ -3987,11 +4003,11 @@ function packNext(){
   if((wu.sent||0)>0 && u.sentences.length){ qs.push({type:'sent', s:u.sentences[Math.floor(Math.random()*u.sentences.length)]}); }
   if(qs.length===0){ qs.push({type:'en', w:singles[0]}); qs.push({type:'zh', w:singles[0]}); }
   testQs=shuffle(qs); testIdx=0; testCorrect=0; testTypeStat={};
-  go('test');
-  setTimeout(renderTestQ, 0);
+  openTestModal();
+  renderTestQ();
 }
 function packAdvance(){ packIdx++; packNext(); }
-function packFinish(){ packMode=false; toast('🎉 薄弱练习包练完啦！'); go('home'); }
+function packFinish(){ packMode=false; toast('🎉 薄弱练习包练完啦！'); closeTestModal(); }
 
 /* =========================================================
    单词游戏：拼词 + 连连看
@@ -5089,6 +5105,17 @@ function confirmPickType(){
   startTest(types);
 }
 function closePickType(){ const m=document.getElementById('pickTypeModal'); if(m) m.classList.remove('show'); }
+
+/* v76 单元测试 · 题目弹窗开关（取代整屏切到 test 屏） */
+let testModalReturnTo='home';
+function openTestModal(){
+  testModalReturnTo = (typeof curScreen!=='undefined' && curScreen) ? curScreen : 'home';
+  const m=document.getElementById('testModal'); if(m) m.classList.add('show');
+}
+function closeTestModal(){
+  const m=document.getElementById('testModal'); if(m) m.classList.remove('show');
+  go(testModalReturnTo||'home');
+}
 
 /* =========================================================
    首次使用指引（v42）：狐狸向导分步卡片，首次打开自动弹，设置里可重看
