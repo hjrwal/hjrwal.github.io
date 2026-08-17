@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 70,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v71',// 与 sw.js 的 CACHE 保持一致
+    version: 71,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v72',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    70,        // 迭代版本数
+    iter:    71,        // 迭代版本数
     updated: '2026-08-17'
   };
 </script>
@@ -388,6 +388,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v68 · 单元测试词块自适应不溢出</b><span>单元测试「连词成句」用 .lt 固定 42×50 框，长词（如 maths/English/weekend）装不下溢出到邻词视觉粘连。改 .lt 为 min-width:42 + padding:0 10（自适应横向撑开）、font-size 22→18、white-space:nowrap；build-slot 内边距同步加。短词仍是 42px 方块，长词自动变宽不挤压。</span></div>
       <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
       <div class="it"><b>v70 · 词块视觉语言统一（.token = .lt）</b><span>统一闯关/BOSS 的 .token 与单元测试/拼词的 .lt 两套词块视觉：.token 改用 2.5px 深紫边框 + 3D 实心底线(0 3px 0 grape-d)+ 紫色光晕 + hover 抬升/active 按下，风格与 .lt 的「糖果块」一致；.basket 虚线边框 2px→2.5px 与 .build-slot 对齐。全站词块观感统一，且不影响布局（box-shadow 不占排版空间、border 仅 +0.5px）。</span></div>
+      <div class="it"><b>v71 · 段位阶梯重做：12 阶 + 更陡峭门槛</b><span>原 6 段位（满级仅 150⭐）太易达成、缺乏成就感。重做为 12 段位阶梯：🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→👑荣耀→📜传奇→🏆大导师→♛至尊宗师→🌈终极神话。门槛 0→2000⭐ 递增且越往上越陡（间距 15→30→45→70→100→140→180→220→300→400→500）。升级庆祝从 5 次增至 11 次。段位仍按累计⭐ 纯数据驱动计算，旧存档自动按星数重新映射。</span></div>
       </div>
     </div>
   </section>
