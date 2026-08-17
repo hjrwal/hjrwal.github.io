@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 75,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v76',// 与 sw.js 的 CACHE 保持一致
+    version: 76,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v77',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    75,        // 迭代版本数
+    iter:    76,        // 迭代版本数
     updated: '2026-08-18'
   };
 </script>
@@ -393,6 +393,7 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v73 · 星星只来自做题</b><span>用户要求「只有做题目能加星星」。移除词汇卡片熟悉（cardResult，点「认识/不认识」）的加星，其余加星途径保持不变：单元测试/拼写/连词成句/填空/跟读/语法/重做/挑战赛等做题途径照常加星，趣味闯关小游戏（拼词游戏/听音选词/看图选词/连连看）与单元 BOSS 血条战也保留加星。词汇卡反馈文案改为「太棒了，记住啦！」不再显示 +1⭐。</span></div>
 <div class="it"><b>v74 · 单元测试先选题型再出题</b><span>点击「开始单元测试」不再直接进题，而是弹出选题型中间层（看中文·选英文 / 看英文·选中文 / 听发音·拼写 / 连词·成句，可多选，全选/清空快捷）；按选中类型均分 10 题，连词成句固定占 20%。新加 lastTestTypes 记忆上次选择，「🔄 再做一次」沿用上次选中的题型，无需重复设置。</span></div>
 <div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first、其它资源继续 cache-first；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此发版用户不需要硬刷，新版本自动接管实时生效。</span></div>
+      <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
       </div>
     </div>
   </section>
