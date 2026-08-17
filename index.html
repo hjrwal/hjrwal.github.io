@@ -1015,7 +1015,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">71</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">72</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1082,6 +1082,7 @@ update → controllerchange
       <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
       <div class="it"><b>v70 · 词块视觉语言统一（.token = .lt）</b><span>统一闯关/BOSS 的 .token 与单元测试/拼词的 .lt 两套词块视觉：.token 改用 2.5px 深紫边框 + 3D 实心底线(0 3px 0 grape-d)+ 紫色光晕 + hover 抬升/active 按下，风格与 .lt 的「糖果块」一致；.basket 虚线边框 2px→2.5px 与 .build-slot 对齐。全站词块观感统一，且不影响布局（box-shadow 不占排版空间、border 仅 +0.5px）。</span></div>
       <div class="it"><b>v71 · 段位阶梯重做：12 阶 + 更陡峭门槛</b><span>原 6 段位（满级仅 150⭐）太易达成、缺乏成就感。重做为 12 段位阶梯：🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→👑荣耀→📜传奇→🏆大导师→♛至尊宗师→🌈终极神话。门槛从 0 递增到 2000⭐，且越往上越陡（间距 15→30→45→70→100→140→180→220→300→400→500）。升级庆祝事件从 5 次增至 11 次。段位依据仍为累计⭐（纯数据驱动，getRank 实时计算，旧存档自动按星数重新映射，无需迁移）。</span></div>
+      <div class="it"><b>v72 · 段位体系重做：终极神话封顶 + 无限星阶</b><span>用户希望高段位更有追求、不轻易封顶。体系改为：命名阶梯 8 阶（🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→🌈终极神话）在 100⭐ 封顶为「终极神话」；终极神话之后进入无限星阶，每满 100⭐ 升 1 星（200⭐=终极神话1星、300⭐=终极神话2星…永无止境）。getRank 改为纯数据驱动：命名阶梯按 RANKS 阈值计算，超过 100⭐ 用 floor((stars-100)/100) 合成「终极神话N星」；段位弹窗路线图、首页进度条、升级撒花均自动适配无限星阶。旧存档按累计⭐ 实时重映射，无需迁移。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2503,7 +2504,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 71;
+const APP_VERSION = 72;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2790,42 +2791,60 @@ function recordWord(id, en, ok){
   saveState();
 }
 const RANKS=[
-  {lo:0,    ico:'🌱', t:'英语小萌新',   c:'#7cc36b'},
-  {lo:15,   ico:'🥉', t:'青铜小勇士',   c:'#b87333'},
-  {lo:45,   ico:'🪙', t:'白银小学徒',   c:'#9aa7b5'},
-  {lo:90,   ico:'⚪', t:'黄金小能手',   c:'#f5b301'},
-  {lo:160,  ico:'🥇', t:'铂金小达人',   c:'#e0a92e'},
-  {lo:260,  ico:'💎', t:'钻石小高手',   c:'#4cc9f0'},
-  {lo:400,  ico:'🌟', t:'星耀小学霸',   c:'#ffd54f'},
-  {lo:580,  ico:'👑', t:'荣耀小王者',   c:'#ff5d8f'},
-  {lo:800,  ico:'📜', t:'传奇小学者',   c:'#8b5cf6'},
-  {lo:1100, ico:'🏆', t:'英语大导师',   c:'#36c46b'},
-  {lo:1500, ico:'♛', t:'至尊宗师',     c:'#c0392b'},
-  {lo:2000, ico:'🌈', t:'终极英语神话', c:'#ff7ab6'}
+  {lo:0,    ico:'🌱', t:'英语小萌新', c:'#7cc36b'},
+  {lo:12,   ico:'🥉', t:'青铜小勇士', c:'#b87333'},
+  {lo:25,   ico:'🪙', t:'白银小学徒', c:'#9aa7b5'},
+  {lo:40,   ico:'⚪', t:'黄金小能手', c:'#f5b301'},
+  {lo:55,   ico:'🥇', t:'铂金小达人', c:'#e0a92e'},
+  {lo:72,   ico:'💎', t:'钻石小高手', c:'#4cc9f0'},
+  {lo:88,   ico:'🌟', t:'星耀小学霸', c:'#ffd54f'},
+  {lo:100,  ico:'🌈', t:'终极神话',   c:'#ff7ab6'}
 ];
-function getRank(s){ s=Math.max(0,s|0); let i=0; for(let k=0;k<RANKS.length;k++){ if(s>=RANKS[k].lo) i=k; }
-  const cur=RANKS[i], nxt=RANKS[i+1]||null;
-  let pct=100; if(nxt) pct=Math.min(100, Math.round((s-cur.lo)/(nxt.lo-cur.lo)*100));
-  return {idx:i, cur, nxt, pct, toNext: nxt? (nxt.lo-s):0}; }
+const MYTH_LO=100, MYTH_STEP=100; // 终极神话在 100⭐ 封顶；之后每满 100⭐ 升 1 星（无限）
+function getRank(s){
+  s=Math.max(0,s|0); let i=0; for(let k=0;k<RANKS.length;k++){ if(s>=RANKS[k].lo) i=k; }
+  const cur=RANKS[i];
+  if(s<MYTH_LO){ // 命名阶梯内
+    const nxt=RANKS[i+1]||null;
+    let pct=100; if(nxt) pct=Math.min(100, Math.round((s-cur.lo)/(nxt.lo-cur.lo)*100));
+    return {idx:i, level:i, cur, nxt, pct, toNext:nxt?(nxt.lo-s):0, myth:false};
+  }
+  // 终极神话之后：无限星阶（floor((stars-100)/100) = N 星）
+  const N=Math.floor((s-MYTH_LO)/MYTH_STEP);          // 100→0, 200→1, 300→2 ...
+  const base=MYTH_LO+N*MYTH_STEP, nextBase=MYTH_LO+(N+1)*MYTH_STEP;
+  const tier={lo:MYTH_LO, ico:'🌈', t:'终极神话'+(N>0?N+'星':''), c:'#ff7ab6', myth:true};
+  const nxt={lo:nextBase, ico:'🌈', t:'终极神话'+(N+1)+'星', c:'#ff7ab6', myth:true};
+  const pct=Math.min(100, Math.round((s-base)/MYTH_STEP*100));
+  return {idx:RANKS.length-1, level:100+N, cur:tier, nxt, pct, toNext:nextBase-s, myth:true, mythN:N};
+}
 function rankUpFx(){
   const r=getRank(STATE.stars); celebrate(); confetti();
   foxSay('🎉 段位升级！你现在是「'+r.cur.ico+r.cur.t+'」'); toast('🎉 段位升级 → '+r.cur.ico+r.cur.t);
 }
 function openRank(){ const m=document.getElementById('rankModal'); if(!m) return;
-  const rk=getRank(STATE.stars);
+  const rk=getRank(STATE.stars); const mythN=rk.myth?rk.mythN:0;
   let html='<div class="modal"><div class="row spread"><h2 class="sec" style="margin:0">🏅 段位称号</h2><button class="back" onclick="closeRank()">✕</button></div>'+
     '<p class="muted" style="margin:2px 0 12px">攒 ⭐ 升级，每过一阶都解锁新称号！</p><div class="rank-list">';
-  RANKS.forEach((R,i)=>{ const got=i<=rk.idx, cur=i===rk.idx, cls=(got?'got':'lock')+(cur?' cur':'');
+  RANKS.forEach((R,i)=>{ const got=STATE.stars>=R.lo;
+    const cur=rk.myth ? false : (i===rk.idx);
+    const cls=(got?'got':'lock')+(cur?' cur':'');
     html+='<div class="rank-row '+cls+'" style="--rc:'+R.c+'"><span class="ri">'+R.ico+'</span>'+
-      '<div class="rl"><b>'+R.t+'</b><small>'+(i===0?'起点段位':('需 '+R.lo+'⭐ 解锁'))+'</small></div>'+
+      '<div class="rl"><b>'+R.t+'</b><small>'+(R.lo===0?'起点段位':('需 '+R.lo+'⭐ 解锁'))+'</small></div>'+
       (cur?'<span class="rb">当前</span>':got?'<span class="rb ok">已达成</span>':'<span class="rb">未解锁</span>')+'</div>'; });
-  html+='</div><p class="muted center" style="margin-top:10px">当前 ⭐ '+STATE.stars+(rk.nxt?' · 下一阶还差 '+rk.toNext+'⭐':' · 已满级 👑')+'</p></div>';
+  const showMyth=Math.max(mythN+2,3);
+  for(let n=1;n<=showMyth;n++){ const lo=MYTH_LO+MYTH_STEP*n; const got=STATE.stars>=lo; const cur=rk.myth&&n===mythN;
+    const cls=(got?'got':'lock')+(cur?' cur':'');
+    html+='<div class="rank-row '+cls+'" style="--rc:#ff7ab6"><span class="ri">🌈</span>'+
+      '<div class="rl"><b>终极神话'+n+'星</b><small>需 '+lo+'⭐ 解锁</small></div>'+
+      (cur?'<span class="rb">当前</span>':got?'<span class="rb ok">已达成</span>':'<span class="rb">未解锁</span>')+'</div>'; }
+  html+='</div><p class="muted center" style="margin:8px 0 2px">🌈 终极神话之后每 100⭐ 升 1 星，永无止境！</p>'+
+    '<p class="muted center" style="margin-top:2px">当前 ⭐ '+STATE.stars+' · 下一阶还差 '+rk.toNext+'⭐</p></div>';
   m.innerHTML=html; m.classList.add('show');
 }
 function closeRank(){ const m=document.getElementById('rankModal'); if(m) m.classList.remove('show'); }
 function awardStars(n){
-  const before=getRank(STATE.stars).idx;
-  STATE.stars+=n; STATE.rankIdx=getRank(STATE.stars).idx;
+  const before=getRank(STATE.stars).level;
+  STATE.stars+=n; STATE.rankIdx=getRank(STATE.stars).level;
   saveState(); flyStar(n);
   if(STATE.rankIdx>before) rankUpFx();
 }
