@@ -742,22 +742,58 @@
   /* v78 薄弱点洞察面板 */
   .weak-modal{max-width:480px;}
   .weak-body{max-height:calc(100vh - 150px); overflow:auto;}
-  .wk-sec{margin:14px 0 4px; font-weight:800; font-size:14px; display:flex; align-items:center; gap:6px;}
-  .wk-card{background:var(--soft); border-radius:14px; padding:10px 12px; margin:8px 0; border:1px solid var(--line);}
-  .wk-row{display:flex; align-items:center; justify-content:space-between; gap:8px;}
-  .wk-name{font-weight:700; font-size:14px;}
-  .wk-tags{display:flex; gap:5px; flex-wrap:wrap; margin-top:6px;}
-  .wk-tag{font-size:11px; padding:2px 8px; border-radius:999px; background:#fff; border:1px solid var(--line);}
-  .wk-tag.sel{color:#c0392b; border-color:#f0b4ad;}
-  .wk-tag.spell{color:#b8860b; border-color:#f0dca6;}
-  .wk-tag.sent{color:#6c3fb5; border-color:#d9c7f2;}
-  .wk-word{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px dashed var(--line);}
-  .wk-word:last-child{border-bottom:none;}
-  .wk-en{font-weight:800; font-size:15px;}
-  .wk-zh{color:var(--muted); font-size:13px; margin-left:6px;}
-  .wk-meta{font-size:12px; color:var(--muted); white-space:nowrap;}
-  .wk-empty{text-align:center; color:var(--muted); padding:24px 0;}
-  .wk-empty .big{font-size:40px; display:block; margin-bottom:6px;}
+  /* v84 薄弱点 · 4仪表+等级徽章+chip单词（重做） */
+  .wk-gauge{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0 14px;}
+  .wk-stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; box-shadow:var(--sh-1); position:relative; overflow:hidden;}
+  .wk-stat::before{content:''; position:absolute; inset:0 0 auto 0; height:3px; background:linear-gradient(90deg,var(--grape),var(--amber)); opacity:.75;}
+  .wk-stat .ico{font-size:18px; line-height:1; margin-bottom:2px;}
+  .wk-stat .num{font-size:22px; font-weight:800; color:var(--grape-d); line-height:1.1; font-variant-numeric:tabular-nums;}
+  .wk-stat:nth-child(3) .num{color:var(--forest-d);}
+  .wk-stat:nth-child(4) .num{color:var(--amber-d);}
+  .wk-stat .lbl{font-size:11px; color:var(--muted); margin-top:3px;}
+  .wk-sec{margin:14px 0 6px; font-weight:800; font-size:14px; display:flex; align-items:center; gap:6px; color:var(--ink);}
+  .wk-sec .count{margin-left:auto; font-size:11px; font-weight:600; color:var(--muted); background:var(--soft); padding:2px 8px; border-radius:999px;}
+
+  /* 单元卡：左侧大emoji，中间等级+错次条，右侧去复习 */
+  .wk-u{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:10px 12px; margin:8px 0; box-shadow:var(--sh-1); transition:transform .15s var(--ease-spring);}
+  .wk-u:hover{transform:translateX(2px); box-shadow:var(--sh-2);}
+  .wk-u-emo{width:46px; height:46px; flex:0 0 46px; display:flex; align-items:center; justify-content:center; font-size:26px; background:var(--soft); border-radius:14px; box-shadow:inset 0 0 0 1.5px var(--line);}
+  .wk-u-body{flex:1; min-width:0;}
+  .wk-u-name{font-weight:800; font-size:14px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .wk-u-meta{display:flex; align-items:center; gap:6px; margin-top:5px; flex-wrap:wrap;}
+  .wk-u-lv{font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px; line-height:1.4; white-space:nowrap;}
+  .wk-u-lv.h1{background:rgba(226,109,92,.15); color:#B23E2E; box-shadow:inset 0 0 0 1px rgba(226,109,92,.3);}
+  .wk-u-lv.h2{background:rgba(244,169,60,.15); color:#B07000; box-shadow:inset 0 0 0 1px rgba(244,169,60,.3);}
+  .wk-u-lv.h3{background:rgba(79,157,108,.16); color:#2F6E47; box-shadow:inset 0 0 0 1px rgba(79,157,108,.32);}
+  .wk-u-bar{flex:1; min-width:60px; height:8px; background:var(--soft); border-radius:999px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--line);}
+  .wk-u-bar i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--grape),var(--amber));}
+  .wk-u-bar.h1 i{background:linear-gradient(90deg,#E26D5C,#C9503E);}
+  .wk-u-bar.h2 i{background:linear-gradient(90deg,var(--amber),var(--amber-d));}
+  .wk-u-bar.h3 i{background:linear-gradient(90deg,var(--forest),var(--forest-d));}
+  .wk-u-sum{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .wk-u-go{flex:0 0 auto; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:12px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); color:#fff; border:none; cursor:pointer; box-shadow:0 3px 0 var(--grape-d), 0 4px 10px rgba(106,84,189,.25); transition:transform .12s var(--ease-spring); white-space:nowrap;}
+  .wk-u-go:hover{transform:translateY(-1px); box-shadow:0 4px 0 var(--grape-d), 0 6px 14px rgba(106,84,189,.32);}
+  .wk-u-go:active{transform:translateY(2px); box-shadow:0 1px 0 var(--grape-d);}
+
+  /* 单词 chip：发音按钮+英文大字+中文+错次热力chip */
+  .wk-words{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px;}
+  .wk-chip{display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px 4px 6px 6px; box-shadow:var(--sh-1); transition:transform .12s var(--ease-spring), box-shadow .12s;}
+  .wk-chip:hover{transform:translateY(-2px); box-shadow:var(--sh-2);}
+  .wk-chip-spk{width:28px; height:28px; flex:0 0 28px; border:none; border-radius:10px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); color:#fff; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 0 var(--grape-d); transition:transform .1s;}
+  .wk-chip-spk:hover{transform:translateY(-1px);}
+  .wk-chip-spk:active{transform:translateY(1px);}
+  .wk-chip-en{font-weight:800; font-size:14.5px; color:var(--ink); padding:0 4px;}
+  .wk-chip-zh{font-size:12px; color:var(--muted); padding-right:6px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .wk-chip-cnt{font-size:10.5px; font-weight:800; padding:2px 7px; border-radius:999px; line-height:1.3;}
+  .wk-chip-cnt.h1{background:rgba(226,109,92,.18); color:#B23E2E;}
+  .wk-chip-cnt.h2{background:rgba(244,169,60,.18); color:#B07000;}
+  .wk-chip-cnt.h3{background:rgba(79,157,108,.2); color:#2F6E47;}
+
+  /* 空数据 */
+  .wk-empty{text-align:center; color:var(--muted); padding:30px 0 16px; background:var(--card); border:1px dashed var(--line); border-radius:18px; margin-top:6px;}
+  .wk-empty .big{font-size:44px; display:block; margin-bottom:6px;}
+  .wk-empty .ttl{font-weight:800; color:var(--ink); font-size:14px;}
+  .wk-empty p{margin:4px 0 12px; font-size:12.5px;}
   .lt.shake{animation:shakeX .4s ease;}
   @keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
   .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
@@ -1083,7 +1119,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">83</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">84</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1161,6 +1197,7 @@ update → controllerchange
       <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值显示灰色数字 +「0」、超均值显示金色数字，悬停完整数据（日期·掌握数·正确率）均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
       <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
       <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
+      <div class="it"><b>v84 · 薄弱点面板重做：4仪表+等级徽章+chip单词</b><span>用户反馈 v78 「我的薄弱点」面板太简陋（灰底平铺、chip 只是数字、单词无发音、无等级）。彻底重做：①顶部 4 项仪表卡网格 — 累计错次/薄弱单元/已掌握词/连续学习，配色用 --grape/--forest/--amber 区分类型，全部 var() 跟随主题。②单元卡重做：左侧 big emoji 圆形头像罩、中间等级徽章（🔴⚠严重 ≥7 次 / 🟡●中等 4-6 / 🟢✦轻微 1-3）+ 错次进度条（按级别配色 渐变，h1 暖红、h2 琥珀、h3 森林绿）+ 底部小字统计「选/拼/句」、右侧大紫色立体「去复习 ➡️」按钮（带 3D 阴影+按压反馈）。③常错单词按出现频次合并去重，前 16 渲染为 chip：每个 chip = 🔊 发音按钮（点调用 speak()）+ 英文大字 + 中文 + 错次热度 chip（×1 绿、×2 黄、≥4 红），hover 抬升 2px。配色全部用 var() 跟随主题（暖色绘本风），与 v83 报告/v80 趋势图/v82 数字盖顶同套视觉语言。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2619,7 +2656,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 83;
+const APP_VERSION = 84;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -5526,29 +5563,83 @@ function closeWeakPanel(){
 function renderWeakPanel(){
   const body=document.getElementById('weakBody'); if(!body) return;
   const wb=STATE.weakByUnit||{};
-  const totalWrong=(STATE.wrong||[]).length;
-  const rows=Object.entries(wb).map(([uid,w])=>{
-    const s=(w.sel||0)+(w.spell||0)+(w.sent||0);
-    return {uid, s, sel:w.sel||0, spell:w.spell||0, sent:w.sent||0};
-  }).filter(r=>r.s>0).sort((a,b)=>b.s-a.s).slice(0,5);
-  const words=(STATE.wrong||[]).slice(0,12);
-  let html=`<p class="muted" style="margin:0 0 4px">累计错题 <b>${totalWrong}</b> 个 · 选/拼/句 分别指「选择题、拼写、连词成句」的错次</p>`;
-  if(!rows.length && !words.length){
-    html+=`<div class="wk-empty"><span class="big">🌟</span><p>还没有薄弱点记录，继续加油哦！</p></div>`;
+  const wrongArr=STATE.wrong||[];
+  const totalWrong=wrongArr.length;
+  // 顶部 4 仪表数据
+  const weakUids=Object.entries(wb).map(([uid,w])=>{
+    const s=(w.sel||0)+(w.spell||0)+(w.sent||0); return {uid,s};
+  }).filter(r=>r.s>0);
+  const weakUnitCount=weakUids.length;
+  const mastered=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
+  // 4 仪表：①总错次 ②薄弱单元 ③已掌握 ④连续学习
+  const streak=STATE.streak||0;
+  let html=`
+    <div class="wk-gauge">
+      <div class="wk-stat"><div class="ico">📉</div><div class="num">${totalWrong}</div><div class="lbl">累计错次</div></div>
+      <div class="wk-stat"><div class="ico">🔥</div><div class="num">${weakUnitCount}</div><div class="lbl">薄弱单元</div></div>
+      <div class="wk-stat"><div class="ico">⭐</div><div class="num">${mastered}</div><div class="lbl">已掌握词</div></div>
+      <div class="wk-stat"><div class="ico">📅</div><div class="num">${streak}</div><div class="lbl">连续天数</div></div>
+    </div>`;
+
+  // 空数据兜底
+  if(!weakUids.length && !wrongArr.length){
+    html+=`<div class="wk-empty"><span class="big">🌟</span>
+      <div class="ttl">还没有薄弱点记录</div>
+      <p>去学习/测试，错的词会自动归到这里</p></div>`;
     body.innerHTML=html; return;
   }
+
+  // 单元卡（按 s 降序，Top 5）
+  const rows=weakUids.slice().sort((a,b)=>b.s-a.s).slice(0,5);
   if(rows.length){
-    html+=`<div class="wk-sec">📌 最该补的单元</div>`;
+    const maxS=rows[0].s||1;
+    html+=`<div class="wk-sec">📌 最该补的单元<span class="count">Top ${rows.length}</span></div>`;
     rows.forEach(r=>{
-      html+=`<div class="wk-card"><div class="wk-row"><span class="wk-name">${unitName(r.uid)}</span>`
-        +`<button class="btn grape" style="padding:5px 12px;font-size:13px" onclick="closeWeakPanel();goTestUnit('${r.uid}')">去复习 ➡️</button></div>`
-        +`<div class="wk-tags"><span class="wk-tag sel">选 ${r.sel}</span><span class="wk-tag spell">拼 ${r.spell}</span><span class="wk-tag sent">句 ${r.sent}</span></div></div>`;
+      const w=wb[r.uid]||{};
+      const sel=w.sel||0, spell=w.spell||0, sent=w.sent||0;
+      // 等级：≥7 严重 4-6 中 1-3 轻
+      let lv='h3', lvTxt='✦ 轻微', lvEmoji='🟢';
+      if(r.s>=7){ lv='h1'; lvTxt='⚠ 严重'; lvEmoji='🔴'; }
+      else if(r.s>=4){ lv='h2'; lvTxt='● 中等'; lvEmoji='🟡'; }
+      const u=(ALL_UNITS.find(x=>x.id===r.uid))||{};
+      const emoji=u.emoji||'📘';
+      const tt=u.title||r.uid;
+      const total=(u.words||[]).length||0;
+      const masteredN=((STATE.units[r.uid]||{}).mastered||[]).length;
+      const pct=total?Math.min(100,Math.round(r.s/(r.s+masteredN+1)*100)):50;
+      html+=`<div class="wk-u">
+        <div class="wk-u-emo">${emoji}</div>
+        <div class="wk-u-body">
+          <div class="wk-u-name">${tt}</div>
+          <div class="wk-u-meta">
+            <span class="wk-u-lv ${lv}">${lvEmoji} ${lvTxt}</span>
+            <div class="wk-u-bar ${lv}" title="错 ${r.s} / 总词 ${total}"><i style="width:${pct}%"></i></div>
+            <span class="wk-u-sum">错 ${sel+spell+sent} · 选${sel} 拼${spell} 句${sent}</span>
+          </div>
+        </div>
+        <button class="wk-u-go" onclick="closeWeakPanel();goTestUnit('${r.uid}')">去复习 ➡️</button>
+      </div>`;
     });
   }
-  if(words.length){
-    html+=`<div class="wk-sec">🔤 常错单词</div><div class="wk-card">`;
-    words.forEach(w=>{
-      html+=`<div class="wk-word"><span><span class="wk-en">${w.en}</span><span class="wk-zh">${w.zh||''}</span></span><span class="wk-meta">${unitName(w.unit)||''}</span></div>`;
+
+  // 常错单词 chip（去重按出现频次热度排序）
+  if(wrongArr.length){
+    const m=new Map();
+    wrongArr.forEach(w=>{ if(!w||!w.en) return; const k=w.en+' '; const cur=m.get(k)||{en:w.en,zh:w.zh||'',n:0,unit:w.unit||''}; cur.n++; m.set(k,cur); });
+    const arr=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,16);
+    html+=`<div class="wk-sec">🔤 常错单词<span class="count">${arr.length} 词 · 已合并重复</span></div>
+      <div class="wk-words">`;
+    arr.forEach(w=>{
+      let lv='h3';
+      if(w.n>=4) lv='h1';
+      else if(w.n>=2) lv='h2';
+      const enEsc=(w.en||'').replace(/'/g,"\\'");
+      html+=`<div class="wk-chip" title="${enEsc} · ${w.zh||''}">
+        <button class="wk-chip-spk" onclick="speak('${enEsc}')" aria-label="发音">🔊</button>
+        <span class="wk-chip-en">${enEsc}</span>
+        <span class="wk-chip-zh">${w.zh||''}</span>
+        <span class="wk-chip-cnt ${lv}">×${w.n}</span>
+      </div>`;
     });
     html+=`</div>`;
   }
