@@ -479,7 +479,7 @@
   .report li{margin-bottom:4px;}
   .filebox{margin-top:10px;}
   /* ===== v79 家长报告（精美版） ===== */
-  .rpt{background:linear-gradient(180deg,#FFFDF8 0%, #FFF6E9 100%); border:2px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow); margin-top:10px;}
+  .rpt{background:var(--card); border:1.5px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow); margin-top:10px;}
   .rpt-head{display:flex; align-items:center; justify-content:space-between; gap:10px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); border-radius:16px; padding:14px 16px; color:#fff; box-shadow:0 8px 18px rgba(124,92,200,.28);}
   .rpt-title{font-size:16px; font-weight:800;}
   .rpt-date{font-size:12px; opacity:.92; margin-top:3px;}
@@ -492,14 +492,15 @@
   .rpt-line b{font-size:16px;}
   .rpt-sec{font-size:15px; font-weight:800; color:var(--ink); margin:14px 0 8px; display:flex; align-items:center; gap:6px;}
   /* v80 家长报告·近况：每日柱+数字（详细版） */
-  .rpt-trend{display:flex; align-items:flex-end; gap:5px; height:108px; padding:20px 4px 0; position:relative;}
+  .rpt-trend{display:flex; align-items:flex-end; gap:5px; height:108px; padding:20px 8px 10px; position:relative; background:var(--card); border:1.5px solid var(--line); border-radius:14px; margin-bottom:4px;}
   .rpt-tcol{flex:1; min-width:20px; max-width:38px; display:flex; flex-direction:column; align-items:center;}
   .rpt-tbar{width:100%; min-height:4px; background:linear-gradient(180deg,#B79BE8,var(--grape)); border-radius:5px 5px 0 0; position:relative; transition:transform .15s;}
   .rpt-tbar:hover{filter:brightness(1.07);}
-  .rpt-tbar.zero{background:linear-gradient(180deg,#E5D9C2,#CDBFA3); opacity:.6;}
+  /* v83 灰柱改虚线空柱（0 掌握=无）：在 var(--card) 卡上两种主题都可见，语义更准确 */
+  .rpt-tbar.zero{background:transparent; border:1.5px dashed var(--muted); opacity:1; min-height:8px;}
   .rpt-tbar.hi{background:linear-gradient(180deg,#FFD27A,var(--amber)); box-shadow:inset 0 0 0 1.5px #E89018;}
   .rpt-tnum{position:absolute; left:0; right:0; bottom:100%; margin-bottom:2px; text-align:center; font-size:10.5px; font-weight:800; color:#fff; line-height:1; text-shadow:0 1px 2px rgba(74,42,90,.55); z-index:2; pointer-events:none;}
-  .rpt-tnum.zero{color:#6B5B45; text-shadow:0 1px 1px rgba(255,255,255,.7);}
+  .rpt-tnum.zero{color:var(--muted); text-shadow:none;}
   .rpt-tnum.hi{color:#7A4A00; text-shadow:0 1px 1px rgba(255,255,255,.7);}
   .rpt-tdate{font-size:10px; color:var(--muted); margin-top:7px; font-weight:600; line-height:1;}
   .rpt-weak{margin-bottom:12px;}
@@ -1082,7 +1083,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">82</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">83</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1159,6 +1160,7 @@ update → controllerchange
       <div class="it"><b>v80 · 近况趋势详细化：每日柱+数字</b><span>用户反馈 v79 的家长报告中「📈 近况（掌握单词趋势）」只画了几根无标签无数字的紫色柱状图，过于抽象看不出含义。重做为「每日柱+数字」详细版：14 天一日一柱（一日一格），柱顶标「+5」当天掌握数（0 掌握显示灰色 +「0」），超过当周平均的柱高亮金色渐变 + 内描边 + 数字徽章；柱底标日期简写（8/12、8/13…）；悬停 title 显示「8/12 · 掌握 5 词 · 正确率 87%」完整数据。趋势区右上加副标「峰值 +N · 均值 +M」。同步 saveReportImage() 纯 canvas 长图：每柱顶部数字 + 底部日期 + 0 值灰色 + 超均值金色渐变，区域高度从 64 增至 126 容纳新增的标签层。视觉层 CSS（.rpt-trend/.rpt-tcol/.rpt-tbar.zero/.rpt-tbar.hi/.rpt-tnum/.rpt-tdate）与数据层（trendBars 生成函数）同步升级。</span></div>
       <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值显示灰色数字 +「0」、超均值显示金色数字，悬停完整数据（日期·掌握数·正确率）均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
       <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
+      <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2617,7 +2619,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 82;
+const APP_VERSION = 83;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -5044,8 +5046,13 @@ function saveReportImage(){
     const H=pad*2+headerH+16+cardsH+12+lineH+12+trendH+12+24+weakH+12+24+wordsH+12+24+adviceH+40;
     const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
     const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
-    let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#FFF7EC'); g.addColorStop(1,'#FBE7CF');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const cs=getComputedStyle(document.body);
+    const cardBg=cs.getPropertyValue('--card').trim()||'#fdf3df';
+    const ink=cs.getPropertyValue('--ink').trim()||'#3A2B22';
+    const muted=cs.getPropertyValue('--muted').trim()||'#9A8B78';
+    const soft=cs.getPropertyValue('--soft').trim()||'#f3e6c8';
+    const line=cs.getPropertyValue('--line').trim()||'#ECDCC4';
+    ctx.fillStyle=cardBg; ctx.fillRect(0,0,W,H);
     let y=pad;
     // 头部
     let hg=ctx.createLinearGradient(0,y,W,y+headerH); hg.addColorStop(0,'#8A6FD0'); hg.addColorStop(1,'#6E54BD');
@@ -5061,9 +5068,9 @@ function saveReportImage(){
     const cw=(W-pad*2-12)/2, ch=88;
     const cards=[['⭐ 星星',String(d.stars)],['🔥 连续天数',String(d.streak)],['📚 掌握度',d.masPct+'%'],['✅ 正确率',d.acc+'%']];
     cards.forEach((c,i)=>{ const cx=pad+(i%2)*(cw+12), cy=y+Math.floor(i/2)*(ch+12);
-      roundRect(ctx,cx,cy,cw,ch,16); ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle='#ECDCC4'; ctx.lineWidth=1.5; ctx.stroke();
-      ctx.fillStyle='#9A8B78'; ctx.font='600 14px sans-serif'; ctx.fillText(c[0],cx+16,cy+26);
-      ctx.fillStyle='#3A2B22'; ctx.font='800 30px sans-serif'; ctx.fillText(c[1],cx+16,cy+62);
+      roundRect(ctx,cx,cy,cw,ch,16); ctx.fillStyle=cardBg; ctx.fill(); ctx.strokeStyle=line; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle=muted; ctx.font='600 14px sans-serif'; ctx.fillText(c[0],cx+16,cy+26);
+      ctx.fillStyle=ink; ctx.font='800 30px sans-serif'; ctx.fillText(c[1],cx+16,cy+62);
     });
     y+=cardsH+12;
     // 一行摘要
@@ -5073,11 +5080,11 @@ function saveReportImage(){
     y+=lineH+12;
     // 趋势（v80：每日柱+数字+日期，0值灰、超均值金、含峰均副标）
     if(d.trend.length){
-      ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.textAlign='left';
+      ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.textAlign='left';
       ctx.fillText('📈 近况（掌握单词趋势）', pad, y+16);
       const maxM=Math.max(1,...d.trend.map(e=>e.mastered));
       const avg=d.trend.reduce((a,x)=>a+x.mastered,0)/d.trend.length;
-      ctx.fillStyle='#9A8B78'; ctx.font='500 12px sans-serif'; ctx.textAlign='right';
+      ctx.fillStyle=muted; ctx.font='500 12px sans-serif'; ctx.textAlign='right';
       ctx.fillText('峰值 +'+maxM+' · 均值 +'+(Math.round(avg*10)/10), W-pad, y+16);
       ctx.textAlign='left';
       y+=24;
@@ -5089,49 +5096,51 @@ function saveReportImage(){
         const isZero=e.mastered===0, isHi=!isZero && e.mastered>avg;
         const h=isZero?3:Math.max(6,Math.round(e.mastered/maxM*barAreaH));
         // 数字（柱顶上方）
-        ctx.fillStyle=isZero?'#9A8B78':(isHi?'#B07000':'#6E54BD');
+        ctx.fillStyle=isZero?muted:(isHi?'#B07000':'#6E54BD');
         ctx.font='800 11px sans-serif'; ctx.textAlign='center';
         ctx.fillText(isZero?'0':'+'+e.mastered, cx, baseline-h-4);
-        // 柱（渐变）
+        // 柱（紫/金渐变保留；灰柱改虚线空柱 v83）
         if(!isZero){
           const bg=ctx.createLinearGradient(0,baseline-h,0,baseline);
           if(isHi){ bg.addColorStop(0,'#FFD27A'); bg.addColorStop(1,'#F4A93C'); }
           else { bg.addColorStop(0,'#B79BE8'); bg.addColorStop(1,'#8A6FD0'); }
           ctx.fillStyle=bg; roundRect(ctx,bx,baseline-h,bbw,h,4); ctx.fill();
         } else {
-          ctx.fillStyle='#CDBFA3'; roundRect(ctx,bx,baseline-h,bbw,h,2); ctx.fill();
+          ctx.setLineDash([3,3]); ctx.strokeStyle=muted; ctx.lineWidth=1.5;
+          roundRect(ctx,bx,baseline-h,bbw,h,2); ctx.stroke();
+          ctx.setLineDash([]);
         }
         // 日期（柱底下方）
         const day=parseInt((e.date||'').split('-')[2],10);
-        ctx.fillStyle='#9A8B78'; ctx.font='600 11px sans-serif';
+        ctx.fillStyle=muted; ctx.font='600 11px sans-serif';
         ctx.fillText(day||'', cx, baseline+16);
       });
       ctx.textAlign='left';
       y+=topReserve+barAreaH+botReserve;
     }
     // 薄弱单元
-    ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('🔥 薄弱单元', pad, y+16); y+=24;
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('🔥 薄弱单元', pad, y+16); y+=24;
     if(d.weakUnits.length){ d.weakUnits.forEach(w=>{
-      ctx.fillStyle='#3A2B22'; ctx.font='600 15px sans-serif'; ctx.fillText(w.emoji+' '+w.title+'　错'+w.tot+'次', pad, y+18);
+      ctx.fillStyle=ink; ctx.font='600 15px sans-serif'; ctx.fillText(w.emoji+' '+w.title+'　错'+w.tot+'次', pad, y+18);
       const bx0=pad, bw=W-pad*2-120, by=y+26, bh=12;
-      roundRect(ctx,bx0,by,bw,bh,6); ctx.fillStyle='#EDE6F7'; ctx.fill();
+      roundRect(ctx,bx0,by,bw,bh,6); ctx.fillStyle=soft; ctx.fill();
       roundRect(ctx,bx0,by,bw*w.pct/100,bh,6); ctx.fillStyle='#8A6FD0'; ctx.fill();
       ctx.fillStyle='#6E54BD'; ctx.font='700 13px sans-serif'; ctx.textAlign='right'; ctx.fillText(w.pct+'%', W-pad, y+37); ctx.textAlign='left';
       y+=56;
-    }); } else { ctx.fillStyle='#9A8B78'; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱单元，掌握得很棒 🎉', pad, y+16); y+=36; }
+    }); } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱单元，掌握得很棒 🎉', pad, y+16); y+=36; }
     y+=8;
     // 常错单词
-    ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('📒 常错单词', pad, y+16); y+=24;
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('📒 常错单词', pad, y+16); y+=24;
     if(d.wrongWords.length){ const items=d.wrongWords.map(w=>w.en+(w.zh?'('+w.zh+')':'')).join('、');
-      ctx.fillStyle='#6b5a48'; ctx.font='500 14px sans-serif'; y=drawWrapped(ctx,items,pad,y,W-pad*2,20)+10;
-    } else { ctx.fillStyle='#9A8B78'; ctx.font='500 14px sans-serif'; ctx.fillText('错题本空空如也，真厉害！', pad, y+16); y+=24; }
+      ctx.fillStyle=ink; ctx.font='500 14px sans-serif'; y=drawWrapped(ctx,items,pad,y,W-pad*2,20)+10;
+    } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('错题本空空如也，真厉害！', pad, y+16); y+=24; }
     y+=8;
     // 建议
-    ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('💡 学习建议', pad, y+16); y+=26;
-    ctx.fillStyle='#6b5a48'; ctx.font='500 14px sans-serif';
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('💡 学习建议', pad, y+16); y+=26;
+    ctx.fillStyle=ink; ctx.font='500 14px sans-serif';
     d.advice.forEach(t=>{ y=drawWrapped(ctx,'· '+t,pad,y,W-pad*2,20)+10; });
     y+=12;
-    ctx.fillStyle='#B7A98F'; ctx.font='500 13px sans-serif'; ctx.fillText('由 english5-helper 生成 · hjrwal.github.io', pad, y+10);
+    ctx.fillStyle=muted; ctx.font='500 13px sans-serif'; ctx.fillText('由 english5-helper 生成 · hjrwal.github.io', pad, y+10);
     cv.toBlob(function(blob){
       if(!blob){ toast('图片生成失败'); return; }
       const name='英语家长报告_'+d.date+'.png', file=new File([blob],name,{type:'image/png'});
