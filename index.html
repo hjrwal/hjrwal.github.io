@@ -640,35 +640,22 @@
   .chip.on{background:linear-gradient(90deg,var(--grape),var(--sky)); color:#fff; border-color:rgba(255,255,255,.6); box-shadow:var(--shadow);}
   .num-in{width:72px; padding:7px 10px; border-radius:10px; border:2px solid var(--line); background:var(--card); color:var(--ink); font-size:15px; font-weight:800; text-align:center;}
   .num-in:focus{outline:none; border-color:var(--grape);}
-  /* 首次使用指引（v42 · v47 改绘本封面风） */
-  .onboard{text-align:center; max-width:340px; padding:0; overflow:hidden;
-    border:2px solid var(--line); border-radius:26px 24px 22px 26px/24px 26px 24px 22px;
-    background:linear-gradient(180deg,#FFF7E8 0%, var(--paper) 42%);
-    box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.5), inset 0 0 0 7.5px rgba(200,150,90,.16);}
-  .ob-scene{position:relative; height:104px; overflow:hidden; background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
-  .ob-body{padding:14px 20px 18px;}
-  .ob-fox{display:flex; justify-content:center; margin-bottom:2px; line-height:1;}
-  .ob-fox .fox-char{width:92px; height:92px; animation:foxBob 1s var(--ease-spring) infinite; filter:drop-shadow(0 3px 5px rgba(0,0,0,.18));}
-  .ob-title{font-size:20px; font-weight:900; margin:2px 0 8px; color:var(--fox-d); letter-spacing:.3px;}
-  .ob-emoji{font-size:40px; margin:2px 0 8px; line-height:1; filter:drop-shadow(0 4px 8px rgba(0,0,0,.12));}
-  .ob-text{font-size:15px; font-weight:700; color:var(--ink); line-height:1.6; min-height:60px; margin:0 0 6px; text-align:left;
-    background:#FFFDF8; border:2px solid var(--line); border-radius:16px; padding:11px 14px; position:relative; box-shadow:var(--sh-1);}
-  .ob-text::before{content:''; position:absolute; left:34px; top:-9px; width:16px; height:16px; background:#FFFDF8; border-left:2px solid var(--line); border-top:2px solid var(--line); transform:rotate(45deg); border-radius:3px 0 0 0;}
-  .ob-dots{display:flex; gap:7px; justify-content:center; margin:8px 0 14px;}
-  .ob-dot{width:8px; height:8px; border-radius:50%; background:var(--line); transition:.25s;}
-  .ob-dot.on{width:22px; border-radius:999px; background:linear-gradient(90deg,var(--fox),var(--amber));}
-  .ob-nav{justify-content:space-between; gap:10px;}
-  .ob-nav .btn{flex:1; padding:12px 0; font-size:15px;}
-  .ob-skip{display:block; margin:14px auto 0; background:none; border:none; color:var(--muted); font-size:12px; font-weight:700; cursor:pointer; text-decoration:underline; font-family:inherit;}
-  /* 暖夜绘本下的指引封面 */
-  body.theme-dark .onboard{background:linear-gradient(180deg,#3a2c20 0%, var(--paper) 42%); box-shadow:var(--sh-3), inset 0 0 0 6px rgba(60,46,34,.5), inset 0 0 0 7.5px rgba(232,116,59,.22);}
-  body.theme-dark .ob-scene{background:linear-gradient(180deg,#3a3150 0%, #46324a 100%);}
-  body.theme-dark .ob-text{background:#3a2e24; border-color:var(--line);}
-  body.theme-dark .ob-text::before{background:#3a2e24; border-color:var(--line);}
-  body.theme-sepia .onboard{background:linear-gradient(180deg,#FBF1DA 0%, var(--paper) 42%);}
-  body.theme-sepia .ob-scene{background:linear-gradient(180deg,#dcebd8 0%, #f0ead0 100%);}
-  body.theme-sepia .ob-text{background:#fff7e6;}
-  body.theme-sepia .ob-text::before{background:#fff7e6;}
+  /* 板块首次指引 / 巡览（v86 · 替代 v42 一次性向导，改为按板块触发） */
+  .coach-mask{position:fixed; inset:0; z-index:60; display:none; align-items:flex-start; justify-content:center;
+    padding:72px 16px 16px; background:rgba(28,22,16,.20); -webkit-backdrop-filter:blur(1px); backdrop-filter:blur(1px);}
+  .coach-mask.show{display:flex; animation:coachFade .18s ease;}
+  .coach{max-width:340px; width:100%; text-align:center; padding:18px 20px 16px; box-sizing:border-box;
+    background:var(--card); border:2px solid var(--line); border-radius:24px 22px 24px 22px/22px 24px 22px 24px;
+    box-shadow:var(--sh-3); position:relative; animation:coachPop .22s var(--ease-spring);}
+  .coach::before{content:''; position:absolute; left:50%; top:-9px; transform:translateX(-50%) rotate(45deg); width:18px; height:18px;
+    background:var(--card); border-left:2px solid var(--line); border-top:2px solid var(--line); border-radius:4px 0 0 0;}
+  .coach-emoji{font-size:42px; line-height:1; margin:2px 0 6px; filter:drop-shadow(0 4px 8px rgba(0,0,0,.12));}
+  .coach-title{font-size:18px; font-weight:900; margin:0 0 8px; color:var(--grape-d); letter-spacing:.3px;}
+  .coach-text{font-size:15px; font-weight:700; color:var(--ink); line-height:1.62; margin:0 0 14px; text-align:left;}
+  .coach-nav{display:flex; gap:10px; justify-content:space-between;}
+  .coach-nav .btn{flex:1; padding:11px 0; font-size:15px;}
+  @keyframes coachFade{from{opacity:0}to{opacity:1}}
+  @keyframes coachPop{from{opacity:0; transform:translateY(-8px) scale(.96)}to{opacity:1; transform:none}}
   @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
   .floaty{animation:floaty 2.5s ease-in-out infinite;}
   /* 发音动画条 */
@@ -1124,7 +1111,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">85</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">86</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1204,6 +1191,7 @@ update → controllerchange
       <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
       <div class="it"><b>v84 · 薄弱点面板重做：4仪表+等级徽章+chip单词</b><span>用户反馈 v78 「我的薄弱点」面板太简陋（灰底平铺、chip 只是数字、单词无发音、无等级）。彻底重做：①顶部 4 项仪表卡网格 — 累计错次/薄弱单元/已掌握词/连续学习，配色用 --grape/--forest/--amber 区分类型，全部 var() 跟随主题。②单元卡重做：左侧 big emoji 圆形头像罩、中间等级徽章（🔴⚠严重 ≥7 次 / 🟡●中等 4-6 / 🟢✦轻微 1-3）+ 错次进度条（按级别配色 渐变，h1 暖红、h2 琥珀、h3 森林绿）+ 底部小字统计「选/拼/句」、右侧大紫色立体「去复习 ➡️」按钮（带 3D 阴影+按压反馈）。③常错单词按出现频次合并去重，前 16 渲染为 chip：每个 chip = 🔊 发音按钮（点调用 speak()）+ 英文大字 + 中文 + 错次热度 chip（×1 绿、×2 黄、≥4 红），hover 抬升 2px。配色全部用 var() 跟随主题（暖色绘本风），与 v83 报告/v80 趋势图/v82 数字盖顶同套视觉语言。</span></div>
       <div class="it"><b>v85 · 薄弱点面板升级：等级徽章强化 + 🔊加大 + 去复习拆双按钮</b><span>用户确认 v84 三项优化点全部采纳：①等级徽章强化——「⚠ 严重」(≥7 次) 字号加粗到 900、红色更深(#9E2B1B)、加 1.5px 红边 + 红色外发光圈，三种级别一眼区分；②🔊 发音按钮由 28px 加大到 34px、字号 13→16、圆角 10→12，更易点中；③单元卡右侧「去复习 ➡️」单按钮拆为竖排双按钮——「📝 练一练」(沿用上次题型进测试屏直接做) 与「🎯 测一测」(弹题型选择框自定义 10 题)，橙色区分。配色继续全部 var() 跟随主题。</span></div>
+      <div class="it"><b>v86 · 首次指引改为「按板块触发」</b><span>用户反馈原 v42 一次性 6 步向导「全放出来记不清」。改为：首次打开只弹 1 张简短欢迎卡（白喵打招呼 + 一句「点哪个板块我讲哪个」）；之后每次首次点进某板块，才弹该板块自己的 1-2 句小提示（轻量气泡 coachmark，贴近顶部、不挡全屏、点「知道了」即走）。覆盖全部 14 个板块：首页/词汇/句型/语法/听说读写/单元测试/错题本/闯关/单词游戏/限时挑战/成就墙/进度/词鉴/技术亮点。设置页「重新查看」改为按顺序巡览全部板块指引。状态存 STATE.guided（按板块标记已看），欢迎即覆盖首页避免重复弹。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1555,7 +1543,7 @@ update → controllerchange
       <p class="muted" id="abStatus" style="margin:6px 0 0">今天还没自动备份</p>
     </div>
     <div class="set-row"><b>📖 新手引导</b>
-      <button class="btn sky" style="flex:1" onclick="closeSettings(); openOnboard()">▶ 重新查看</button>
+      <button class="btn sky" style="flex:1" onclick="closeSettings(); openTour()">▶ 重新查看</button>
     </div>
   </div>
 </div>
@@ -1619,34 +1607,15 @@ update → controllerchange
   </div>
 </div>
 
-<!-- 首次使用指引 -->
-<div class="modal-mask" id="onboardMask">
-  <div class="modal onboard">
-    <div class="ob-scene" aria-hidden="true">
-      <svg class="scene-svg" viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice">
-        <circle class="sc-sun" cx="262" cy="30" r="16"/>
-        <g class="sc-rays">
-          <line x1="262" y1="6" x2="262" y2="0"/><line x1="286" y1="30" x2="292" y2="30"/>
-          <line x1="279" y1="13" x2="284" y2="8"/><line x1="279" y1="47" x2="284" y2="52"/>
-          <line x1="245" y1="13" x2="240" y2="8"/><line x1="245" y1="47" x2="240" y2="52"/>
-        </g>
-        <ellipse class="sc-cloud sc-cloud-a" cx="58" cy="30" rx="22" ry="10"/>
-        <ellipse class="sc-cloud sc-cloud-b" cx="120" cy="20" rx="15" ry="7"/>
-        <path class="sc-hill-far" d="M0 98 Q80 66 160 94 T320 86 V132 H0 Z"/>
-        <path class="sc-hill-near" d="M0 114 Q90 88 190 112 T320 106 V132 H0 Z"/>
-        <use href="#i-fox" class="sc-fox" x="34" y="51" width="56" height="63"/>
-      </svg>
-    </div>
-    <div class="ob-body">
-      <h2 class="ob-title" id="obTitle"></h2>
-      <div class="ob-emoji" id="obEmoji"></div>
-      <p class="ob-text" id="obText"></p>
-      <div class="ob-dots" id="obDots"></div>
-      <div class="row ob-nav">
-        <button class="btn ghost" id="obPrev" onclick="obStep(-1)">上一步</button>
-        <button class="btn grape" id="obNext" onclick="obStep(1)">下一步</button>
-      </div>
-      <button class="ob-skip" onclick="closeOnboard()">跳过指引</button>
+<!-- 板块首次指引 / 巡览（v86 替代 v42 一次性向导） -->
+<div class="coach-mask" id="coachMask" onclick="if(event.target===this) hideCoachMask()">
+  <div class="coach" id="coachCard">
+    <div class="coach-emoji" id="coachEmoji"></div>
+    <h3 class="coach-title" id="coachTitle"></h3>
+    <p class="coach-text" id="coachText"></p>
+    <div class="coach-nav">
+      <button class="btn ghost" id="coachPrev" style="visibility:hidden" onclick="coachStep(-1)">上一步</button>
+      <button class="btn grape" id="coachNext" onclick="coachStep(1)">知道了</button>
     </div>
   </div>
 </div>
@@ -2662,7 +2631,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 85;
+const APP_VERSION = 86;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2764,6 +2733,7 @@ function defaultState(){
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     rankIdx:0, codex:{}, bossSeen:{},
     onboarded:false,
+    guided:{},
     settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc'} };
 }
 function loadState(){
@@ -2789,6 +2759,7 @@ function loadState(){
     if(!s.codex) s.codex={};
     if(!s.bossSeen) s.bossSeen={};
     if(typeof s.onboarded!=='boolean') s.onboarded=false;
+    if(!s.guided || typeof s.guided!=='object') s.guided={};
     if(!s.settings.grade) s.settings.grade='5';
     return s;
   } }catch(e){}
@@ -3252,6 +3223,7 @@ function go(name){
     else safeRender(renderCodex);
   }
   safeRender(renderGoal);
+  maybeGuide(name); // v86 按板块触发：首次点进才弹该板块自己的简短指引
 }
 // 全局兜底：捕获未处理的 JS 异常（忽略 img/audio 等资源加载错误），避免静默崩
 window.addEventListener('error', e=>{ if(e.error){ console.error('[global error]', e.error||e.message); try{ toast('😵 出了点小问题，已记录'); }catch(_){} } });
@@ -5473,80 +5445,73 @@ function hideConfirm(){ const cm=document.getElementById('confirmModal'); if(cm)
 function runConfirm(){ const f=_cfOk; hideConfirm(); if(f) f(); }
 
 /* =========================================================
-   首次使用指引（v42）：狐狸向导分步卡片，首次打开自动弹，设置里可重看
+   板块首次指引 / 巡览（v86 · 替代 v42 一次性向导）
+   - 首次打开：弹 1 张简短欢迎卡（白喵打招呼）
+   - 之后：每次首次点进某板块，才弹该板块自己的 1-2 句小提示
+   - 设置页「重新查看」：按顺序巡览全部板块指引
    ========================================================= */
-// 首次使用指引（v42 起：向导分步卡片；v52 起：年级/吉祥物文案动态化）
-function getOnboardSteps(){
-  const g=(STATE&&STATE.settings&&STATE.settings.grade==='6')?'六年级':'五年级';
-  const mascot=(STATE&&STATE.settings&&STATE.settings.grade==='6')?'白喵':'小狐狸'; // 五年级仍是经典小狐狸文案
-  return [
-    {t:'欢迎来到英语小探险！', e:'👋', x:'嗨，小学霸！我是你的英语小向导——'+mascot+'。'+g+'的英语，我们玩着就学会啦！'},
-    {t:'📘 先「学一学」', e:'📚', x:'背单词、练句型、学语法。把课本里的本事，先稳稳学到手。'},
-    {t:'🎯 再「练一练」', e:'✏️', x:'听说读写四项训练、单元测试，还有专属「错题本」——错过的题会陪你重练到会为止。'},
-    {t:'🎮 边玩边记', e:'🏝️', x:'趣味闯关地图、单词小游戏、60 秒限时挑战。在玩里不知不觉就巩固啦！'},
-    {t:'🎯 我的每日小目标', e:'🎯', x:'首页最上面就是「今日目标」，每天答对 20 题就算达标～点标题旁的小铅笔 ✏️ 可以改成你觉得舒服的题数。完成当天会蹦出小庆祝，超有成就感！'},
-    {t:'📊 看看我的成长', e:'🏆', x:'成就墙、学习进度、单词图鉴随时看。每天的点滴进步，都悄悄记在这里啦～'}
-  ];
+const SECTION_GUIDES = {
+  home:        {t:'🏠 这是你的英语小基地', e:'🐱', x:'今日目标、词汇、练习、闯关都从这里一键出发。先挑一个感兴趣的点进去吧～'},
+  vocab:       {t:'📚 词汇练习', e:'🃏', x:'用闪卡背单词：点卡片听发音、翻面看意思。熟悉就点「认识」，不熟点「不认识」让白喵多考你几次。'},
+  sentences:   {t:'💬 句型练习', e:'🗣️', x:'跟着例句读一读、说一说，把课本核心句型练熟。先听一遍，再试着自己读出来～'},
+  grammar:     {t:'🧩 语法小课堂', e:'💡', x:'用孩子能懂的话讲语法点，讲完还有小练习立刻巩固。遇到不懂的词点 🔊 听一听。'},
+  skills:      {t:'🎧 听说读写', e:'✍️', x:'听、说、读、写四项分开练：听力辨词、口语跟读、阅读选择、写作拼写，逐项突破。'},
+  test:        {t:'📝 单元测试', e:'📋', x:'正式小测验！选题型、计分数，错的会自动收进「错题本」陪你重练。先挑一个单元试试。'},
+  wrongbook:   {t:'📕 错题本', e:'🔁', x:'这里收集你答错的题，按复习节奏提醒重做，练到会为止。错得越多越要常回来逛逛。'},
+  adventure:   {t:'🏝️ 趣味闯关', e:'🗺️', x:'一张冒险地图，闯单词关、打败单元 BOSS 赚星星！慢慢来，每天攒一点就很厉害。'},
+  games:       {t:'🎮 单词游戏', e:'🧩', x:'拼词、连连看……在游戏里不知不觉记住单词。纯玩也行，当作放松小奖励～'},
+  challenge:   {t:'⏱️ 限时挑战', e:'🔥', x:'60 秒限时，看你能答对多少题、冲多高分！适合热身或挑战纪录。'},
+  achievements:{t:'🏆 成就墙', e:'🌟', x:'你赚到的星星、勋章和段位都挂在这里。每解锁一个，都是努力的小证明！'},
+  progress:    {t:'📊 我的进度', e:'📈', x:'看每天进步曲线、掌握了多少词、薄弱点在哪。想发给爸妈？点「生成报告」就能存图或导出。'},
+  codex:       {t:'📖 单词图鉴', e:'🦋', x:'每掌握一个单词就收进图鉴，像集邮一样把 545 个词慢慢集齐。翻翻看很有成就感～'},
+  tech:        {t:'💡 技术亮点', e:'⚙️', x:'好奇这个 App 怎么做出来的？这里讲技术演变和版本故事，给爱钻研的小朋友～'}
+};
+const GUIDE_ORDER = ['home','vocab','sentences','grammar','skills','test','wrongbook','adventure','games','challenge','achievements','progress','codex','tech'];
+const WELCOME_GUIDE = {t:'嗨，我是白喵 🐱', e:'🐱', x:'欢迎来到英语小探险！每个板块你第一次点进去，我都会悄悄给你一句小提示，帮你快速上手～ 现在，先从首页逛起吧！', next:'开始探索 🚀'};
+
+let coachMode=null;   // 'welcome' | 'tour' | 'single'
+let coachList=[];     // 巡览用
+let coachIdx=0;
+
+function showCoachMask(){ const m=document.getElementById('coachMask'); if(m) m.classList.add('show'); }
+function hideCoachMask(){
+  const m=document.getElementById('coachMask'); if(m) m.classList.remove('show');
+  if(coachMode==='welcome' && !STATE.onboarded){ STATE.onboarded=true; saveState(); }
+  coachMode=null;
 }
-function onboardSteps(){
-  const steps=getOnboardSteps();
-  return {get length(){return steps.length;}, getItem:i=>steps[i]};
+function renderCoach(g){
+  const t=document.getElementById('coachTitle'); if(t) t.textContent=g.t;
+  const em=document.getElementById('coachEmoji'); if(em) em.textContent=g.e;
+  const tx=document.getElementById('coachText'); if(tx) tx.textContent=g.x;
+  const prev=document.getElementById('coachPrev'); if(prev) prev.style.visibility=(coachMode==='tour'&&coachIdx>0)?'visible':'hidden';
+  const next=document.getElementById('coachNext'); if(next) next.textContent=(coachMode==='tour'&&coachIdx===coachList.length-1)?'完成 ✅':(g.next||'知道了');
 }
-let obIdx=0;
-function openOnboard(){ obIdx=0; renderOnboard(); const m=document.getElementById('onboardMask'); if(m) m.classList.add('show'); }
-function renderOnboard(){
-  const steps=getOnboardSteps();
-  const s=steps[obIdx]; if(!s) return;
-  const t=document.getElementById('obTitle'); if(t) t.textContent=s.t;
-  const em=document.getElementById('obEmoji'); if(em) em.innerHTML = obIdx===0 ? '<svg width="64" height="72" viewBox="0 0 64 72"><use href="#i-fox"/></svg>' : s.e;
-  const tx=document.getElementById('obText'); if(tx) tx.textContent=s.x;
-  const dots=document.getElementById('obDots');
-  if(dots) dots.innerHTML=steps.map((_,i)=>'<span class="ob-dot'+(i===obIdx?' on':'')+'"></span>').join('');
-  const prev=document.getElementById('obPrev'); if(prev) prev.style.visibility = obIdx===0?'hidden':'visible';
-  const next=document.getElementById('obNext'); if(next) next.textContent = obIdx===getOnboardSteps().length-1 ? '🚀 开始我的英语冒险' : '下一步';
+function openOnboard(){ // 首次打开的简短欢迎（替代 v42 一次性向导）
+  if(!STATE.guided) STATE.guided={};
+  STATE.guided.home=true; // 欢迎即覆盖首页指引，避免重复弹
+  coachMode='welcome'; renderCoach(WELCOME_GUIDE); showCoachMask();
 }
-function obStep(d){
-  const steps=getOnboardSteps();
-  if(d>0 && obIdx===steps.length-1){ closeOnboard(); return; }
-  obIdx=Math.max(0, Math.min(steps.length-1, obIdx+d));
-  renderOnboard();
+function maybeGuide(name){
+  if(!SECTION_GUIDES[name]) return;
+  if(STATE.guided && STATE.guided[name]) return;
+  if(!STATE.guided) STATE.guided={};
+  STATE.guided[name]=true; saveState();
+  coachMode='single'; renderCoach(SECTION_GUIDES[name]); showCoachMask();
 }
-function closeOnboard(){
-  const m=document.getElementById('onboardMask'); if(m) m.classList.remove('show');
-  if(!STATE.onboarded){ STATE.onboarded=true; saveState(); }
+function openTour(){ // 设置页「重新查看」：按顺序巡览全部板块
+  coachMode='tour';
+  coachList=GUIDE_ORDER.filter(k=>SECTION_GUIDES[k]).map(k=>SECTION_GUIDES[k]);
+  coachIdx=0; renderCoach(coachList[0]); showCoachMask();
+}
+function coachStep(d){
+  if(coachMode==='single' || coachMode==='welcome'){ hideCoachMask(); return; }
+  if(coachMode==='tour'){
+    if(d>0 && coachIdx===coachList.length-1){ hideCoachMask(); return; }
+    coachIdx=Math.max(0, Math.min(coachList.length-1, coachIdx+d));
+    renderCoach(coachList[coachIdx]);
+  }
 }
 
-/* =========================================================
-   错题本（独立模块：列表 + 逐题重做）
-   ========================================================= */
-function renderWrongbook(){
-  const wl=STATE.wrong||[];
-  document.getElementById('wbTotal').textContent=wl.length;
-  const due=dueReviews();
-  document.getElementById('wbDue').textContent=due.length;
-  document.getElementById('wbMaster').textContent=STATE.wrongFixed||0;
-  document.getElementById('wbAllCount').textContent='('+wl.length+')';
-  document.getElementById('wbReviewCount').textContent='('+due.length+' 个待复习)';
-  document.getElementById('wbReviewBtn').disabled = due.length===0;
-  const btn=document.getElementById('redoBtn'); if(btn) btn.disabled = wl.length===0;
-  const box=document.getElementById('wbList');
-  if(wl.length===0){ box.innerHTML='<div class="wb-empty"><div class="wb-empty-emoji">🦊✨</div><div class="wb-empty-title">还没有错题，真厉害！</div><div class="wb-empty-sub">你的小脑袋瓜把单词都记住啦～继续保持，去闯关练练手吧！</div></div>'; }
-  else{
-    box.innerHTML='';
-    wl.slice().reverse().forEach(w=>{
-      const u=(ALL_UNITS.find(x=>x.id===w.unit))||{title:w.unit};
-      const el=document.createElement('div'); el.className='wb-row';
-      el.innerHTML=`<span class="wb-en">${w.en}</span><span class="wb-zh">${w.zh||''}</span>
-        <span class="wb-tag">${u.title||''}</span><span class="wb-times">✗ ${w.reviews||1} 次</span>
-        <span class="wb-actions">
-          <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="speak('${w.en.replace(/'/g,"\\'")}')">🔊</button>
-          <button class="btn grass" style="padding:6px 12px;font-size:13px" onclick="removeWrong('${w.en.replace(/'/g,"\\'")}')">✔ 会了</button>
-        </span>`;
-      box.appendChild(el);
-    });
-  }
-  refreshWrongDot();
-}
 function removeWrong(en){
   const i=STATE.wrong.findIndex(w=>w.en===en);
   if(i>=0){ STATE.wrong.splice(i,1); STATE.wrongFixed=(STATE.wrongFixed||0)+1; saveState(); renderWrongbook(); toast('已移出错题本 ✅'); }
