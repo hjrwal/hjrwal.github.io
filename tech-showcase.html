@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 90,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v91',// 与 sw.js 的 CACHE 保持一致
+    version: 91,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v92',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    90,        // 迭代版本数
+    iter:    91,        // 迭代版本数
     updated: '2026-08-18'
   };
 </script>
@@ -408,6 +408,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v88 · 做题正反馈特效（飘字·连对火苗·白喵表情）</b><span>为答题过程加入即时正反馈，提升做题爽感：①飘字——答对居中弹绿色「答对 +10」、答错弹橙色「再想想」，上浮淡出；②连对火苗——连续答对 ≥3 次触发顶部火苗横幅显示连击数（答错清零）；③白喵表情——顶部吉祥物新增 happy/cheer/sad 三种叠加线框表情（默认中性），答对变 cheer、答错变 sad，1.6 秒自动回中性。复用既有庆祝系统（confetti/playDing）与设计 token，SVG 绘本风、无 emoji 占位。</span></div>
       <div class="it"><b>v89 · 吉祥物温度（idle 微动画 + 多场景心境 + 弹窗白喵）</b><span>让白喵像「活的小伙伴」：①首页 idle——故事书封面白喵新增探头（上下浮）+ 招手（轻摆）+ 眨眼（眼睑 scaleY 周期闭合）三组合 CSS 关键帧，常驻有生命感；②多场景心境——扩展叠加表情到 think/welcome/encourage，与 v88 的 happy/cheer/sad 共 6 种；③修复 v88 缺陷：单元测试整屏 modal 盖住顶栏白喵致答题表情不可见——弹窗标题处新增 `#testMascot` 白喵（替换廉价 📝 emoji），`setMascotMood` 改为作用于所有 `.mascot`。接线：回家→welcome、开测→encourage、出每题→think、答对→cheer、答错→sad。SVG 绘本风、零 emoji 占位。</span></div>
       <div class="it"><b>v90 · 学习闭环（SRS 掌握进度 + 复习卡升级 + 解锁动画）</b><span>把「学→练→测→复习」闭环做得看得见：①错题消灭进度——复习弹窗每词新增 6 段式 SRS 掌握进度条（答对一次点亮一格，6 格满即移出错题本），并提示「还差 N 次彻底记住」；错题本新增「平均巩固度」统计卡，实时显示全部错题 SRS 进度均值。②首页复习卡升级——「今日复习」卡替换廉价 🔁 emoji 为 SVG 绘本风刷新图标，新增迷你进度条显示「待复习占全部错题的比例」。③闯关解锁动画——地图「新解锁」缎带替换 🔓 为 SVG 开锁徽章、未解锁单元替换 🔒 为 SVG 锁图标，刚解锁单元迸发四色星火；前沿标记 🦊 换成主人公白喵 SVG。全 SVG 绘本风、零 emoji 占位。</span></div>
+      <div class="it"><b>v91 · 跨浏览器加固（夸克/UC/微信/360 都能稳跑）</b><span>针对国产浏览器与老 WebView 做兼容兜底：flex gap 用 @supports 自动降级为 margin（老内核不丢间距）；color-mix/aspect-ratio 改静态色与 min-height 兜底；100vh 追加 100dvh 回退（动态地址栏不再裁切弹窗）；viewport-fit=cover + 安全区内距（刘海/挖孔屏不压边）；Service Worker 被禁时用 fetch 探测 sw.js 版本号，仍主动弹「发现新版本」横条。全 SVG 绘本风、零 emoji 占位。</span></div>
 
       </div>
     </div>
