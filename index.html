@@ -478,6 +478,32 @@
   .report{font-size:14px; line-height:1.7;}
   .report li{margin-bottom:4px;}
   .filebox{margin-top:10px;}
+  /* ===== v79 家长报告（精美版） ===== */
+  .rpt{background:linear-gradient(180deg,#FFFDF8 0%, #FFF6E9 100%); border:2px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow); margin-top:10px;}
+  .rpt-head{display:flex; align-items:center; justify-content:space-between; gap:10px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); border-radius:16px; padding:14px 16px; color:#fff; box-shadow:0 8px 18px rgba(124,92,200,.28);}
+  .rpt-title{font-size:16px; font-weight:800;}
+  .rpt-date{font-size:12px; opacity:.92; margin-top:3px;}
+  .rpt-rank{font-size:22px; font-weight:800; white-space:nowrap; background:rgba(255,255,255,.18); padding:6px 12px; border-radius:14px;}
+  .rpt-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:12px 0;}
+  .rpt-card{background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:12px; text-align:center; box-shadow:var(--sh-1);}
+  .rpt-card .n{font-size:26px; font-weight:800; color:var(--grape-d); line-height:1.1;}
+  .rpt-card .l{font-size:12px; color:var(--muted); margin-top:4px;}
+  .rpt-line{background:linear-gradient(135deg,#9A7FE0,var(--grape-d)); color:#fff; border-radius:12px; padding:10px 14px; font-size:14px; font-weight:600; text-align:center;}
+  .rpt-line b{font-size:16px;}
+  .rpt-sec{font-size:15px; font-weight:800; color:var(--ink); margin:14px 0 8px; display:flex; align-items:center; gap:6px;}
+  .rpt-trend{display:flex; align-items:flex-end; gap:4px; height:48px; padding:4px 2px;}
+  .rpt-tbar{flex:1; min-width:6px; background:linear-gradient(180deg,#B79BE8,#8A6FD0); border-radius:5px 5px 0 0; min-height:3px;}
+  .rpt-weak{margin-bottom:12px;}
+  .rpt-weak .row{margin-bottom:5px;}
+  .rpt-prog{height:9px; background:var(--soft); border-radius:999px; overflow:hidden;}
+  .rpt-prog i{display:block; height:100%; background:linear-gradient(90deg,#B79BE8,var(--grape)); border-radius:999px;}
+  .rpt-words{display:flex; flex-wrap:wrap; gap:7px;}
+  .rpt-chip{background:var(--soft); border:1.5px solid var(--line); border-radius:999px; padding:5px 11px; font-size:13px; font-weight:700;}
+  .rpt-chip small{font-weight:500; margin-left:3px;}
+  .rpt-advice{margin:0; padding-left:0; list-style:none;}
+  .rpt-advice li{position:relative; padding:7px 10px 7px 26px; background:var(--soft); border-radius:10px; margin-bottom:7px; font-size:13.5px; line-height:1.55; color:var(--ink);}
+  .rpt-advice li::before{content:'💡'; position:absolute; left:7px; top:7px; font-size:13px;}
+  .rpt-empty{color:var(--muted); font-size:13px; margin:2px 0;}
 
   /* 主题（明亮 / 护眼暖纸 / 暖夜绘本） */
   body.theme-sepia{ --ink:#5b4a2f; --muted:#9c8a63; --card:#fdf3df; --paper:#f6e9cf; --line:#e7d8b8; --soft:#f3e6c8; --shadow:0 6px 16px rgba(120,90,40,.10); --bg:#f3e7cd; --nav-bg:rgba(253,243,223,.86);
@@ -1047,7 +1073,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">77</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">79</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1119,6 +1145,8 @@ update → controllerchange
       <div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管，体验差。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first（保证新版本立即覆盖）、其它资源继续 cache-first（离线能力不丢）；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此每次发版用户不需要硬刷，新版本在后台自动接管实时生效。</span></div>
       <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
       <div class="it"><b>v77 · 单元测试弹窗合并（选题型与题目同一层）</b><span>用户反馈点「开始单元测试」后经历两次弹窗（先选题型、再弹题目），步骤偏多。本次合并为同一层弹窗的两个步骤：删除独立的 #pickTypeModal 与 openPickType/closePickType，把「选题型」渲染进 #testModalBody 作为第 1 步（含 4 类题型 chip、全选/清空、沿用上次选择 lastTestTypes），点「开始 10 题」后原地切换为第 2 步题目（renderTestQ 直接覆盖同一 body），不再开关第二个弹窗；薄弱练习包与「再做一次」沿用 lastTestTypes 跳过选型步；取消 / ✕ 仍整体关闭并回到来源页。</span></div>
+      <div class="it"><b>v78 · 三项体验打磨：退出确认 / 放对反馈 / 薄弱点面板</b><span>①单元测试弹窗答题进行中点「✕」或遮罩会弹「退出确认」，避免误触丢失进度；选型步与结束屏仍直接关闭；新增可复用的通用确认弹窗组件。②连词成句与拼词：空槽时显示提示文案；批改后按位置给词块加绿色（对位正确）/红色（错位）反馈并锁定，拼词拼对时字母变绿，且延迟切题让反馈被看清。③新增「📉 薄弱点」入口（首页·看一看）：弹窗按单元弱项错次排名 Top5，列出常错单词，单元可一键「去复习」；首页角标同步错题计数。</span></div>
+      <div class="it"><b>v79 · 家长报告重做：精美版 + 可分享长图</b><span>用户希望「生成家长/老师报告」更精美详细。新增 buildReportData() 统一数据模型（星星/连续天数/掌握度/正确率/近 7 天新增掌握/薄弱单元 Top4/常错单词/测验最佳分/当前段位），buildAdvice() 据数据动态生成针对性学习建议。屏幕内报告改为卡片化精美排版（段位徽章 + 统计卡网格 + 摘要条 + 趋势迷你柱 + 薄弱单元进度条「去练习」+ 常错单词 + 建议清单）。新增 saveReportImage() 纯 canvas 2D 绘制竖版报告长图（零依赖、离线可用、高清），可保存 PNG 或直接调起系统分享（微信等）；导出文字版也升级为含薄弱单元/本周新增/建议的详细 txt。进度屏按钮改为「生成报告 / 保存为图片 / 导出文字版」。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -1338,9 +1366,10 @@ update → controllerchange
         <button class="btn ghost" onclick="if(confirm('确定清空所有进度？')){resetProgress();}">🗑️ 清空</button>
       </div>
       <div class="filebox report" id="reportBox"></div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn sun" onclick="exportWeekly()">📄 导出家长周报</button>
-        <button class="btn sun lg" onclick="showReport()">📋 生成家长/老师报告</button>
+      <div class="row" style="margin-top:10px; flex-wrap:wrap; gap:8px">
+        <button class="btn sun" onclick="showReport()">📋 生成报告</button>
+        <button class="btn grape" onclick="saveReportImage()">🖼️ 保存为图片</button>
+        <button class="btn sky" onclick="exportWeekly()">📄 导出文字版</button>
       </div>
     </div>
   </section>
@@ -2576,7 +2605,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 78;
+const APP_VERSION = 79;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4874,55 +4903,195 @@ function recordTrend(){
   if(STATE.trend.length>14) STATE.trend=STATE.trend.slice(-14);
   saveState();
 }
-function exportWeekly(){
+function buildReportData(){
+  const grade=STATE.settings.grade==='6'?'六年级':'五年级';
   const mastered=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
   const totalW=ALL_UNITS.reduce((a,u)=>a+u.words.length,0);
   const totalAtt=Object.values(STATE.units).reduce((a,u)=>a+u.attempts,0);
   const totalCor=Object.values(STATE.units).reduce((a,u)=>a+u.correct,0);
   const acc=totalAtt?Math.round(totalCor/totalAtt*100):0;
-  const due=dueReviews().length;
-  const lines=[
-    '【'+(STATE.settings.grade==='6'?'六年级':'五年级')+'英语 · 家长周报】',
-    '日期：'+todayStr(),
-    '',
-    '★ 累计星星：'+STATE.stars,
-    '🔥 连续学习：'+STATE.streak+' 天',
-    '📚 掌握单词：'+mastered+' / '+totalW+'（'+Math.round(mastered/totalW*100)+'%）',
-    '✅ 答题正确率：'+acc+'%',
-    '📅 今日待复习：'+due+' 个',
-    '📒 错题总数：'+STATE.wrong.length+' 个',
-    '',
-    '各单元掌握度：'
-  ];
-  UNITS.forEach(u=>{ const st=unitStat(u.id); const total=u.words.length; const pct=total?Math.round(st.mastered.length/total*100):0; lines.push('  '+u.emoji+' '+u.title+'：'+st.mastered.length+'/'+total+'（'+pct+'%）'); });
-  const txt=lines.join('\n');
+  const masPct=totalW?Math.round(mastered/totalW*100):0;
+  const rk=getRank(STATE.stars);
+  // 近 7 天新增掌握（对比趋势里 7 天前那天的累计掌握数）
+  const trend=STATE.trend||[]; let weekNew=0;
+  if(trend.length){ const t7=addDays(todayStr(),-7); let base=null;
+    for(const e of trend){ if(e.date<=t7) base=e; }
+    const cur=trend[trend.length-1]; weekNew=cur.mastered-(base?base.mastered:0);
+  }
+  // 薄弱单元：按总错次排序取前 4
+  const weakUnits=UNITS.map(u=>{ const w=STATE.weakByUnit[u.id]||{sel:0,spell:0,sent:0};
+    const tot=(w.sel||0)+(w.spell||0)+(w.sent||0); const st=unitStat(u.id); const total=u.words.length;
+    const pct=total?Math.round(st.mastered.length/total*100):0;
+    return {id:u.id, emoji:u.emoji, title:u.title, tot, pct, mastered:st.mastered.length, total};
+  }).filter(x=>x.tot>0).sort((a,b)=>b.tot-a.tot).slice(0,4);
+  const wrongWords=(STATE.wrong||[]).slice(0,8);
+  const testVals=Object.values(STATE.tests||{}).filter(v=>typeof v==='number');
+  const bestTest=testVals.length?Math.max.apply(null,testVals):null;
+  const avgTest=testVals.length?Math.round(testVals.reduce((a,b)=>a+b,0)/testVals.length):null;
+  const advice=buildAdvice({masPct,acc,weekNew,weakUnits,wrongWords,streak:STATE.streak});
+  return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
+    weekNew,weakUnits,wrongWords,bestTest,avgTest,advice,trend:trend.slice(-14),date:todayStr()};
+}
+function buildAdvice(d){
+  const a=[];
+  if(d.weekNew>0) a.push('近 7 天掌握了 '+d.weekNew+' 个新单词，进步明显，继续保持 💪');
+  else if(d.weakUnits.length===0 && d.masPct>0) a.push('本周暂无明显新增，但基础已扎实，可适当挑战更高难度单元 ✨');
+  else a.push('近 7 天新增掌握不多，建议每天固定 15 分钟，养成稳定节奏 📅');
+  if(d.weakUnits.length){ const w=d.weakUnits[0]; a.push('「'+w.emoji+w.title+'」错得最多（'+w.tot+' 次），建议优先复习该单元，重点练'+(w.pct<60?'单词拼写与认读':'综合听说读写')+'。'); }
+  if(d.acc>0 && d.acc<70) a.push('整体正确率 '+d.acc+'% 偏低，做题时不妨先慢一点，把错题本里的高频词吃透 📒');
+  if(d.wrongWords.length>=5) a.push('错题本有 '+d.wrongWords.length+' 个词待巩固，今天点「开始今日复习」集中消灭它们吧 🔁');
+  if(d.streak>=7) a.push('已连续学习 '+d.streak+' 天，习惯养成得非常好，家长为你点赞 👍');
+  if(a.length===0) a.push('保持每天 15 分钟的学习节奏，优先复习错题本，定期做单元测试查漏补缺 🌟');
+  return a;
+}
+function exportWeekly(){
+  const d=buildReportData();
+  const L=[];
+  L.push('【'+d.grade+'英语 · 家长报告】');
+  L.push('日期：'+d.date);
+  L.push('');
+  L.push('★ 累计星星：'+d.stars+'（当前段位：'+d.rank.cur.ico+d.rank.cur.t+'，下一阶还差 '+d.rank.toNext+'⭐）');
+  L.push('🔥 连续学习：'+d.streak+' 天');
+  L.push('📚 掌握单词：'+d.mastered+' / '+d.totalW+'（'+d.masPct+'%）');
+  L.push('✅ 答题正确率：'+d.acc+'%');
+  L.push('📅 本周新增掌握：'+d.weekNew+' 词');
+  L.push('📒 待巩固错题：'+d.wrongWords.length+' 个');
+  if(d.bestTest!=null) L.push('🏆 单元测试最佳：'+d.bestTest+' 分'+(d.avgTest!=null?'（平均 '+d.avgTest+' 分）':''));
+  L.push(''); L.push('【薄弱单元】');
+  if(d.weakUnits.length) d.weakUnits.forEach(w=>L.push('  '+w.emoji+' '+w.title+'：错 '+w.tot+' 次，掌握 '+w.mastered+'/'+w.total+'（'+w.pct+'%）'));
+  else L.push('  （暂无明显薄弱单元）');
+  if(d.wrongWords.length){ L.push(''); L.push('【常错单词】'); d.wrongWords.forEach(w=>L.push('  '+w.en+' '+(w.zh||''))); }
+  L.push(''); L.push('【学习建议】'); d.advice.forEach(t=>L.push('  · '+t));
+  L.push(''); L.push('—— 由 english5-helper 生成（hjrwal.github.io）');
+  const txt=L.filter(x=>x!==undefined).join('\n');
   const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='英语家长周报_'+todayStr()+'.txt'; a.click();
-  URL.revokeObjectURL(url); toast('已导出家长周报 ⬇️');
+  const a=document.createElement('a'); a.href=url; a.download='英语家长报告_'+d.date+'.txt'; a.click();
+  URL.revokeObjectURL(url); toast('已导出家长报告 ⬇️');
 }
 /* importProgress 已在上方完整定义（含 FileReader 读取 JSON 并恢复 STATE），此处仅留注释占位，空函数声明会覆盖完整版故删除 */
 function resetProgress(){ STATE=defaultState(); saveState(); renderProgress(); toast('已清空进度'); }
 function showReport(){
-  const mastered=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
-  const totalW=ALL_UNITS.reduce((a,u)=>a+u.words.length,0);
-  const totalAtt=Object.values(STATE.units).reduce((a,u)=>a+u.attempts,0);
-  const totalCor=Object.values(STATE.units).reduce((a,u)=>a+u.correct,0);
-  const acc=totalAtt?Math.round(totalCor/totalAtt*100):0;
-  const testsLine = ALL_UNITS.map(u=>STATE.tests&&STATE.tests[u.id]!=null?(u.title.split(' ')[0]+STATE.tests[u.id]+'分'):null).filter(Boolean).join(' · ')||'尚未测验';
+  const d=buildReportData();
   const box=document.getElementById('reportBox');
-  box.innerHTML=`<b>📋 学习报告（${todayStr()}）</b>
-    <ul>
-      <li>累计星星：⭐ ${STATE.stars}</li>
-      <li>连续学习：${STATE.streak} 天</li>
-      <li>掌握单词：${mastered} / ${totalW}（${totalW?Math.round(mastered/totalW*100):0}%）</li>
-      <li>答题正确率：${acc}%</li>
-      <li>待巩固错题：${STATE.wrong.length} 个</li>
-      <li>单元测试：${testsLine}</li>
-      <li>各单元闯关星星：${ALL_UNITS.map(u=>unitStat(u.id).levelStars+'⭐').join(' · ')}</li>
-    </ul>
-    <p class="muted">建议：每天保持 15 分钟，优先复习错题本中的单词，并定期做单元测试查漏补缺。</p>`;
+  const weakHtml=d.weakUnits.length? d.weakUnits.map(w=>`
+    <div class="rpt-weak">
+      <div class="row spread"><span>${w.emoji} ${w.title}</span><span class="muted">错 ${w.tot} 次</span></div>
+      <div class="rpt-prog"><i style="width:${w.pct}%"></i></div>
+      <div class="muted" style="font-size:12px;margin-top:3px">掌握 ${w.mastered}/${w.total}（${w.pct}%）· <span style="color:var(--grape);cursor:pointer" onclick="goTestUnit('${w.id}')">去练习 ›</span></div>
+    </div>`).join('') : '<p class="rpt-empty">暂无薄弱单元，掌握得很棒 🎉</p>';
+  const wordsHtml=d.wrongWords.length? d.wrongWords.map(w=>`<span class="rpt-chip">${w.en}<small class="muted">${w.zh||''}</small></span>`).join('') : '<p class="rpt-empty">错题本空空如也，真厉害！</p>';
+  const adviceHtml=d.advice.map(t=>`<li>${t}</li>`).join('');
+  const trendBars=d.trend.length? d.trend.map(e=>{ const maxM=Math.max(1,...d.trend.map(x=>x.mastered)); const h=Math.max(3,Math.round(e.mastered/maxM*44)); return `<div class="rpt-tbar" style="height:${h}px"></div>`; }).join('') : '';
+  box.innerHTML=`<div class="rpt">
+    <div class="rpt-head">
+      <div>
+        <div class="rpt-title">📋 ${d.grade}英语 · 家长/老师报告</div>
+        <div class="rpt-date">${d.date} · ${d.rank.cur.ico} 当前段位「${d.rank.cur.t}」</div>
+      </div>
+      <div class="rpt-rank">${d.stars}⭐</div>
+    </div>
+    <div class="rpt-grid">
+      <div class="rpt-card"><div class="n">${d.stars}</div><div class="l">⭐ 星星</div></div>
+      <div class="rpt-card"><div class="n">${d.streak}</div><div class="l">🔥 连续天数</div></div>
+      <div class="rpt-card"><div class="n">${d.masPct}%</div><div class="l">📚 掌握度</div></div>
+      <div class="rpt-card"><div class="n">${d.acc}%</div><div class="l">✅ 正确率</div></div>
+    </div>
+    <div class="rpt-line">本周新增掌握 <b>${d.weekNew}</b> 词 · 待巩固错题 <b>${d.wrongWords.length}</b> 个${d.bestTest!=null?(' · 测验最佳 <b>'+d.bestTest+'</b> 分'):''}</div>
+    ${trendBars?`<div class="rpt-sec">📈 近况（掌握单词趋势）</div><div class="rpt-trend">${trendBars}</div>`:''}
+    <div class="rpt-sec">🔥 薄弱单元</div>
+    ${weakHtml}
+    <div class="rpt-sec">📒 常错单词</div>
+    <div class="rpt-words">${wordsHtml}</div>
+    <div class="rpt-sec">💡 学习建议</div>
+    <ul class="rpt-advice">${adviceHtml}</ul>
+  </div>`;
 }
+/* 可分享长图：纯 canvas 2D 绘制，零依赖、可离线，支持保存/系统分享 */
+function saveReportImage(){
+  try{
+    const d=buildReportData();
+    const W=720, pad=28, scale=Math.min(3,(window.devicePixelRatio||1)*2);
+    const headerH=92, cardsH=96, lineH=46;
+    const trendH=d.trend.length?64:0;
+    const weakH=d.weakUnits.length?d.weakUnits.length*56:40;
+    const wordsH=d.wrongWords.length?90:40;
+    const adviceH=30+d.advice.length*72;
+    const H=pad*2+headerH+16+cardsH+12+lineH+12+trendH+12+24+weakH+12+24+wordsH+12+24+adviceH+40;
+    const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
+    const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
+    let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#FFF7EC'); g.addColorStop(1,'#FBE7CF');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    let y=pad;
+    // 头部
+    let hg=ctx.createLinearGradient(0,y,W,y+headerH); hg.addColorStop(0,'#8A6FD0'); hg.addColorStop(1,'#6E54BD');
+    roundRect(ctx,pad,y,W-pad*2,headerH,20); ctx.fillStyle=hg; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.textAlign='left';
+    ctx.font='800 25px sans-serif'; ctx.fillText(d.grade+'英语 · 家长报告', pad+22, y+40);
+    ctx.font='500 15px sans-serif'; ctx.fillStyle='rgba(255,255,255,.92)';
+    ctx.fillText(d.date+'  ·  '+d.rank.cur.ico+' '+d.rank.cur.t, pad+22, y+66);
+    ctx.font='800 28px sans-serif'; ctx.textAlign='right'; ctx.fillStyle='#fff';
+    ctx.fillText(d.stars+'⭐', W-pad-22, y+62); ctx.textAlign='left';
+    y+=headerH+16;
+    // 统计卡 2x2
+    const cw=(W-pad*2-12)/2, ch=88;
+    const cards=[['⭐ 星星',String(d.stars)],['🔥 连续天数',String(d.streak)],['📚 掌握度',d.masPct+'%'],['✅ 正确率',d.acc+'%']];
+    cards.forEach((c,i)=>{ const cx=pad+(i%2)*(cw+12), cy=y+Math.floor(i/2)*(ch+12);
+      roundRect(ctx,cx,cy,cw,ch,16); ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle='#ECDCC4'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='#9A8B78'; ctx.font='600 14px sans-serif'; ctx.fillText(c[0],cx+16,cy+26);
+      ctx.fillStyle='#3A2B22'; ctx.font='800 30px sans-serif'; ctx.fillText(c[1],cx+16,cy+62);
+    });
+    y+=cardsH+12;
+    // 一行摘要
+    ctx.fillStyle='#6E54BD'; roundRect(ctx,pad,y,W-pad*2,lineH,12); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='600 15px sans-serif';
+    ctx.fillText('本周 +'+d.weekNew+' 词 · 待巩固 '+d.wrongWords.length+' 个'+(d.bestTest!=null?(' · 测验 '+d.bestTest+'分'):''), pad+16, y+28);
+    y+=lineH+12;
+    // 趋势
+    if(d.trend.length){
+      ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('📈 近况（掌握单词趋势）', pad, y+16); y+=24;
+      const maxM=Math.max(1,...d.trend.map(e=>e.mastered)), bw=(W-pad*2)/d.trend.length;
+      d.trend.forEach((e,i)=>{ const h=Math.max(4,Math.round(e.mastered/maxM*40)), bx=pad+i*bw+bw*0.18;
+        ctx.fillStyle='#B79BE8'; roundRect(ctx,bx,y+44-h,bw*0.64,h,4); ctx.fill(); });
+      y+=60;
+    }
+    // 薄弱单元
+    ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('🔥 薄弱单元', pad, y+16); y+=24;
+    if(d.weakUnits.length){ d.weakUnits.forEach(w=>{
+      ctx.fillStyle='#3A2B22'; ctx.font='600 15px sans-serif'; ctx.fillText(w.emoji+' '+w.title+'　错'+w.tot+'次', pad, y+18);
+      const bx0=pad, bw=W-pad*2-120, by=y+26, bh=12;
+      roundRect(ctx,bx0,by,bw,bh,6); ctx.fillStyle='#EDE6F7'; ctx.fill();
+      roundRect(ctx,bx0,by,bw*w.pct/100,bh,6); ctx.fillStyle='#8A6FD0'; ctx.fill();
+      ctx.fillStyle='#6E54BD'; ctx.font='700 13px sans-serif'; ctx.textAlign='right'; ctx.fillText(w.pct+'%', W-pad, y+37); ctx.textAlign='left';
+      y+=56;
+    }); } else { ctx.fillStyle='#9A8B78'; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱单元，掌握得很棒 🎉', pad, y+16); y+=36; }
+    y+=8;
+    // 常错单词
+    ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('📒 常错单词', pad, y+16); y+=24;
+    if(d.wrongWords.length){ const items=d.wrongWords.map(w=>w.en+(w.zh?'('+w.zh+')':'')).join('、');
+      ctx.fillStyle='#6b5a48'; ctx.font='500 14px sans-serif'; y=drawWrapped(ctx,items,pad,y,W-pad*2,20)+10;
+    } else { ctx.fillStyle='#9A8B78'; ctx.font='500 14px sans-serif'; ctx.fillText('错题本空空如也，真厉害！', pad, y+16); y+=24; }
+    y+=8;
+    // 建议
+    ctx.fillStyle='#3A2B22'; ctx.font='700 16px sans-serif'; ctx.fillText('💡 学习建议', pad, y+16); y+=26;
+    ctx.fillStyle='#6b5a48'; ctx.font='500 14px sans-serif';
+    d.advice.forEach(t=>{ y=drawWrapped(ctx,'· '+t,pad,y,W-pad*2,20)+10; });
+    y+=12;
+    ctx.fillStyle='#B7A98F'; ctx.font='500 13px sans-serif'; ctx.fillText('由 english5-helper 生成 · hjrwal.github.io', pad, y+10);
+    cv.toBlob(function(blob){
+      if(!blob){ toast('图片生成失败'); return; }
+      const name='英语家长报告_'+d.date+'.png', file=new File([blob],name,{type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'英语家长报告'}).catch(function(){});
+      } else {
+        const url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download=name; a.click();
+        setTimeout(function(){URL.revokeObjectURL(url);},4000); toast('已保存报告图片 ⬇️');
+      }
+    },'image/png');
+  }catch(err){ console.error(err); toast('生成图片失败：'+(err&&err.message||err)); }
+}
+function roundRect(ctx,x,y,w,h,r){ if(w<2*r)r=w/2; if(h<2*r)r=h/2; ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function drawWrapped(ctx,text,x,y,maxW,lh){ let line=''; for(const ch of text){ const t=line+ch; if(ctx.measureText(t).width>maxW && line){ ctx.fillText(line,x,y); line=ch; y+=lh; } else line=t; } if(line) ctx.fillText(line,x,y); return y; }
 
 /* =========================================================
    错题复习（艾宾浩斯遗忘曲线排期）
