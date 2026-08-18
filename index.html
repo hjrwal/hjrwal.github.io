@@ -742,7 +742,7 @@
   /* v78 薄弱点洞察面板 */
   .weak-modal{max-width:480px;}
   .weak-body{max-height:calc(100vh - 150px); overflow:auto;}
-  /* v84 薄弱点 · 4仪表+等级徽章+chip单词（重做） */
+  /* v85 薄弱点升级 · 等级徽章强化 + 🔊加大 + 去复习拆双按钮 */
   .wk-gauge{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0 14px;}
   .wk-stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 8px; text-align:center; box-shadow:var(--sh-1); position:relative; overflow:hidden;}
   .wk-stat::before{content:''; position:absolute; inset:0 0 auto 0; height:3px; background:linear-gradient(90deg,var(--grape),var(--amber)); opacity:.75;}
@@ -761,25 +761,30 @@
   .wk-u-body{flex:1; min-width:0;}
   .wk-u-name{font-weight:800; font-size:14px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .wk-u-meta{display:flex; align-items:center; gap:6px; margin-top:5px; flex-wrap:wrap;}
-  .wk-u-lv{font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px; line-height:1.4; white-space:nowrap;}
-  .wk-u-lv.h1{background:rgba(226,109,92,.15); color:#B23E2E; box-shadow:inset 0 0 0 1px rgba(226,109,92,.3);}
-  .wk-u-lv.h2{background:rgba(244,169,60,.15); color:#B07000; box-shadow:inset 0 0 0 1px rgba(244,169,60,.3);}
-  .wk-u-lv.h3{background:rgba(79,157,108,.16); color:#2F6E47; box-shadow:inset 0 0 0 1px rgba(79,157,108,.32);}
+  .wk-u-lv{font-size:11px; font-weight:800; padding:2px 9px; border-radius:999px; line-height:1.4; white-space:nowrap;}
+  .wk-u-lv.h1{background:rgba(226,109,92,.24); color:#9E2B1B; font-weight:900; box-shadow:inset 0 0 0 1.5px rgba(226,109,92,.55), 0 0 0 3px rgba(226,109,92,.14);}
+  .wk-u-lv.h2{background:rgba(244,169,60,.16); color:#B07000; box-shadow:inset 0 0 0 1px rgba(244,169,60,.32);}
+  .wk-u-lv.h3{background:rgba(79,157,108,.18); color:#2F6E47; box-shadow:inset 0 0 0 1px rgba(79,157,108,.34);}
   .wk-u-bar{flex:1; min-width:60px; height:8px; background:var(--soft); border-radius:999px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--line);}
   .wk-u-bar i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--grape),var(--amber));}
   .wk-u-bar.h1 i{background:linear-gradient(90deg,#E26D5C,#C9503E);}
   .wk-u-bar.h2 i{background:linear-gradient(90deg,var(--amber),var(--amber-d));}
   .wk-u-bar.h3 i{background:linear-gradient(90deg,var(--forest),var(--forest-d));}
   .wk-u-sum{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
-  .wk-u-go{flex:0 0 auto; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:12px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); color:#fff; border:none; cursor:pointer; box-shadow:0 3px 0 var(--grape-d), 0 4px 10px rgba(106,84,189,.25); transition:transform .12s var(--ease-spring); white-space:nowrap;}
+  /* v85 去复习拆双按钮：竖排两键（练一练/测一测） */
+  .wk-u-go-row{display:flex; flex-direction:column; gap:6px; flex:0 0 auto;}
+  .wk-u-go{width:88px; font-size:12px; font-weight:700; padding:8px 10px; border-radius:12px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); color:#fff; border:none; cursor:pointer; box-shadow:0 3px 0 var(--grape-d), 0 4px 10px rgba(106,84,189,.25); transition:transform .12s var(--ease-spring); white-space:nowrap;}
   .wk-u-go:hover{transform:translateY(-1px); box-shadow:0 4px 0 var(--grape-d), 0 6px 14px rgba(106,84,189,.32);}
   .wk-u-go:active{transform:translateY(2px); box-shadow:0 1px 0 var(--grape-d);}
+  .wk-u-go.alt{background:linear-gradient(135deg,#F6B04A,var(--amber)); box-shadow:0 3px 0 var(--amber), 0 4px 10px rgba(244,169,60,.25);}
+  .wk-u-go.alt:hover{box-shadow:0 4px 0 var(--amber), 0 6px 14px rgba(244,169,60,.32);}
+  .wk-u-go.alt:active{box-shadow:0 1px 0 var(--amber);}
 
   /* 单词 chip：发音按钮+英文大字+中文+错次热力chip */
   .wk-words{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px;}
-  .wk-chip{display:inline-flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px 4px 6px 6px; box-shadow:var(--sh-1); transition:transform .12s var(--ease-spring), box-shadow .12s;}
+  .wk-chip{display:inline-flex; align-items:center; gap:7px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px 4px 6px 6px; box-shadow:var(--sh-1); transition:transform .12s var(--ease-spring), box-shadow .12s;}
   .wk-chip:hover{transform:translateY(-2px); box-shadow:var(--sh-2);}
-  .wk-chip-spk{width:28px; height:28px; flex:0 0 28px; border:none; border-radius:10px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); color:#fff; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 0 var(--grape-d); transition:transform .1s;}
+  .wk-chip-spk{width:34px; height:34px; flex:0 0 34px; border:none; border-radius:12px; background:linear-gradient(135deg,var(--grape),var(--grape-d)); color:#fff; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 0 var(--grape-d); transition:transform .1s;}
   .wk-chip-spk:hover{transform:translateY(-1px);}
   .wk-chip-spk:active{transform:translateY(1px);}
   .wk-chip-en{font-weight:800; font-size:14.5px; color:var(--ink); padding:0 4px;}
@@ -1119,7 +1124,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">84</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">85</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1198,6 +1203,7 @@ update → controllerchange
       <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
       <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
       <div class="it"><b>v84 · 薄弱点面板重做：4仪表+等级徽章+chip单词</b><span>用户反馈 v78 「我的薄弱点」面板太简陋（灰底平铺、chip 只是数字、单词无发音、无等级）。彻底重做：①顶部 4 项仪表卡网格 — 累计错次/薄弱单元/已掌握词/连续学习，配色用 --grape/--forest/--amber 区分类型，全部 var() 跟随主题。②单元卡重做：左侧 big emoji 圆形头像罩、中间等级徽章（🔴⚠严重 ≥7 次 / 🟡●中等 4-6 / 🟢✦轻微 1-3）+ 错次进度条（按级别配色 渐变，h1 暖红、h2 琥珀、h3 森林绿）+ 底部小字统计「选/拼/句」、右侧大紫色立体「去复习 ➡️」按钮（带 3D 阴影+按压反馈）。③常错单词按出现频次合并去重，前 16 渲染为 chip：每个 chip = 🔊 发音按钮（点调用 speak()）+ 英文大字 + 中文 + 错次热度 chip（×1 绿、×2 黄、≥4 红），hover 抬升 2px。配色全部用 var() 跟随主题（暖色绘本风），与 v83 报告/v80 趋势图/v82 数字盖顶同套视觉语言。</span></div>
+      <div class="it"><b>v85 · 薄弱点面板升级：等级徽章强化 + 🔊加大 + 去复习拆双按钮</b><span>用户确认 v84 三项优化点全部采纳：①等级徽章强化——「⚠ 严重」(≥7 次) 字号加粗到 900、红色更深(#9E2B1B)、加 1.5px 红边 + 红色外发光圈，三种级别一眼区分；②🔊 发音按钮由 28px 加大到 34px、字号 13→16、圆角 10→12，更易点中；③单元卡右侧「去复习 ➡️」单按钮拆为竖排双按钮——「📝 练一练」(沿用上次题型进测试屏直接做) 与「🎯 测一测」(弹题型选择框自定义 10 题)，橙色区分。配色继续全部 var() 跟随主题。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2656,7 +2662,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 84;
+const APP_VERSION = 85;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3873,9 +3879,10 @@ function renderMastery(){
   });
   buildUnitChips('testUnits', ()=>{});
 }
-function goTestUnit(uid){ // 弱项推荐一键直达：选中单元并进入单元测试
+function goTestUnit(uid, mode){ // 弱项推荐：mode='modal' 弹题型选择 / 其它 进测试屏
   if(UNITS.some(x=>x.id===uid)) curUnitId=uid;
-  go('test');
+  if(mode==='modal'){ openUnitTest(); }
+  else { go('test'); }
 }
 function goVocabUnit(uid){ // 闯关失败引导：选中单元并进入词汇练习
   if(UNITS.some(x=>x.id===uid)) curUnitId=uid;
@@ -5617,7 +5624,10 @@ function renderWeakPanel(){
             <span class="wk-u-sum">错 ${sel+spell+sent} · 选${sel} 拼${spell} 句${sent}</span>
           </div>
         </div>
-        <button class="wk-u-go" onclick="closeWeakPanel();goTestUnit('${r.uid}')">去复习 ➡️</button>
+        <div class="wk-u-go-row">
+          <button class="wk-u-go" onclick="closeWeakPanel();goTestUnit('${r.uid}')">📝 练一练</button>
+          <button class="wk-u-go alt" onclick="closeWeakPanel();goTestUnit('${r.uid}','modal')">🎯 测一测</button>
+        </div>
       </div>`;
     });
   }
