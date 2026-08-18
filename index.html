@@ -694,6 +694,34 @@
   .trend-box{display:flex; align-items:flex-end; gap:4px; height:72px; padding:6px 2px; overflow-x:auto;}
   .trend-bar{flex:1 0 10px; min-width:10px; background:linear-gradient(var(--grape),var(--grape-d)); border-radius:6px 6px 0 0; min-height:3px;}
   .build-slot.wrong .lt.in{background:#ffd9d9; border-color:#d33; color:#a00;}
+  /* v78 连词成句/拼词：空槽提示 + 放对反馈 */
+  .build-slot:empty::before{content:"👆 点上面的词，按顺序排好句子"; color:var(--muted); font-size:13px; font-weight:600; align-self:center;}
+  .basket:empty::before{content:"👆 按顺序点下面的字母拼出单词"; color:var(--muted); font-size:13px; font-weight:600; align-self:center;}
+  .lt.in.right, .token.in.right{background:#c8f5d0 !important; border-color:#1ca64a !important; color:#0c6b2e !important; box-shadow:0 3px 0 #14853b, 0 4px 8px rgba(28,166,74,.2) !important;}
+  .lt.in.wrong-pos, .token.in.wrong-pos{background:#ffd9d9 !important; border-color:#d33 !important; color:#a00 !important;}
+  /* v78 通用确认弹窗 */
+  .confirm-modal{max-width:340px; text-align:center; padding:20px 18px;}
+  .cf-title{font-size:17px; font-weight:800; margin-bottom:6px;}
+  .cf-msg{color:var(--muted); font-size:14px; line-height:1.5;}
+  /* v78 薄弱点洞察面板 */
+  .weak-modal{max-width:480px;}
+  .weak-body{max-height:calc(100vh - 150px); overflow:auto;}
+  .wk-sec{margin:14px 0 4px; font-weight:800; font-size:14px; display:flex; align-items:center; gap:6px;}
+  .wk-card{background:var(--soft); border-radius:14px; padding:10px 12px; margin:8px 0; border:1px solid var(--line);}
+  .wk-row{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .wk-name{font-weight:700; font-size:14px;}
+  .wk-tags{display:flex; gap:5px; flex-wrap:wrap; margin-top:6px;}
+  .wk-tag{font-size:11px; padding:2px 8px; border-radius:999px; background:#fff; border:1px solid var(--line);}
+  .wk-tag.sel{color:#c0392b; border-color:#f0b4ad;}
+  .wk-tag.spell{color:#b8860b; border-color:#f0dca6;}
+  .wk-tag.sent{color:#6c3fb5; border-color:#d9c7f2;}
+  .wk-word{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px dashed var(--line);}
+  .wk-word:last-child{border-bottom:none;}
+  .wk-en{font-weight:800; font-size:15px;}
+  .wk-zh{color:var(--muted); font-size:13px; margin-left:6px;}
+  .wk-meta{font-size:12px; color:var(--muted); white-space:nowrap;}
+  .wk-empty{text-align:center; color:var(--muted); padding:24px 0;}
+  .wk-empty .big{font-size:40px; display:block; margin-bottom:6px;}
   .lt.shake{animation:shakeX .4s ease;}
   @keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
   .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
@@ -940,7 +968,8 @@
         <div class="tile c-sun" onclick="go('achievements')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-trophy"/></svg><h3>成就墙</h3><p>我的勋章</p></div>
         <div class="tile c-grass" onclick="go('progress')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-chart"/></svg><h3>我的进度</h3><p>报告 + 导出</p></div>
         <div class="tile c-sky" onclick="go('codex')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-library"/></svg><h3>单词图鉴</h3><p>收集我的词库</p></div>
-      </div>
+        <div class="tile c-coral" onclick="openWeakPanel()"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-bulb"/></svg><h3>薄弱点</h3><p>哪里常错</p><span class="count-dot hidden" id="weakDot">0</span></div>
+    </div>
     </div>
     <div class="review-callout" id="reviewCallout" onclick="startReview()">
       <span class="rc-ic">🔁</span>
@@ -1465,6 +1494,29 @@ update → controllerchange
       <button class="back" onclick="closeTestModal()">✕ 退出</button>
     </div>
     <div class="test-modal-body" id="testModalBody"></div>
+  </div>
+</div>
+
+<!-- v78 通用确认弹窗（测试中途退出等） -->
+<div class="modal-mask" id="confirmModal">
+  <div class="modal confirm-modal">
+    <div class="cf-title" id="cfTitle">确定？</div>
+    <div class="cf-msg" id="cfMsg"></div>
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="btn ghost" onclick="hideConfirm()">取消</button>
+      <button class="btn coral" id="cfOk" onclick="runConfirm()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- v78 薄弱点洞察面板 -->
+<div class="modal-mask" id="weakModal" onclick="if(event.target===this)closeWeakPanel()">
+  <div class="modal weak-modal">
+    <div class="row spread" style="margin-bottom:8px">
+      <b style="font-size:16px">📉 我的薄弱点</b>
+      <button class="back" onclick="closeWeakPanel()">✕ 关闭</button>
+    </div>
+    <div class="weak-body" id="weakBody"></div>
   </div>
 </div>
 
@@ -2524,7 +2576,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 77;
+const APP_VERSION = 78;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2945,6 +2997,7 @@ if('serviceWorker' in navigator){
     });
     function showUpdateBarSafe(){ const reg=navigator.serviceWorker; try{ /* 横条已在 updatefound 弹出；此处兜底再弹一次 */ const bar=document.getElementById('updateBar'); if(bar) bar.classList.add('show'); else { const b=document.createElement('div'); b.id='updateBar'; b.className='update-bar'; b.innerHTML='🎉 发现新版本，体验更稳更顺了～ <button class="ub-btn" id="ubBtn" onclick="location.reload()">立即更新</button> <button class="ub-x" onclick="this.parentNode.classList.remove(\'show\')">稍后</button>'; document.body.appendChild(b); b.classList.add('show'); } }catch(_){} }
     var _vt=document.getElementById('verTag'); if(_vt) _vt.textContent='v'+APP_VERSION;
+    refreshWrongDot(); // v78：启动即同步错题/薄弱点角标
     setTimeout(preloadCommonAudio, 4000); // 空闲预热常用音频（D1）
   });
 }
@@ -3787,6 +3840,7 @@ function startTest(types){
   }
   testQs = shuffle(questions).slice(0, T);
   testIdx=0; testCorrect=0; testTypeStat={};
+  testActive=true;
   openTestModal();
   renderTestQ();
   if(document.activeElement) document.activeElement.blur();
@@ -3897,12 +3951,22 @@ function gradeTestSpell(){
 function gradeTestSentence(){
   if(testLocked) return; testLocked=true;
   const q=testQs[testIdx];
-  const got=[...document.querySelectorAll('#tSlot .in')].map(e=>e.textContent).join(' ');
+  const ins=[...document.querySelectorAll('#tSlot .in')];
+  const got=ins.map(e=>e.textContent).join(' ');
   const ok=norm(got)===norm(q.s.en);
+  const exp=q.s.en.split(/\s+/);
+  // v78：按位置给每个已放词块反馈（绿=对位正确，红=错位），并锁定不再拖动
+  ins.forEach((e,i)=>{
+    e.onclick=null;
+    e.classList.add('graded');
+    if(ok || (i<exp.length && norm(e.textContent)===norm(exp[i]))) e.classList.add('right');
+    else e.classList.add('wrong-pos');
+  });
+  document.querySelectorAll('#tPool .lt').forEach(t=>{ t.style.pointerEvents='none'; });
   if(!ok) toast('💡 正确顺序：'+q.s.en);
-  commitTest(ok, null);
+  commitTest(ok, null, 900); // 延迟切题，让放对/错位反馈被看清
 }
-function commitTest(ok, enForWrong){
+function commitTest(ok, enForWrong, delay){
   const q=testQs[testIdx];
   const t=q?q.type:'?';
   testTypeStat[t]=testTypeStat[t]||{c:0,t:0};
@@ -3917,7 +3981,7 @@ function commitTest(ok, enForWrong){
   if(ok){ testCorrect++; awardStars(1); }
   else if(enForWrong){ addTestWrong(enForWrong, curUnitId); }
   testIdx++;
-  setTimeout(renderTestQ, 480);
+  setTimeout(renderTestQ, delay||480);
 }
 function addTestWrong(en, unitId){
   if(STATE.wrong.some(w=>w.en===en&&w.unit===unitId)) return;
@@ -3926,6 +3990,7 @@ function addTestWrong(en, unitId){
   STATE.wrong.push({en, zh, unit:unitId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
 }
 function finishTest(){
+  testActive=false; // v78：结束屏关闭不再弹退出确认
   const total=testQs.length;
   const score=Math.round(testCorrect/total*100);
   STATE.tests[curUnitId]=Math.max(STATE.tests[curUnitId]||0, score);
@@ -4465,7 +4530,8 @@ function renderPuzzle(q, done){
   });
   window.__puzzlePlay=()=>speak(answer.en);
   window.__puzzleCheck=()=>{ const got=[...basket.children].map(e=>e.textContent).join(''); const ok=norm(got)===norm(answer.en);
-    if(ok){ resolve(true); } else { basket.classList.add('wrong'); setTimeout(()=>basket.classList.remove('wrong'),500); resolve(false); } };
+    if(ok){ [...basket.children].forEach(c=>{ c.classList.remove('used'); c.classList.add('right'); }); setTimeout(()=>resolve(true), 500); } // v78：拼对时字母变绿反馈
+    else { basket.classList.add('wrong'); [...basket.children].forEach(c=>c.classList.add('wrong-pos')); setTimeout(()=>{ basket.classList.remove('wrong'); [...basket.children].forEach(c=>c.classList.remove('wrong-pos')); }, 500); resolve(false); } };
   speak(answer.en);
 }
 // 连连看：点单词再点它的意思
@@ -5101,14 +5167,34 @@ function confirmPickType(){
 
 /* v76 单元测试 · 题目弹窗开关（取代整屏切到 test 屏） */
 let testModalReturnTo='home';
+let testActive=false; // v78：题目是否处于答题进行中（用于退出确认）
 function openTestModal(){
   testModalReturnTo = (typeof curScreen!=='undefined' && curScreen) ? curScreen : 'home';
   const m=document.getElementById('testModal'); if(m) m.classList.add('show');
 }
-function closeTestModal(){
+function closeTestModal(force){
+  // v78：答题进行中点 ✕/遮罩 才弹确认，选型步与结束屏直接关
+  if(!force && testActive && testQs && testIdx<testQs.length){
+    askConfirm('退出测试？','还有题目没做完，退出后本次进度不会保存。', ()=>{ testActive=false; _realCloseTest(); });
+    return;
+  }
+  testActive=false;
+  _realCloseTest();
+}
+function _realCloseTest(){
   const m=document.getElementById('testModal'); if(m) m.classList.remove('show');
   go(testModalReturnTo||'home');
 }
+/* v78 通用确认弹窗 */
+let _cfOk=null;
+function askConfirm(title, msg, onOk){
+  const t=document.getElementById('cfTitle'); if(t) t.textContent=title;
+  const m=document.getElementById('cfMsg'); if(m) m.innerHTML=msg;
+  _cfOk=onOk;
+  const cm=document.getElementById('confirmModal'); if(cm) cm.classList.add('show');
+}
+function hideConfirm(){ const cm=document.getElementById('confirmModal'); if(cm) cm.classList.remove('show'); _cfOk=null; }
+function runConfirm(){ const f=_cfOk; hideConfirm(); if(f) f(); }
 
 /* =========================================================
    首次使用指引（v42）：狐狸向导分步卡片，首次打开自动弹，设置里可重看
@@ -5190,11 +5276,51 @@ function removeWrong(en){
   if(i>=0){ STATE.wrong.splice(i,1); STATE.wrongFixed=(STATE.wrongFixed||0)+1; saveState(); renderWrongbook(); toast('已移出错题本 ✅'); }
 }
 function refreshWrongDot(){
-  const dot=document.getElementById('wrongDot');
-  if(!dot) return;
   const n=(STATE.wrong||[]).length;
-  dot.classList.toggle('hidden', n===0);
-  dot.textContent=n>99?'99+':n;
+  const dot=document.getElementById('wrongDot');
+  if(dot){ dot.classList.toggle('hidden', n===0); dot.textContent=n>99?'99+':n; }
+  const wd=document.getElementById('weakDot');
+  if(wd){ wd.classList.toggle('hidden', n===0); wd.textContent=n>99?'99+':n; }
+}
+/* v78 薄弱点洞察面板 */
+function unitName(uid){ const u=ALL_UNITS.find(x=>x.id===uid); return u ? (u.title||u.name||uid) : uid; }
+function openWeakPanel(){
+  const m=document.getElementById('weakModal'); if(m) m.classList.add('show');
+  renderWeakPanel();
+}
+function closeWeakPanel(){
+  const m=document.getElementById('weakModal'); if(m) m.classList.remove('show');
+}
+function renderWeakPanel(){
+  const body=document.getElementById('weakBody'); if(!body) return;
+  const wb=STATE.weakByUnit||{};
+  const totalWrong=(STATE.wrong||[]).length;
+  const rows=Object.entries(wb).map(([uid,w])=>{
+    const s=(w.sel||0)+(w.spell||0)+(w.sent||0);
+    return {uid, s, sel:w.sel||0, spell:w.spell||0, sent:w.sent||0};
+  }).filter(r=>r.s>0).sort((a,b)=>b.s-a.s).slice(0,5);
+  const words=(STATE.wrong||[]).slice(0,12);
+  let html=`<p class="muted" style="margin:0 0 4px">累计错题 <b>${totalWrong}</b> 个 · 选/拼/句 分别指「选择题、拼写、连词成句」的错次</p>`;
+  if(!rows.length && !words.length){
+    html+=`<div class="wk-empty"><span class="big">🌟</span><p>还没有薄弱点记录，继续加油哦！</p></div>`;
+    body.innerHTML=html; return;
+  }
+  if(rows.length){
+    html+=`<div class="wk-sec">📌 最该补的单元</div>`;
+    rows.forEach(r=>{
+      html+=`<div class="wk-card"><div class="wk-row"><span class="wk-name">${unitName(r.uid)}</span>`
+        +`<button class="btn grape" style="padding:5px 12px;font-size:13px" onclick="closeWeakPanel();goTestUnit('${r.uid}')">去复习 ➡️</button></div>`
+        +`<div class="wk-tags"><span class="wk-tag sel">选 ${r.sel}</span><span class="wk-tag spell">拼 ${r.spell}</span><span class="wk-tag sent">句 ${r.sent}</span></div></div>`;
+    });
+  }
+  if(words.length){
+    html+=`<div class="wk-sec">🔤 常错单词</div><div class="wk-card">`;
+    words.forEach(w=>{
+      html+=`<div class="wk-word"><span><span class="wk-en">${w.en}</span><span class="wk-zh">${w.zh||''}</span></span><span class="wk-meta">${unitName(w.unit)||''}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+  body.innerHTML=html;
 }
 /* —— 错题重做：听音 / 看义 / 拼写 轮流出题 —— */
 let redoList=[], redoIdx=0;
