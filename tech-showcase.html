@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 82,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v83',// 与 sw.js 的 CACHE 保持一致
+    version: 83,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v84',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    82,        // 迭代版本数
+    iter:    83,        // 迭代版本数
     updated: '2026-08-18'
   };
 </script>
@@ -400,6 +400,7 @@ update  → <span class="k">controllerchange</span>
       <div class="it"><b>v80 · 近况趋势详细化：每日柱+数字</b><span>用户反馈 v79 家长报告中「📈 近况（掌握单词趋势）」只画了几根无标签无数字的紫色柱状图，过于抽象看不出含义。重做为「每日柱+数字」详细版：14 天一日一柱，柱顶标「+5」当天掌握数（0 掌握显示灰色 +「0」），超过当周平均的柱高亮金色渐变 + 内描边 + 数字徽章；柱底标日期简写（8/12、8/13…）；悬停 title 显示「8/12 · 掌握 5 词 · 正确率 87%」完整数据。趋势区右上加副标「峰值 +N · 均值 +M」。同步 saveReportImage() 纯 canvas 长图：每柱顶部数字 + 底部日期 + 0 值灰色 + 超均值金色渐变，区域高度从 64 增至 126 容纳新增的标签层。视觉层 CSS（.rpt-trend/.rpt-tcol/.rpt-tbar.zero/.rpt-tbar.hi/.rpt-tnum/.rpt-tdate）与数据层（trendBars 生成函数）同步升级。</span></div>
       <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值灰色数字 +「0」、超均值金色数字，悬停完整数据均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
       <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
+      <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
       </div>
     </div>
   </section>
