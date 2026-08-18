@@ -1,455 +1,456 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>五年级英语小探险家 · 技术亮点</title>
-<!--
-  技术成果展示页（独立单文件 · 浅色商务风）
-  ⚠️ 更新版本时，只改下面的 META 即可：
-     页面里的版本号 / 工程指标都会通过 data-meta 自动同步，无需逐处修改。
--->
-<script>
-  const META = {
-    version: 87,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v88',// 与 sw.js 的 CACHE 保持一致
-    words:   545,       // 核心词数
-    audio:   1151,      // 预录音频数
-    audioMB: 13.6,      // 音频总体积(MB)
-    deps:    0,         // 第三方依赖数
-    offline: 100,       // 离线可用比例(%)
-    iter:    87,        // 迭代版本数
-    updated: '2026-08-18'
-  };
-</script>
-<style>
-  :root{
-    --bg:#f5f7fb; --panel:#ffffff; --ink:#1f2433; --muted:#5b6478;
-    --line:#e6e9f2; --indigo:#4f46e5; --indigo2:#6d5efc; --teal:#0ea5a4;
-    --amber:#f59e0b; --shadow:0 2px 10px rgba(20,30,60,.06), 0 10px 26px rgba(20,30,60,.05);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --sans:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
-    line-height:1.6; -webkit-font-smoothing:antialiased;
-    background-image:radial-gradient(circle at 18% 0%, #eef1fb 0 22%, transparent 22.5%),
-                     radial-gradient(circle at 92% 6%, #e7f6f6 0 20%, transparent 20.5%);
-    background-attachment:fixed;
-  }
-  .wrap{max-width:980px; margin:0 auto; padding:30px 20px 60px;}
-  a{color:var(--indigo); text-decoration:none;}
-
-  /* header */
-  .hd{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:18px 22px;
-    background:var(--panel); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow);}
-  .logo{width:58px; height:58px; border-radius:16px; flex:0 0 auto;
-    background:linear-gradient(135deg,#6d5efc,#3ec6ff); display:flex; align-items:center; justify-content:center;
-    font-size:30px; box-shadow:0 8px 18px rgba(109,94,252,.32);}
-  .hd .tt{display:flex; flex-direction:column;}
-  .hd .tt h1{margin:0; font-size:22px; font-weight:900; letter-spacing:.4px;}
-  .hd .tt .en{font:600 12px var(--mono); color:var(--muted); letter-spacing:.5px;}
-  .hd .tags{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-  .pill{font:800 12px var(--mono); color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff);
-    padding:6px 12px; border-radius:999px; box-shadow:0 6px 14px rgba(109,94,252,.28);}
-  .tag{font-size:12px; font-weight:700; color:var(--muted); background:#eef1f8;
-    border:1px solid var(--line); padding:5px 11px; border-radius:999px;}
-  .backlink{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800; color:var(--ink);
-    background:var(--panel); border:1px solid var(--line); padding:8px 14px; border-radius:999px; box-shadow:var(--shadow);
-    transition:.18s;}
-  .backlink:hover{color:var(--indigo); border-color:var(--indigo); transform:translateY(-1px);}
-
-  /* hero */
-  .hero{margin:26px 0 8px;}
-  .hero h2{margin:0 0 10px; font-size:34px; line-height:1.25; font-weight:900; letter-spacing:.3px;}
-  .hero h2 .hl{background:linear-gradient(120deg,#6d5efc,#0ea5a4); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .hero p{margin:0; max-width:680px; color:var(--muted); font-size:15px;}
-  .cta{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
-  .cta a{font-weight:800; font-size:14px; padding:11px 18px; border-radius:14px;}
-  .cta .pri{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 8px 18px rgba(109,94,252,.28);}
-  .cta .sec{color:var(--ink); background:var(--panel); border:1px solid var(--line); box-shadow:var(--shadow);}
-
-  /* sections */
-  .sec{margin-top:40px;}
-  .sec-h{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
-  .sec-h .n{font:900 13px var(--mono); color:#fff; background:var(--indigo); width:26px; height:26px;
-    border-radius:8px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
-  .sec-h h3{margin:0; font-size:20px; font-weight:900; letter-spacing:.4px;}
-  .sec-h .ln{flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent);}
-
-  /* architecture svg */
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow);}
-  .arch-svg{width:100%; height:auto; display:block;}
-
-  /* algo grid */
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-  .acard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
-  .acard h4{margin:0 0 6px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
-  .acard p{margin:0 0 10px; font-size:13px; color:var(--muted);}
-  pre.code{margin:0; background:#f6f8fc; border:1px solid var(--line); border-radius:12px; padding:11px 13px;
-    font:12.5px/1.6 var(--mono); color:#2c3350; overflow:auto; white-space:pre-wrap;}
-  pre.code .c{color:#9aa3bd;}     /* comment */
-  pre.code .k{color:#6d5efc; font-weight:700;}
-
-  /* metrics */
-  .mgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
-  .mcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px 10px; text-align:center; box-shadow:var(--shadow);}
-  .mcard .n{font:900 30px var(--mono); color:var(--indigo);}
-  .mcard .n small{font-size:14px; font-weight:800; color:#9aa3bd;}
-  .mcard .l{font-size:12px; color:var(--muted); margin-top:4px;}
-
-  /* tech stack */
-  .stack{display:flex; gap:10px; flex-wrap:wrap;}
-  .chip{font-size:13px; font-weight:700; color:var(--ink); background:var(--panel); border:1px solid var(--line);
-    border-radius:12px; padding:9px 14px; box-shadow:var(--shadow);}
-  .chip b{color:var(--indigo2);}
-
-  /* timeline */
-  .tl{position:relative; margin-left:8px; padding-left:22px; border-left:2px solid #e2dcfb;}
-  .tl .it{position:relative; padding:9px 0;}
-  .tl .it::before{content:''; position:absolute; left:-29px; top:13px; width:12px; height:12px; border-radius:50%;
-    background:var(--indigo2); border:2px solid #fff; box-shadow:0 0 0 3px #e8e4fb;}
-  .tl .it b{font-size:14px;}
-  .tl .it span{display:block; font-size:12px; color:var(--muted);}
-
-  /* challenges */
-  .sec-sub{margin:-4px 0 14px; font-size:13px; color:var(--muted);}
-  code{font:600 12.5px var(--mono); color:var(--indigo2); background:#eef0fb; padding:1px 6px; border-radius:6px;}
-  .qcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
-  .qcard h4{margin:0 0 10px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
-  .qrow{display:flex; gap:9px; margin-top:9px; align-items:flex-start;}
-  .qtag{flex:0 0 auto; font:800 11px var(--mono); padding:3px 9px; border-radius:999px; white-space:nowrap; margin-top:1px;}
-  .qtag.q{color:#b45309; background:#fef3c7;}
-  .qtag.p{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 4px 10px rgba(109,94,252,.25);}
-  .qtxt{font-size:13px; color:var(--muted); line-height:1.55;}
-  .qcard pre.code{margin-top:10px;}
-
-  .foot{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); text-align:center;}
-  @media(max-width:640px){
-    .grid2,.mgrid{grid-template-columns:1fr;}
-    .hero h2{font-size:27px;}
-  }
-  .tl-seg{display:flex; justify-content:space-between; align-items:center; margin:6px 0 14px;}
-  .tl-seg .muted{font-size:14px;}
-  .tl-seg .seg{display:flex; gap:8px; width:220px; margin:0;}
-  .tl-seg .seg button{flex:1; border:2px solid var(--line); background:var(--panel); border-radius:12px; padding:10px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink); transition:.15s;}
-  .tl-seg .seg button.on{background:var(--indigo); color:#fff; border-color:var(--indigo);}
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <!-- HEADER -->
-  <header class="hd">
-    <div class="logo">🦊</div>
-    <div class="tt">
-      <h1>五年级英语小探险家</h1>
-      <span class="en">OFFLINE ENGLISH LEARNING PWA · GRADE 5</span>
-    </div>
-    <div class="tags">
-      <a class="backlink" href="index.html">← 返回英语助手</a>
-      <span class="pill" data-meta="version">v22</span>
-      <span class="tag">PWA</span>
-      <span class="tag">离线优先</span>
-      <span class="tag">0 第三方依赖</span>
-    </div>
-  </header>
-
-  <!-- HERO -->
-  <section class="hero">
-    <h2>一个<span class="hl">为离线而生</span>的五年级英语 PWA</h2>
-    <p>单文件、零依赖、可安装到手机桌面的离线学习应用。从词库、语音、复习算法到缓存策略，整套工程都在本地闭环运行——无账号、无联网上报、无后端服务器。</p>
-    <div class="cta">
-      <a class="pri" href="https://hjrwal.github.io/" target="_blank" rel="noopener">▶ 在线体验</a>
-      <a class="sec" href="#arch">查看架构 ↓</a>
-    </div>
-  </section>
-
-  <!-- 1. ARCHITECTURE -->
-  <section class="sec" id="arch">
-    <div class="sec-h"><span class="n">1</span><h3>系统分层架构</h3><span class="ln"></span></div>
-    <div class="card">
-      <svg class="arch-svg" viewBox="0 0 820 392" role="img" aria-label="系统分层架构图">
-        <defs>
-          <linearGradient id="gL" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#3ec6ff"/>
-          </linearGradient>
-          <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1.1" fill="#d9deec"/>
-          </pattern>
-        </defs>
-        <rect x="0" y="0" width="820" height="392" fill="url(#dots)" opacity=".5"/>
-        <g font-family="PingFang SC, Microsoft YaHei, system-ui, sans-serif">
-          <!-- L1 表现层 -->
-          <rect x="60" y="22" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="22" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="48" font-size="17" font-weight="800" fill="#1f2433">表现层</text>
-          <text x="92" y="70" font-size="13" fill="#5b6478">单文件 PWA · 响应式 UI · 三档主题引擎（浅色 / 深色 / 护眼 + 跟随系统）</text>
-          <!-- L2 核心引擎 -->
-          <rect x="60" y="114" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="114" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="140" font-size="17" font-weight="800" fill="#1f2433">核心引擎</text>
-          <text x="92" y="162" font-size="13" fill="#5b6478">SRS 复习 · 单元测试 · 趣味闯关 · 单词游戏 · 双维度弱项诊断</text>
-          <!-- L3 数据层 -->
-          <rect x="60" y="206" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="206" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="232" font-size="17" font-weight="800" fill="#1f2433">数据层</text>
-          <text x="92" y="254" font-size="13" fill="#5b6478">localStorage 状态机 · 错题本 · 进度趋势 · 成就系统</text>
-          <!-- L4 资源层 -->
-          <rect x="60" y="298" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="298" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="324" font-size="17" font-weight="800" fill="#1f2433">资源层</text>
-          <text x="92" y="346" font-size="13" fill="#5b6478">Service Worker 离线缓存 · 671 个预录音频 · 人教 PEP 词库</text>
-        </g>
-        <!-- connectors -->
-        <g stroke="#c7cde0" stroke-width="2" fill="#c7cde0">
-          <line x1="410" y1="84" x2="410" y2="112"/><polygon points="410,118 405,108 415,108"/>
-          <line x1="410" y1="176" x2="410" y2="204"/><polygon points="410,210 405,200 415,200"/>
-          <line x1="410" y1="268" x2="410" y2="296"/><polygon points="410,302 405,292 415,292"/>
-        </g>
-      </svg>
-    </div>
-  </section>
-
-  <!-- 2. ALGORITHMS -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">2</span><h3>关键技术与算法</h3><span class="ln"></span></div>
-    <div class="grid2">
-      <div class="acard">
-        <h4>🧠 SRS 间隔复习</h4>
-        <p>艾宾浩斯式分级调度，错词按间隔重新出现，掌握后自动移出错题本。</p>
-        <pre class="code"><span class="c">// 间隔天数（天）</span>
-REVIEW_INTERVALS = [1, 2, 4, 7, 15, 30]
-<span class="k">due</span> = today + INTERVALS[stage]
-<span class="k">if</span> stage &gt;= len: 移出错题本</pre>
-      </div>
-      <div class="acard">
-        <h4>⚡ SW 缓存失效策略</h4>
-        <p>安装即接管页面，资源更新后自动刷新，根治 PWA「常驻不重启」老问题。</p>
-        <pre class="code">install → <span class="k">skipWaiting</span>()
-update  → <span class="k">controllerchange</span>
-        → location.reload()</pre>
-      </div>
-      <div class="acard">
-        <h4>🔊 TTS 降级方案</h4>
-        <p>设备缺失语音引擎时，用 edge-tts 预录本地音频优先播放，失败则静默降级。</p>
-        <pre class="code"><span class="k">speak</span>(text):
-  <span class="k">if</span> AUDIO_MAP[text]:
-      play(local_mp3)
-  <span class="k">else</span>: webTTS(text)</pre>
-      </div>
-      <div class="acard">
-        <h4>🎯 双维度弱项诊断</h4>
-        <p>按单元统计错次（热力色阶）+ 掌握度（进度条），精准定位薄弱环节。</p>
-        <pre class="code">weakByUnit[unit] = {
-  sel, spell, sent   <span class="c">// 错题计数</span>
-}
-master = solved / total <span class="c">// 进度条</span></pre>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. METRICS -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">3</span><h3>工程指标</h3><span class="ln"></span></div>
-    <div class="mgrid">
-      <div class="mcard"><div class="n" data-meta="words">341</div><div class="l">核心词汇</div></div>
-      <div class="mcard"><div class="n" data-meta="audio">671</div><div class="l">预录音频</div></div>
-      <div class="mcard"><div class="n"><span data-meta="audioMB">9.5</span><small>MB</small></div><div class="l">音频总量</div></div>
-      <div class="mcard"><div class="n" data-meta="deps">0</div><div class="l">第三方依赖</div></div>
-      <div class="mcard"><div class="n"><span data-meta="offline">100</span><small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n" data-meta="iter">63</div><div class="l">迭代版本</div></div>
-    </div>
-  </section>
-
-  <!-- 4. TECH STACK -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">4</span><h3>技术栈</h3><span class="ln"></span></div>
-    <div class="card">
-      <div class="stack">
-        <span class="chip"><b>前端</b> · 原生 HTML / CSS / JavaScript（零框架）</span>
-        <span class="chip"><b>存储</b> · localStorage 状态机</span>
-        <span class="chip"><b>离线</b> · Service Worker（Cache-First）</span>
-        <span class="chip"><b>语音</b> · edge-tts 预录 + Web Speech API 降级</span>
-        <span class="chip"><b>部署</b> · GitHub Pages（静态托管）</span>
-        <span class="chip"><b>可安装</b> · Web App Manifest + PWA</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. CHALLENGES -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">5</span><h3>技术难点与解决方案</h3><span class="ln"></span></div>
-    <p class="sec-sub">真实开发中被「卡住」过、并逐一破解的工程问题——每一个都来自真机实测。</p>
-    <div class="grid2">
-      <div class="qcard">
-        <h4>🔇 设备级 TTS 整体缺失</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">一加 Ace 5 Pro / ColorOS 16 的 Web Speech API 朗读整台设备不可用（系统级语音引擎缺失，非浏览器问题），QQ 浏览器与系统浏览器均无法出声。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">用 edge-tts（en-US-AriaNeural）批量预录 671 个 mp3（341 词 + 341 例句 + 句型，共 9.5MB），建立 <code>AUDIO_MAP</code> 内嵌；<code>speak()</code> 优先播本地音频，无则降级 web TTS，彻底摆脱运行时 TTS 依赖。</span></div>
-        <pre class="code"><span class="k">speak</span>(text):
-  <span class="k">if</span> AUDIO_MAP[text]: play(local_mp3)
-  <span class="k">else</span>: webTTS(text)</pre>
-      </div>
-      <div class="qcard">
-        <h4>🔄 PWA 常驻不重启，更新到不了</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">手机 PWA 长期驻留内存，Service Worker 不接管新版本，旧缓存一直生效，用户永远看不到更新。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">install 阶段 <code>try/catch</code> 后必执行 <code>skipWaiting()</code> 抢接管；注册后监听 <code>controllerchange</code> → <code>saveState()</code> 后 <code>location.reload()</code>；页面可见时（<code>visibilitychange</code>）主动 <code>reg.update()</code> 查新。双保险根治缓存陈旧。</span></div>
-        <pre class="code">install → <span class="k">skipWaiting</span>()   <span class="c">// 必执行</span>
-update  → <span class="k">controllerchange</span>
-        → saveState(); location.reload()</pre>
-      </div>
-      <div class="qcard">
-        <h4>📦 671 音频的离线 + 国内可访问</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">671 个音频共 9.5MB，既要离线可听又不能拖慢首屏；且 Vercel / Cloudflare 子域在国内被 DNS 污染，无法直连。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">SW 对 <code>/audio/</code> 走 cache-first 永久离线；仅 install 预缓存壳资源（index / sw / icon），音频按需 fetch 时缓存；部署锁定 GitHub Pages（<code>*.github.io</code> 国内可直连）。</span></div>
-      </div>
-      <div class="qcard">
-        <h4>🎯 弱项诊断：从「有错」到「知道错在哪」</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">仅统计错题总数无法指导复习，孩子不知道该练哪个单元、哪种题型。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt"><code>weakByUnit[unit] = {sel, spell, sent}</code> 三维计数；进度页双维度热力图（色=错次、蓝条=掌握度）；首页推荐「去练某单元某题型」，单元测试与闯关两路错题同源汇聚。</span></div>
-        <pre class="code">weakByUnit[unit] = {
-  sel, spell, sent   <span class="c">// 错次计数</span>
-}
-<span class="c">// 色阶: 错次→红 ; 蓝条: 掌握度</span></pre>
-      </div>
-      <div class="qcard">
-        <h4>🗂️ 零依赖下的可维护词库</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">单文件 + 零依赖，341 词手维护易错、易漏音标，且音频与词表易失同步。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">本地 Python 工具链（<code>rebuild / expand / validate</code>）管词库，脚本式校验词数一致；<code>AUDIO_MAP</code> 由脚本生成，保证与词库同源同步，改词后一键重生成音频。</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. TIMELINE -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
-      <div class="card">
-      <div class="tl-seg">
-        <span class="muted">时间线排序</span>
-        <div class="seg" id="tlOrderSeg">
-          <button data-tl="asc" onclick="tsSetTimelineOrder('asc')">低 → 高</button>
-          <button data-tl="desc" onclick="tsSetTimelineOrder('desc')">高 → 低</button>
-        </div>
-      </div>
-      <div class="tl">
-        <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
-        <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
-        <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
-        <div class="it"><b>v14 · 弱项系统</b><span>题型统计 · 弱项推荐 · 通关星爆</span></div>
-        <div class="it"><b>v18 · 可视化</b><span>关卡路线 · 弱项热力图 · Hero 进度环</span></div>
-        <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
-        <div class="it"><b>v22 · 技术亮点</b><span>技术展示页 · 架构与工程实践对外呈现</span></div>
-      <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
-      <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
-      <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
-      <div class="it"><b>v26 · 连词成句防抄</b><span>答题时隐藏上方完整英文，只留中文提示+听原句，杜绝直接抄答案</span></div>
-      <div class="it"><b>v27 · 修复返回地图</b><span>关卡屏改用独立 #lvlArea 渲染，不再覆盖整 #adventure section，「返回地图」按钮恢复正常</span></div>
-      <div class="it"><b>v28 · 选择题改错重做</b><span>闯关+单元测试的 4 选 1 题改为「错了重选直到对」，第一次选错即入错题本+累加弱项</span></div>
-      <div class="it"><b>v29 · 趣味闯关大改造</b><span>世界地图加狐狸当前位置标记+关卡任务卡；新增听音打地鼠/拼词/连连看/捉迷藏 4 种迷你玩法，每关收尾接单元 BOSS 血条战</span></div>
-      <div class="it"><b>v30 · 修复拼词玩法 "undefined" bug</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
-      <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
-      <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
-      <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
-      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
-      <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
-      <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
-      <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
-      <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
-      <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
-      <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
-      <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
-      <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
-      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配）</span></div>
-      <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>按 iOS 原生质感重构：配色降饱和（新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 主入口 + 顶部齿轮的 emoji 全换统一线性图标（狐狸吉祥物与装饰 emoji 保留）</span></div>
-      <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
-      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转）并加弹性按压态，整体更有「翻开一本绘本」的专属仪式感</span></div>
-      <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
-      <div class="it"><b>v48 · 重画狐狸主角 SVG</b><span>重画为圆润脸庞、清晰三角耳带内耳、大眼带高光、腮红与小鼻子 + 微笑的呆萌狐狸，配色收敛到暖橙/奶油/暖棕墨，全站共用符号一处同步更新</span></div>
-      <div class="it"><b>v49 · 狐狸换「大眼萌系」方案</b><span>用户从 5 种方案中选定 B·大眼萌系：眼睛放大更圆（双高光闪点）、脸相对更小、腮红更明显（椭圆柔粉），整体像盲盒公仔。仍是全站共用 #i-fox 符号一处更新</span></div>
-      <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度（五年级/六年级）与「册」维度组成双维切换，全模块自动适配；六年级上下册共 10 单元（上册 6 + 下册 4）核心词汇入册，核心词 341→545、预录音频 671→1151（13.6MB）；新增 3 条六年级重点语法（一般将来时/一般过去时深化/形容词比较级深化），随年级切换显示</span></div>
-      <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
-      <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
-      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
-      <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 UNITS.find 查找 STATE.weakByUnit 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 ALL_UNITS.find 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
-      <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
-      <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
-      <div class="it"><b>v57 · 做题/学词进度条</b><span>用户要求「做题目和学词语时都要有进度条」。①词汇闪卡（学词语）面板顶部新增进度条 + 「第 X/Y 词」文案，showCard() 实时更新（pct = cardIdx/总词数，与单元测试屏一致的 0-based 进度）。②闯关（做题目）每个非 BOSS 题目渲染后，在 #lvlArea 顶部重新插入进度条（pct = levelQi/levelTotalNormal），next() 内新增 updateLvlProgress() 辅助函数；BOSS 关本身有血量条作进度指示，不重复加。单元测试屏原本就有 .test-prog 进度条，继续沿用。三处进度条共用 .test-prog 样式（葡萄→天空渐变），视觉一致</span></div>
-      <div class="it"><b>v58 · 听说读写改为就地渲染</b><span>用户反馈点 听/说/读/写 任意按钮会「自动滚到下方题目」。根因：原把四个技能按钮与 #skillArea 题目面板分成上下两 panel，点按钮后题目在下方渲染、手机浏览器把新内容带入视口造成「被弹下去」观感（代码无 scrollIntoView）。修法：合并为单个 #skillStage，renderSkillHome() 在 #skillStage 内渲染四技能 tile（无语音识别时隐藏「说」），startSkill(mode) 在 #skillStage 内「就地」渲染题目，并在每道题顶部加「← 返回选技能」按钮。题目出现在正看着的位置，不再向下滚动</span></div>
-      <div class="it"><b>v59 · chip 点击不再触发自动滚动</b><span>用户反馈单元测验屏点任意单元 chip 会「自动滚动到下方题目」。根因：buildUnitChips() 用 div+onclick 创建 chip，无 tabindex 也未阻止 mousedown，浏览器在 mousedown 时让 div 获得焦点、随后把焦点元素 scroll into view，于是页面被弹到下方 #testArea 题目区。与 v58 听说读写是同类病灶，但 v58 是结构性下渲染、v59 是 chip 本身的可点击性。修法：chip 创建时加 el.onmousedown=(e)=&gt;e.preventDefault()，阻止 mousedown 获得焦点，从根上消除浏览器的 scroll-into-view。一次修复覆盖 vocab/sent/skill/test 四屏所有 chip</span></div>
-      <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use height=63 y=51、onboard SVG width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
-      <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
-      <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v62 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
-      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
-      <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
-      <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
-      <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
-      <div class="it"><b>v67 · 连词成句/拼词词块更疏朗</b><span>用户反馈连词成句/拼词词块挤在一起、视觉粘连。优化：词块上下间距从 8px 增至 10-12px（含 flex-wrap 行间距）、左右间距 12px、padding 从 8×12 增至 10×16、加 hover 微弹起；basket/pool 内容居中、单元测试的 lt/build-slot 同步加宽。整体更易点、不粘连，长词（如 weekend）不再被挤压到跟邻词视觉重叠。</span></div>
-      <div class="it"><b>v68 · 单元测试词块自适应不溢出</b><span>单元测试「连词成句」用 .lt 固定 42×50 框，长词（如 maths/English/weekend）装不下溢出到邻词视觉粘连。改 .lt 为 min-width:42 + padding:0 10（自适应横向撑开）、font-size 22→18、white-space:nowrap；build-slot 内边距同步加。短词仍是 42px 方块，长词自动变宽不挤压。</span></div>
-      <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
-      <div class="it"><b>v70 · 词块视觉语言统一（.token = .lt）</b><span>统一闯关/BOSS 的 .token 与单元测试/拼词的 .lt 两套词块视觉：.token 改用 2.5px 深紫边框 + 3D 实心底线(0 3px 0 grape-d)+ 紫色光晕 + hover 抬升/active 按下，风格与 .lt 的「糖果块」一致；.basket 虚线边框 2px→2.5px 与 .build-slot 对齐。全站词块观感统一，且不影响布局（box-shadow 不占排版空间、border 仅 +0.5px）。</span></div>
-      <div class="it"><b>v71 · 段位阶梯重做：12 阶 + 更陡峭门槛</b><span>原 6 段位（满级仅 150⭐）太易达成、缺乏成就感。重做为 12 段位阶梯：🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→👑荣耀→📜传奇→🏆大导师→♛至尊宗师→🌈终极神话。门槛 0→2000⭐ 递增且越往上越陡（间距 15→30→45→70→100→140→180→220→300→400→500）。升级庆祝从 5 次增至 11 次。段位仍按累计⭐ 纯数据驱动计算，旧存档自动按星数重新映射。</span></div>
-      <div class="it"><b>v72 · 段位体系重做：终极神话封顶 + 无限星阶</b><span>用户希望高段位更有追求、不轻易封顶。体系改为：命名阶梯 8 阶（🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→🌈终极神话）在 100⭐ 封顶为「终极神话」；终极神话之后进入无限星阶，每满 100⭐ 升 1 星（200⭐=终极神话1星、300⭐=终极神话2星…永无止境）。getRank 纯数据驱动，旧存档按累计⭐ 实时重映射。</span></div>
-<div class="it"><b>v73 · 星星只来自做题</b><span>用户要求「只有做题目能加星星」。移除词汇卡片熟悉（cardResult，点「认识/不认识」）的加星，其余加星途径保持不变：单元测试/拼写/连词成句/填空/跟读/语法/重做/挑战赛等做题途径照常加星，趣味闯关小游戏（拼词游戏/听音选词/看图选词/连连看）与单元 BOSS 血条战也保留加星。词汇卡反馈文案改为「太棒了，记住啦！」不再显示 +1⭐。</span></div>
-<div class="it"><b>v74 · 单元测试先选题型再出题</b><span>点击「开始单元测试」不再直接进题，而是弹出选题型中间层（看中文·选英文 / 看英文·选中文 / 听发音·拼写 / 连词·成句，可多选，全选/清空快捷）；按选中类型均分 10 题，连词成句固定占 20%。新加 lastTestTypes 记忆上次选择，「🔄 再做一次」沿用上次选中的题型，无需重复设置。</span></div>
-<div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first、其它资源继续 cache-first；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此发版用户不需要硬刷，新版本自动接管实时生效。</span></div>
-      <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
-      <div class="it"><b>v77 · 单元测试弹窗合并（选题型与题目同一层）</b><span>用户反馈点「开始单元测试」后经历两次弹窗（先选题型、再弹题目），步骤偏多。本次合并为同一层弹窗的两个步骤：删除独立的 #pickTypeModal 与 openPickType/closePickType，把「选题型」渲染进 #testModalBody 作为第 1 步（含 4 类题型 chip、全选/清空、沿用上次选择 lastTestTypes），点「开始 10 题」后原地切换为第 2 步题目（renderTestQ 直接覆盖同一 body），不再开关第二个弹窗；薄弱练习包与「再做一次」沿用 lastTestTypes 跳过选型步；取消 / ✕ 仍整体关闭并回到来源页。</span></div>
-      <div class="it"><b>v78 · 三项体验打磨：退出确认 / 放对反馈 / 薄弱点面板</b><span>①单元测试弹窗答题进行中点「✕」或遮罩会弹「退出确认」，避免误触丢失进度；选型步与结束屏仍直接关闭；新增可复用的通用确认弹窗组件。②连词成句与拼词：空槽时显示「👆 点上面的词 / 字母…」提示文案；批改后按位置给词块加绿色（对位正确）/红色（错位）反馈并锁定，拼词拼对时字母变绿，且延迟切题让反馈被看清。③新增「📉 薄弱点」入口（首页·看一看）：弹窗按单元弱项错次排名 Top5（选/拼/句分维度色标），并列出常错单词，单元可一键「去复习」直达单元测试；首页角标同步错题计数。</span></div>
-      <div class="it"><b>v79 · 家长报告重做：精美版 + 可分享长图</b><span>用户希望「生成家长/老师报告」更精美详细。本次彻底重做：①新增 buildReportData() 统一数据模型，汇总星星/连续天数/掌握度/正确率/近 7 天新增掌握（对比趋势 7 天前）/薄弱单元 Top4（按错次排序）/常错单词/测验最佳分/当前段位；buildAdvice() 据数据动态生成针对性学习建议。②屏幕内报告改为卡片化精美排版（段位徽章 + 统计卡网格 + 摘要条 + 趋势迷你柱 + 薄弱单元进度条「去练习」+ 常错单词 + 建议清单）。③新增 saveReportImage() 纯 canvas 2D 绘制竖版报告长图（零依赖、离线可用、devicePixelRatio 高清），可保存 PNG 或直接调起系统分享（微信等）；导出文字版也升级为含薄弱单元/本周新增/建议的详细 txt。进度屏按钮改为「生成报告 / 保存为图片 / 导出文字版」。</span></div>
-      <div class="it"><b>v80 · 近况趋势详细化：每日柱+数字</b><span>用户反馈 v79 家长报告中「📈 近况（掌握单词趋势）」只画了几根无标签无数字的紫色柱状图，过于抽象看不出含义。重做为「每日柱+数字」详细版：14 天一日一柱，柱顶标「+5」当天掌握数（0 掌握显示灰色 +「0」），超过当周平均的柱高亮金色渐变 + 内描边 + 数字徽章；柱底标日期简写（8/12、8/13…）；悬停 title 显示「8/12 · 掌握 5 词 · 正确率 87%」完整数据。趋势区右上加副标「峰值 +N · 均值 +M」。同步 saveReportImage() 纯 canvas 长图：每柱顶部数字 + 底部日期 + 0 值灰色 + 超均值金色渐变，区域高度从 64 增至 126 容纳新增的标签层。视觉层 CSS（.rpt-trend/.rpt-tcol/.rpt-tbar.zero/.rpt-tbar.hi/.rpt-tnum/.rpt-tdate）与数据层（trendBars 生成函数）同步升级。</span></div>
-      <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值灰色数字 +「0」、超均值金色数字，悬停完整数据均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
-      <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
-      <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
-      <div class="it"><b>v84 · 薄弱点面板重做：4仪表+等级徽章+chip单词</b><span>用户反馈 v78 「我的薄弱点」面板太简陋（灰底平铺、chip 只是数字、单词无发音、无等级）。彻底重做：①顶部 4 项仪表卡网格 — 累计错次/薄弱单元/已掌握词/连续学习，配色用 --grape/--forest/--amber 区分类型，全部 var() 跟随主题。②单元卡重做：左侧 big emoji 圆形头像罩、中间等级徽章（🔴⚠严重 ≥7 次 / 🟡●中等 4-6 / 🟢✦轻微 1-3）+ 错次进度条（按级别配色 渐变，h1 暖红、h2 琥珀、h3 森林绿）+ 底部小字统计「选/拼/句」、右侧大紫色立体「去复习 ➡️」按钮（带 3D 阴影+按压反馈）。③常错单词按出现频次合并去重，前 16 渲染为 chip：每个 chip = 🔊 发音按钮（点调用 speak()）+ 英文大字 + 中文 + 错次热度 chip（×1 绿、×2 黄、≥4 红），hover 抬升 2px。配色全部用 var() 跟随主题（暖色绘本风），与 v83 报告/v80 趋势图/v82 数字盖顶同套视觉语言。</span></div>
-      <div class="it"><b>v85 · 薄弱点面板升级：等级徽章强化 + 🔊加大 + 去复习拆双按钮</b><span>用户确认 v84 三项优化点全部采纳：①等级徽章强化——「⚠ 严重」(≥7 次) 字号加粗到 900、红色更深(#9E2B1B)、加 1.5px 红边 + 红色外发光圈，三种级别一眼区分；②🔊 发音按钮由 28px 加大到 34px、字号 13→16、圆角 10→12，更易点中；③单元卡右侧「去复习 ➡️」单按钮拆为竖排双按钮——「📝 练一练」(沿用上次题型进测试屏直接做) 与「🎯 测一测」(弹题型选择框自定义 10 题)，橙色区分。配色继续全部 var() 跟随主题。</span></div>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>五年级英语小探险家 · 技术亮点</title>
+<!--
+  技术成果展示页（独立单文件 · 浅色商务风）
+  ⚠️ 更新版本时，只改下面的 META 即可：
+     页面里的版本号 / 工程指标都会通过 data-meta 自动同步，无需逐处修改。
+-->
+<script>
+  const META = {
+    version: 88,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v89',// 与 sw.js 的 CACHE 保持一致
+    words:   545,       // 核心词数
+    audio:   1151,      // 预录音频数
+    audioMB: 13.6,      // 音频总体积(MB)
+    deps:    0,         // 第三方依赖数
+    offline: 100,       // 离线可用比例(%)
+    iter:    88,        // 迭代版本数
+    updated: '2026-08-18'
+  };
+</script>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#1f2433; --muted:#5b6478;
+    --line:#e6e9f2; --indigo:#4f46e5; --indigo2:#6d5efc; --teal:#0ea5a4;
+    --amber:#f59e0b; --shadow:0 2px 10px rgba(20,30,60,.06), 0 10px 26px rgba(20,30,60,.05);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 18% 0%, #eef1fb 0 22%, transparent 22.5%),
+                     radial-gradient(circle at 92% 6%, #e7f6f6 0 20%, transparent 20.5%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:30px 20px 60px;}
+  a{color:var(--indigo); text-decoration:none;}
+
+  /* header */
+  .hd{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:18px 22px;
+    background:var(--panel); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow);}
+  .logo{width:58px; height:58px; border-radius:16px; flex:0 0 auto;
+    background:linear-gradient(135deg,#6d5efc,#3ec6ff); display:flex; align-items:center; justify-content:center;
+    font-size:30px; box-shadow:0 8px 18px rgba(109,94,252,.32);}
+  .hd .tt{display:flex; flex-direction:column;}
+  .hd .tt h1{margin:0; font-size:22px; font-weight:900; letter-spacing:.4px;}
+  .hd .tt .en{font:600 12px var(--mono); color:var(--muted); letter-spacing:.5px;}
+  .hd .tags{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .pill{font:800 12px var(--mono); color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff);
+    padding:6px 12px; border-radius:999px; box-shadow:0 6px 14px rgba(109,94,252,.28);}
+  .tag{font-size:12px; font-weight:700; color:var(--muted); background:#eef1f8;
+    border:1px solid var(--line); padding:5px 11px; border-radius:999px;}
+  .backlink{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800; color:var(--ink);
+    background:var(--panel); border:1px solid var(--line); padding:8px 14px; border-radius:999px; box-shadow:var(--shadow);
+    transition:.18s;}
+  .backlink:hover{color:var(--indigo); border-color:var(--indigo); transform:translateY(-1px);}
+
+  /* hero */
+  .hero{margin:26px 0 8px;}
+  .hero h2{margin:0 0 10px; font-size:34px; line-height:1.25; font-weight:900; letter-spacing:.3px;}
+  .hero h2 .hl{background:linear-gradient(120deg,#6d5efc,#0ea5a4); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero p{margin:0; max-width:680px; color:var(--muted); font-size:15px;}
+  .cta{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .cta a{font-weight:800; font-size:14px; padding:11px 18px; border-radius:14px;}
+  .cta .pri{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 8px 18px rgba(109,94,252,.28);}
+  .cta .sec{color:var(--ink); background:var(--panel); border:1px solid var(--line); box-shadow:var(--shadow);}
+
+  /* sections */
+  .sec{margin-top:40px;}
+  .sec-h{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .sec-h .n{font:900 13px var(--mono); color:#fff; background:var(--indigo); width:26px; height:26px;
+    border-radius:8px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .sec-h h3{margin:0; font-size:20px; font-weight:900; letter-spacing:.4px;}
+  .sec-h .ln{flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent);}
+
+  /* architecture svg */
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow);}
+  .arch-svg{width:100%; height:auto; display:block;}
+
+  /* algo grid */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .acard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
+  .acard h4{margin:0 0 6px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
+  .acard p{margin:0 0 10px; font-size:13px; color:var(--muted);}
+  pre.code{margin:0; background:#f6f8fc; border:1px solid var(--line); border-radius:12px; padding:11px 13px;
+    font:12.5px/1.6 var(--mono); color:#2c3350; overflow:auto; white-space:pre-wrap;}
+  pre.code .c{color:#9aa3bd;}     /* comment */
+  pre.code .k{color:#6d5efc; font-weight:700;}
+
+  /* metrics */
+  .mgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .mcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px 10px; text-align:center; box-shadow:var(--shadow);}
+  .mcard .n{font:900 30px var(--mono); color:var(--indigo);}
+  .mcard .n small{font-size:14px; font-weight:800; color:#9aa3bd;}
+  .mcard .l{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  /* tech stack */
+  .stack{display:flex; gap:10px; flex-wrap:wrap;}
+  .chip{font-size:13px; font-weight:700; color:var(--ink); background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:9px 14px; box-shadow:var(--shadow);}
+  .chip b{color:var(--indigo2);}
+
+  /* timeline */
+  .tl{position:relative; margin-left:8px; padding-left:22px; border-left:2px solid #e2dcfb;}
+  .tl .it{position:relative; padding:9px 0;}
+  .tl .it::before{content:''; position:absolute; left:-29px; top:13px; width:12px; height:12px; border-radius:50%;
+    background:var(--indigo2); border:2px solid #fff; box-shadow:0 0 0 3px #e8e4fb;}
+  .tl .it b{font-size:14px;}
+  .tl .it span{display:block; font-size:12px; color:var(--muted);}
+
+  /* challenges */
+  .sec-sub{margin:-4px 0 14px; font-size:13px; color:var(--muted);}
+  code{font:600 12.5px var(--mono); color:var(--indigo2); background:#eef0fb; padding:1px 6px; border-radius:6px;}
+  .qcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
+  .qcard h4{margin:0 0 10px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
+  .qrow{display:flex; gap:9px; margin-top:9px; align-items:flex-start;}
+  .qtag{flex:0 0 auto; font:800 11px var(--mono); padding:3px 9px; border-radius:999px; white-space:nowrap; margin-top:1px;}
+  .qtag.q{color:#b45309; background:#fef3c7;}
+  .qtag.p{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 4px 10px rgba(109,94,252,.25);}
+  .qtxt{font-size:13px; color:var(--muted); line-height:1.55;}
+  .qcard pre.code{margin-top:10px;}
+
+  .foot{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); text-align:center;}
+  @media(max-width:640px){
+    .grid2,.mgrid{grid-template-columns:1fr;}
+    .hero h2{font-size:27px;}
+  }
+  .tl-seg{display:flex; justify-content:space-between; align-items:center; margin:6px 0 14px;}
+  .tl-seg .muted{font-size:14px;}
+  .tl-seg .seg{display:flex; gap:8px; width:220px; margin:0;}
+  .tl-seg .seg button{flex:1; border:2px solid var(--line); background:var(--panel); border-radius:12px; padding:10px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink); transition:.15s;}
+  .tl-seg .seg button.on{background:var(--indigo); color:#fff; border-color:var(--indigo);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="hd">
+    <div class="logo">🦊</div>
+    <div class="tt">
+      <h1>五年级英语小探险家</h1>
+      <span class="en">OFFLINE ENGLISH LEARNING PWA · GRADE 5</span>
+    </div>
+    <div class="tags">
+      <a class="backlink" href="index.html">← 返回英语助手</a>
+      <span class="pill" data-meta="version">v22</span>
+      <span class="tag">PWA</span>
+      <span class="tag">离线优先</span>
+      <span class="tag">0 第三方依赖</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h2>一个<span class="hl">为离线而生</span>的五年级英语 PWA</h2>
+    <p>单文件、零依赖、可安装到手机桌面的离线学习应用。从词库、语音、复习算法到缓存策略，整套工程都在本地闭环运行——无账号、无联网上报、无后端服务器。</p>
+    <div class="cta">
+      <a class="pri" href="https://hjrwal.github.io/" target="_blank" rel="noopener">▶ 在线体验</a>
+      <a class="sec" href="#arch">查看架构 ↓</a>
+    </div>
+  </section>
+
+  <!-- 1. ARCHITECTURE -->
+  <section class="sec" id="arch">
+    <div class="sec-h"><span class="n">1</span><h3>系统分层架构</h3><span class="ln"></span></div>
+    <div class="card">
+      <svg class="arch-svg" viewBox="0 0 820 392" role="img" aria-label="系统分层架构图">
+        <defs>
+          <linearGradient id="gL" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#3ec6ff"/>
+          </linearGradient>
+          <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.1" fill="#d9deec"/>
+          </pattern>
+        </defs>
+        <rect x="0" y="0" width="820" height="392" fill="url(#dots)" opacity=".5"/>
+        <g font-family="PingFang SC, Microsoft YaHei, system-ui, sans-serif">
+          <!-- L1 表现层 -->
+          <rect x="60" y="22" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="22" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="48" font-size="17" font-weight="800" fill="#1f2433">表现层</text>
+          <text x="92" y="70" font-size="13" fill="#5b6478">单文件 PWA · 响应式 UI · 三档主题引擎（浅色 / 深色 / 护眼 + 跟随系统）</text>
+          <!-- L2 核心引擎 -->
+          <rect x="60" y="114" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="114" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="140" font-size="17" font-weight="800" fill="#1f2433">核心引擎</text>
+          <text x="92" y="162" font-size="13" fill="#5b6478">SRS 复习 · 单元测试 · 趣味闯关 · 单词游戏 · 双维度弱项诊断</text>
+          <!-- L3 数据层 -->
+          <rect x="60" y="206" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="206" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="232" font-size="17" font-weight="800" fill="#1f2433">数据层</text>
+          <text x="92" y="254" font-size="13" fill="#5b6478">localStorage 状态机 · 错题本 · 进度趋势 · 成就系统</text>
+          <!-- L4 资源层 -->
+          <rect x="60" y="298" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="298" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="324" font-size="17" font-weight="800" fill="#1f2433">资源层</text>
+          <text x="92" y="346" font-size="13" fill="#5b6478">Service Worker 离线缓存 · 671 个预录音频 · 人教 PEP 词库</text>
+        </g>
+        <!-- connectors -->
+        <g stroke="#c7cde0" stroke-width="2" fill="#c7cde0">
+          <line x1="410" y1="84" x2="410" y2="112"/><polygon points="410,118 405,108 415,108"/>
+          <line x1="410" y1="176" x2="410" y2="204"/><polygon points="410,210 405,200 415,200"/>
+          <line x1="410" y1="268" x2="410" y2="296"/><polygon points="410,302 405,292 415,292"/>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 2. ALGORITHMS -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">2</span><h3>关键技术与算法</h3><span class="ln"></span></div>
+    <div class="grid2">
+      <div class="acard">
+        <h4>🧠 SRS 间隔复习</h4>
+        <p>艾宾浩斯式分级调度，错词按间隔重新出现，掌握后自动移出错题本。</p>
+        <pre class="code"><span class="c">// 间隔天数（天）</span>
+REVIEW_INTERVALS = [1, 2, 4, 7, 15, 30]
+<span class="k">due</span> = today + INTERVALS[stage]
+<span class="k">if</span> stage &gt;= len: 移出错题本</pre>
+      </div>
+      <div class="acard">
+        <h4>⚡ SW 缓存失效策略</h4>
+        <p>安装即接管页面，资源更新后自动刷新，根治 PWA「常驻不重启」老问题。</p>
+        <pre class="code">install → <span class="k">skipWaiting</span>()
+update  → <span class="k">controllerchange</span>
+        → location.reload()</pre>
+      </div>
+      <div class="acard">
+        <h4>🔊 TTS 降级方案</h4>
+        <p>设备缺失语音引擎时，用 edge-tts 预录本地音频优先播放，失败则静默降级。</p>
+        <pre class="code"><span class="k">speak</span>(text):
+  <span class="k">if</span> AUDIO_MAP[text]:
+      play(local_mp3)
+  <span class="k">else</span>: webTTS(text)</pre>
+      </div>
+      <div class="acard">
+        <h4>🎯 双维度弱项诊断</h4>
+        <p>按单元统计错次（热力色阶）+ 掌握度（进度条），精准定位薄弱环节。</p>
+        <pre class="code">weakByUnit[unit] = {
+  sel, spell, sent   <span class="c">// 错题计数</span>
+}
+master = solved / total <span class="c">// 进度条</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. METRICS -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">3</span><h3>工程指标</h3><span class="ln"></span></div>
+    <div class="mgrid">
+      <div class="mcard"><div class="n" data-meta="words">341</div><div class="l">核心词汇</div></div>
+      <div class="mcard"><div class="n" data-meta="audio">671</div><div class="l">预录音频</div></div>
+      <div class="mcard"><div class="n"><span data-meta="audioMB">9.5</span><small>MB</small></div><div class="l">音频总量</div></div>
+      <div class="mcard"><div class="n" data-meta="deps">0</div><div class="l">第三方依赖</div></div>
+      <div class="mcard"><div class="n"><span data-meta="offline">100</span><small>%</small></div><div class="l">离线可用</div></div>
+      <div class="mcard"><div class="n" data-meta="iter">63</div><div class="l">迭代版本</div></div>
+    </div>
+  </section>
+
+  <!-- 4. TECH STACK -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">4</span><h3>技术栈</h3><span class="ln"></span></div>
+    <div class="card">
+      <div class="stack">
+        <span class="chip"><b>前端</b> · 原生 HTML / CSS / JavaScript（零框架）</span>
+        <span class="chip"><b>存储</b> · localStorage 状态机</span>
+        <span class="chip"><b>离线</b> · Service Worker（Cache-First）</span>
+        <span class="chip"><b>语音</b> · edge-tts 预录 + Web Speech API 降级</span>
+        <span class="chip"><b>部署</b> · GitHub Pages（静态托管）</span>
+        <span class="chip"><b>可安装</b> · Web App Manifest + PWA</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CHALLENGES -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">5</span><h3>技术难点与解决方案</h3><span class="ln"></span></div>
+    <p class="sec-sub">真实开发中被「卡住」过、并逐一破解的工程问题——每一个都来自真机实测。</p>
+    <div class="grid2">
+      <div class="qcard">
+        <h4>🔇 设备级 TTS 整体缺失</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">一加 Ace 5 Pro / ColorOS 16 的 Web Speech API 朗读整台设备不可用（系统级语音引擎缺失，非浏览器问题），QQ 浏览器与系统浏览器均无法出声。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">用 edge-tts（en-US-AriaNeural）批量预录 671 个 mp3（341 词 + 341 例句 + 句型，共 9.5MB），建立 <code>AUDIO_MAP</code> 内嵌；<code>speak()</code> 优先播本地音频，无则降级 web TTS，彻底摆脱运行时 TTS 依赖。</span></div>
+        <pre class="code"><span class="k">speak</span>(text):
+  <span class="k">if</span> AUDIO_MAP[text]: play(local_mp3)
+  <span class="k">else</span>: webTTS(text)</pre>
+      </div>
+      <div class="qcard">
+        <h4>🔄 PWA 常驻不重启，更新到不了</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">手机 PWA 长期驻留内存，Service Worker 不接管新版本，旧缓存一直生效，用户永远看不到更新。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">install 阶段 <code>try/catch</code> 后必执行 <code>skipWaiting()</code> 抢接管；注册后监听 <code>controllerchange</code> → <code>saveState()</code> 后 <code>location.reload()</code>；页面可见时（<code>visibilitychange</code>）主动 <code>reg.update()</code> 查新。双保险根治缓存陈旧。</span></div>
+        <pre class="code">install → <span class="k">skipWaiting</span>()   <span class="c">// 必执行</span>
+update  → <span class="k">controllerchange</span>
+        → saveState(); location.reload()</pre>
+      </div>
+      <div class="qcard">
+        <h4>📦 671 音频的离线 + 国内可访问</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">671 个音频共 9.5MB，既要离线可听又不能拖慢首屏；且 Vercel / Cloudflare 子域在国内被 DNS 污染，无法直连。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">SW 对 <code>/audio/</code> 走 cache-first 永久离线；仅 install 预缓存壳资源（index / sw / icon），音频按需 fetch 时缓存；部署锁定 GitHub Pages（<code>*.github.io</code> 国内可直连）。</span></div>
+      </div>
+      <div class="qcard">
+        <h4>🎯 弱项诊断：从「有错」到「知道错在哪」</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">仅统计错题总数无法指导复习，孩子不知道该练哪个单元、哪种题型。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt"><code>weakByUnit[unit] = {sel, spell, sent}</code> 三维计数；进度页双维度热力图（色=错次、蓝条=掌握度）；首页推荐「去练某单元某题型」，单元测试与闯关两路错题同源汇聚。</span></div>
+        <pre class="code">weakByUnit[unit] = {
+  sel, spell, sent   <span class="c">// 错次计数</span>
+}
+<span class="c">// 色阶: 错次→红 ; 蓝条: 掌握度</span></pre>
+      </div>
+      <div class="qcard">
+        <h4>🗂️ 零依赖下的可维护词库</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">单文件 + 零依赖，341 词手维护易错、易漏音标，且音频与词表易失同步。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">本地 Python 工具链（<code>rebuild / expand / validate</code>）管词库，脚本式校验词数一致；<code>AUDIO_MAP</code> 由脚本生成，保证与词库同源同步，改词后一键重生成音频。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. TIMELINE -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
+      <div class="card">
+      <div class="tl-seg">
+        <span class="muted">时间线排序</span>
+        <div class="seg" id="tlOrderSeg">
+          <button data-tl="asc" onclick="tsSetTimelineOrder('asc')">低 → 高</button>
+          <button data-tl="desc" onclick="tsSetTimelineOrder('desc')">高 → 低</button>
+        </div>
+      </div>
+      <div class="tl">
+        <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
+        <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
+        <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
+        <div class="it"><b>v14 · 弱项系统</b><span>题型统计 · 弱项推荐 · 通关星爆</span></div>
+        <div class="it"><b>v18 · 可视化</b><span>关卡路线 · 弱项热力图 · Hero 进度环</span></div>
+        <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
+        <div class="it"><b>v22 · 技术亮点</b><span>技术展示页 · 架构与工程实践对外呈现</span></div>
+      <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
+      <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
+      <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
+      <div class="it"><b>v26 · 连词成句防抄</b><span>答题时隐藏上方完整英文，只留中文提示+听原句，杜绝直接抄答案</span></div>
+      <div class="it"><b>v27 · 修复返回地图</b><span>关卡屏改用独立 #lvlArea 渲染，不再覆盖整 #adventure section，「返回地图」按钮恢复正常</span></div>
+      <div class="it"><b>v28 · 选择题改错重做</b><span>闯关+单元测试的 4 选 1 题改为「错了重选直到对」，第一次选错即入错题本+累加弱项</span></div>
+      <div class="it"><b>v29 · 趣味闯关大改造</b><span>世界地图加狐狸当前位置标记+关卡任务卡；新增听音打地鼠/拼词/连连看/捉迷藏 4 种迷你玩法，每关收尾接单元 BOSS 血条战</span></div>
+      <div class="it"><b>v30 · 修复拼词玩法 "undefined" bug</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
+      <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
+      <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
+      <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
+      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
+      <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
+      <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
+      <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
+      <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
+      <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
+      <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
+      <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
+      <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
+      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配）</span></div>
+      <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>按 iOS 原生质感重构：配色降饱和（新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 主入口 + 顶部齿轮的 emoji 全换统一线性图标（狐狸吉祥物与装饰 emoji 保留）</span></div>
+      <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
+      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转）并加弹性按压态，整体更有「翻开一本绘本」的专属仪式感</span></div>
+      <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
+      <div class="it"><b>v48 · 重画狐狸主角 SVG</b><span>重画为圆润脸庞、清晰三角耳带内耳、大眼带高光、腮红与小鼻子 + 微笑的呆萌狐狸，配色收敛到暖橙/奶油/暖棕墨，全站共用符号一处同步更新</span></div>
+      <div class="it"><b>v49 · 狐狸换「大眼萌系」方案</b><span>用户从 5 种方案中选定 B·大眼萌系：眼睛放大更圆（双高光闪点）、脸相对更小、腮红更明显（椭圆柔粉），整体像盲盒公仔。仍是全站共用 #i-fox 符号一处更新</span></div>
+      <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度（五年级/六年级）与「册」维度组成双维切换，全模块自动适配；六年级上下册共 10 单元（上册 6 + 下册 4）核心词汇入册，核心词 341→545、预录音频 671→1151（13.6MB）；新增 3 条六年级重点语法（一般将来时/一般过去时深化/形容词比较级深化），随年级切换显示</span></div>
+      <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
+      <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
+      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
+      <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 UNITS.find 查找 STATE.weakByUnit 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 ALL_UNITS.find 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
+      <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
+      <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
+      <div class="it"><b>v57 · 做题/学词进度条</b><span>用户要求「做题目和学词语时都要有进度条」。①词汇闪卡（学词语）面板顶部新增进度条 + 「第 X/Y 词」文案，showCard() 实时更新（pct = cardIdx/总词数，与单元测试屏一致的 0-based 进度）。②闯关（做题目）每个非 BOSS 题目渲染后，在 #lvlArea 顶部重新插入进度条（pct = levelQi/levelTotalNormal），next() 内新增 updateLvlProgress() 辅助函数；BOSS 关本身有血量条作进度指示，不重复加。单元测试屏原本就有 .test-prog 进度条，继续沿用。三处进度条共用 .test-prog 样式（葡萄→天空渐变），视觉一致</span></div>
+      <div class="it"><b>v58 · 听说读写改为就地渲染</b><span>用户反馈点 听/说/读/写 任意按钮会「自动滚到下方题目」。根因：原把四个技能按钮与 #skillArea 题目面板分成上下两 panel，点按钮后题目在下方渲染、手机浏览器把新内容带入视口造成「被弹下去」观感（代码无 scrollIntoView）。修法：合并为单个 #skillStage，renderSkillHome() 在 #skillStage 内渲染四技能 tile（无语音识别时隐藏「说」），startSkill(mode) 在 #skillStage 内「就地」渲染题目，并在每道题顶部加「← 返回选技能」按钮。题目出现在正看着的位置，不再向下滚动</span></div>
+      <div class="it"><b>v59 · chip 点击不再触发自动滚动</b><span>用户反馈单元测验屏点任意单元 chip 会「自动滚动到下方题目」。根因：buildUnitChips() 用 div+onclick 创建 chip，无 tabindex 也未阻止 mousedown，浏览器在 mousedown 时让 div 获得焦点、随后把焦点元素 scroll into view，于是页面被弹到下方 #testArea 题目区。与 v58 听说读写是同类病灶，但 v58 是结构性下渲染、v59 是 chip 本身的可点击性。修法：chip 创建时加 el.onmousedown=(e)=&gt;e.preventDefault()，阻止 mousedown 获得焦点，从根上消除浏览器的 scroll-into-view。一次修复覆盖 vocab/sent/skill/test 四屏所有 chip</span></div>
+      <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use height=63 y=51、onboard SVG width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
+      <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
+      <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v62 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
+      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
+      <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
+      <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
+      <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
+      <div class="it"><b>v67 · 连词成句/拼词词块更疏朗</b><span>用户反馈连词成句/拼词词块挤在一起、视觉粘连。优化：词块上下间距从 8px 增至 10-12px（含 flex-wrap 行间距）、左右间距 12px、padding 从 8×12 增至 10×16、加 hover 微弹起；basket/pool 内容居中、单元测试的 lt/build-slot 同步加宽。整体更易点、不粘连，长词（如 weekend）不再被挤压到跟邻词视觉重叠。</span></div>
+      <div class="it"><b>v68 · 单元测试词块自适应不溢出</b><span>单元测试「连词成句」用 .lt 固定 42×50 框，长词（如 maths/English/weekend）装不下溢出到邻词视觉粘连。改 .lt 为 min-width:42 + padding:0 10（自适应横向撑开）、font-size 22→18、white-space:nowrap；build-slot 内边距同步加。短词仍是 42px 方块，长词自动变宽不挤压。</span></div>
+      <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
+      <div class="it"><b>v70 · 词块视觉语言统一（.token = .lt）</b><span>统一闯关/BOSS 的 .token 与单元测试/拼词的 .lt 两套词块视觉：.token 改用 2.5px 深紫边框 + 3D 实心底线(0 3px 0 grape-d)+ 紫色光晕 + hover 抬升/active 按下，风格与 .lt 的「糖果块」一致；.basket 虚线边框 2px→2.5px 与 .build-slot 对齐。全站词块观感统一，且不影响布局（box-shadow 不占排版空间、border 仅 +0.5px）。</span></div>
+      <div class="it"><b>v71 · 段位阶梯重做：12 阶 + 更陡峭门槛</b><span>原 6 段位（满级仅 150⭐）太易达成、缺乏成就感。重做为 12 段位阶梯：🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→👑荣耀→📜传奇→🏆大导师→♛至尊宗师→🌈终极神话。门槛 0→2000⭐ 递增且越往上越陡（间距 15→30→45→70→100→140→180→220→300→400→500）。升级庆祝从 5 次增至 11 次。段位仍按累计⭐ 纯数据驱动计算，旧存档自动按星数重新映射。</span></div>
+      <div class="it"><b>v72 · 段位体系重做：终极神话封顶 + 无限星阶</b><span>用户希望高段位更有追求、不轻易封顶。体系改为：命名阶梯 8 阶（🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→🌈终极神话）在 100⭐ 封顶为「终极神话」；终极神话之后进入无限星阶，每满 100⭐ 升 1 星（200⭐=终极神话1星、300⭐=终极神话2星…永无止境）。getRank 纯数据驱动，旧存档按累计⭐ 实时重映射。</span></div>
+<div class="it"><b>v73 · 星星只来自做题</b><span>用户要求「只有做题目能加星星」。移除词汇卡片熟悉（cardResult，点「认识/不认识」）的加星，其余加星途径保持不变：单元测试/拼写/连词成句/填空/跟读/语法/重做/挑战赛等做题途径照常加星，趣味闯关小游戏（拼词游戏/听音选词/看图选词/连连看）与单元 BOSS 血条战也保留加星。词汇卡反馈文案改为「太棒了，记住啦！」不再显示 +1⭐。</span></div>
+<div class="it"><b>v74 · 单元测试先选题型再出题</b><span>点击「开始单元测试」不再直接进题，而是弹出选题型中间层（看中文·选英文 / 看英文·选中文 / 听发音·拼写 / 连词·成句，可多选，全选/清空快捷）；按选中类型均分 10 题，连词成句固定占 20%。新加 lastTestTypes 记忆上次选择，「🔄 再做一次」沿用上次选中的题型，无需重复设置。</span></div>
+<div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first、其它资源继续 cache-first；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此发版用户不需要硬刷，新版本自动接管实时生效。</span></div>
+      <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
+      <div class="it"><b>v77 · 单元测试弹窗合并（选题型与题目同一层）</b><span>用户反馈点「开始单元测试」后经历两次弹窗（先选题型、再弹题目），步骤偏多。本次合并为同一层弹窗的两个步骤：删除独立的 #pickTypeModal 与 openPickType/closePickType，把「选题型」渲染进 #testModalBody 作为第 1 步（含 4 类题型 chip、全选/清空、沿用上次选择 lastTestTypes），点「开始 10 题」后原地切换为第 2 步题目（renderTestQ 直接覆盖同一 body），不再开关第二个弹窗；薄弱练习包与「再做一次」沿用 lastTestTypes 跳过选型步；取消 / ✕ 仍整体关闭并回到来源页。</span></div>
+      <div class="it"><b>v78 · 三项体验打磨：退出确认 / 放对反馈 / 薄弱点面板</b><span>①单元测试弹窗答题进行中点「✕」或遮罩会弹「退出确认」，避免误触丢失进度；选型步与结束屏仍直接关闭；新增可复用的通用确认弹窗组件。②连词成句与拼词：空槽时显示「👆 点上面的词 / 字母…」提示文案；批改后按位置给词块加绿色（对位正确）/红色（错位）反馈并锁定，拼词拼对时字母变绿，且延迟切题让反馈被看清。③新增「📉 薄弱点」入口（首页·看一看）：弹窗按单元弱项错次排名 Top5（选/拼/句分维度色标），并列出常错单词，单元可一键「去复习」直达单元测试；首页角标同步错题计数。</span></div>
+      <div class="it"><b>v79 · 家长报告重做：精美版 + 可分享长图</b><span>用户希望「生成家长/老师报告」更精美详细。本次彻底重做：①新增 buildReportData() 统一数据模型，汇总星星/连续天数/掌握度/正确率/近 7 天新增掌握（对比趋势 7 天前）/薄弱单元 Top4（按错次排序）/常错单词/测验最佳分/当前段位；buildAdvice() 据数据动态生成针对性学习建议。②屏幕内报告改为卡片化精美排版（段位徽章 + 统计卡网格 + 摘要条 + 趋势迷你柱 + 薄弱单元进度条「去练习」+ 常错单词 + 建议清单）。③新增 saveReportImage() 纯 canvas 2D 绘制竖版报告长图（零依赖、离线可用、devicePixelRatio 高清），可保存 PNG 或直接调起系统分享（微信等）；导出文字版也升级为含薄弱单元/本周新增/建议的详细 txt。进度屏按钮改为「生成报告 / 保存为图片 / 导出文字版」。</span></div>
+      <div class="it"><b>v80 · 近况趋势详细化：每日柱+数字</b><span>用户反馈 v79 家长报告中「📈 近况（掌握单词趋势）」只画了几根无标签无数字的紫色柱状图，过于抽象看不出含义。重做为「每日柱+数字」详细版：14 天一日一柱，柱顶标「+5」当天掌握数（0 掌握显示灰色 +「0」），超过当周平均的柱高亮金色渐变 + 内描边 + 数字徽章；柱底标日期简写（8/12、8/13…）；悬停 title 显示「8/12 · 掌握 5 词 · 正确率 87%」完整数据。趋势区右上加副标「峰值 +N · 均值 +M」。同步 saveReportImage() 纯 canvas 长图：每柱顶部数字 + 底部日期 + 0 值灰色 + 超均值金色渐变，区域高度从 64 增至 126 容纳新增的标签层。视觉层 CSS（.rpt-trend/.rpt-tcol/.rpt-tbar.zero/.rpt-tbar.hi/.rpt-tnum/.rpt-tdate）与数据层（trendBars 生成函数）同步升级。</span></div>
+      <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值灰色数字 +「0」、超均值金色数字，悬停完整数据均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
+      <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
+      <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
+      <div class="it"><b>v84 · 薄弱点面板重做：4仪表+等级徽章+chip单词</b><span>用户反馈 v78 「我的薄弱点」面板太简陋（灰底平铺、chip 只是数字、单词无发音、无等级）。彻底重做：①顶部 4 项仪表卡网格 — 累计错次/薄弱单元/已掌握词/连续学习，配色用 --grape/--forest/--amber 区分类型，全部 var() 跟随主题。②单元卡重做：左侧 big emoji 圆形头像罩、中间等级徽章（🔴⚠严重 ≥7 次 / 🟡●中等 4-6 / 🟢✦轻微 1-3）+ 错次进度条（按级别配色 渐变，h1 暖红、h2 琥珀、h3 森林绿）+ 底部小字统计「选/拼/句」、右侧大紫色立体「去复习 ➡️」按钮（带 3D 阴影+按压反馈）。③常错单词按出现频次合并去重，前 16 渲染为 chip：每个 chip = 🔊 发音按钮（点调用 speak()）+ 英文大字 + 中文 + 错次热度 chip（×1 绿、×2 黄、≥4 红），hover 抬升 2px。配色全部用 var() 跟随主题（暖色绘本风），与 v83 报告/v80 趋势图/v82 数字盖顶同套视觉语言。</span></div>
+      <div class="it"><b>v85 · 薄弱点面板升级：等级徽章强化 + 🔊加大 + 去复习拆双按钮</b><span>用户确认 v84 三项优化点全部采纳：①等级徽章强化——「⚠ 严重」(≥7 次) 字号加粗到 900、红色更深(#9E2B1B)、加 1.5px 红边 + 红色外发光圈，三种级别一眼区分；②🔊 发音按钮由 28px 加大到 34px、字号 13→16、圆角 10→12，更易点中；③单元卡右侧「去复习 ➡️」单按钮拆为竖排双按钮——「📝 练一练」(沿用上次题型进测试屏直接做) 与「🎯 测一测」(弹题型选择框自定义 10 题)，橙色区分。配色继续全部 var() 跟随主题。</span></div>
       <div class="it"><b>v86 · 首次指引改为「按板块触发」</b><span>用户反馈原 v42 一次性 6 步向导「全放出来记不清」。改为：首次打开只弹 1 张简短欢迎卡（白喵打招呼 + 一句「点哪个板块我讲哪个」）；之后每次首次点进某板块，才弹该板块自己的 1-2 句小提示（轻量气泡 coachmark，贴近顶部、不挡全屏、点「知道了」即走）。覆盖全部 14 个板块：首页/词汇/句型/语法/听说读写/单元测试/错题本/闯关/单词游戏/限时挑战/成就墙/进度/词鉴/技术亮点。设置页「重新查看」改为按顺序巡览全部板块指引。状态存 STATE.guided（按板块标记已看），欢迎即覆盖首页避免重复弹。</span></div>
       <div class="it"><b>v87 · 修复错题本屏</b><span>还原缺失的 renderWrongbook 函数（v85 起被误删，导致点进错题本整屏报错）。用既有 .wb-row/.wb-en/.wb-zh/.wb-tag/.wb-times/.wb-actions/.wb-empty 样式还原列表渲染：错题总数 / 今日待复习 / 已消灭 三项统计 + 全部错题列表（🔊 发音、单元标签、练习次数、✕ 移出），空态友好提示。与 v86 按板块触发指引的「错题本」入口衔接。</span></div>
-
-      </div>
-    </div>
-  </section>
-
-  <div class="foot">
-    五年级英语小探险家 · 单文件离线 PWA · 数据全部存于本机浏览器，无账号、无联网上报<br>
-    版本 <span data-meta="version">v22</span> · 缓存 <span data-meta="cache">eng5-v23</span> · 更新于 <span data-meta="updated">2026-08-15</span><br>
-    <a class="backlink" style="margin-top:12px;" href="index.html">← 返回英语助手</a>
-  </div>
-
-</div>
-
-<script>
-  // 通过 data-meta 自动填充版本 / 指标，更新时只需改顶部 META
-  document.querySelectorAll('[data-meta]').forEach(function(el){
-    var k = el.getAttribute('data-meta');
-    if (META[k] === undefined) return;
-    el.textContent = (k === 'version' ? 'v' : '') + META[k];
-  });
-
-  // 版本演进时间线：升降序可切换，偏好存 localStorage
-  function tsSortTimeline(order){
-    var tl=document.querySelector('.tl'); if(!tl) return;
-    var items=Array.prototype.slice.call(tl.querySelectorAll('.it'));
-    items.sort(function(a,b){
-      var na=parseInt((a.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
-      var nb=parseInt((b.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
-      return order==='asc'? na-nb : nb-na;
-    });
-    items.forEach(function(it){ tl.appendChild(it); });
-  }
-  function tsSetTimelineOrder(order){
-    try{ localStorage.setItem('tech_tl_order', order); }catch(e){}
-    var seg=document.getElementById('tlOrderSeg');
-    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
-    tsSortTimeline(order);
-  }
-  (function(){
-    var order='asc';
-    try{ order=localStorage.getItem('tech_tl_order')||'asc'; }catch(e){}
-    tsSortTimeline(order);
-    var seg=document.getElementById('tlOrderSeg');
-    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
-  })();
-</script>
-</body>
-</html>
+      <div class="it"><b>v88 · 做题正反馈特效（飘字·连对火苗·白喵表情）</b><span>为答题过程加入即时正反馈，提升做题爽感：①飘字——答对居中弹绿色「答对 +10」、答错弹橙色「再想想」，上浮淡出；②连对火苗——连续答对 ≥3 次触发顶部火苗横幅显示连击数（答错清零）；③白喵表情——顶部吉祥物新增 happy/cheer/sad 三种叠加线框表情（默认中性），答对变 cheer、答错变 sad，1.6 秒自动回中性。复用既有庆祝系统（confetti/playDing）与设计 token，SVG 绘本风、无 emoji 占位。</span></div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    五年级英语小探险家 · 单文件离线 PWA · 数据全部存于本机浏览器，无账号、无联网上报<br>
+    版本 <span data-meta="version">v22</span> · 缓存 <span data-meta="cache">eng5-v23</span> · 更新于 <span data-meta="updated">2026-08-15</span><br>
+    <a class="backlink" style="margin-top:12px;" href="index.html">← 返回英语助手</a>
+  </div>
+
+</div>
+
+<script>
+  // 通过 data-meta 自动填充版本 / 指标，更新时只需改顶部 META
+  document.querySelectorAll('[data-meta]').forEach(function(el){
+    var k = el.getAttribute('data-meta');
+    if (META[k] === undefined) return;
+    el.textContent = (k === 'version' ? 'v' : '') + META[k];
+  });
+
+  // 版本演进时间线：升降序可切换，偏好存 localStorage
+  function tsSortTimeline(order){
+    var tl=document.querySelector('.tl'); if(!tl) return;
+    var items=Array.prototype.slice.call(tl.querySelectorAll('.it'));
+    items.sort(function(a,b){
+      var na=parseInt((a.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
+      var nb=parseInt((b.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
+      return order==='asc'? na-nb : nb-na;
+    });
+    items.forEach(function(it){ tl.appendChild(it); });
+  }
+  function tsSetTimelineOrder(order){
+    try{ localStorage.setItem('tech_tl_order', order); }catch(e){}
+    var seg=document.getElementById('tlOrderSeg');
+    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
+    tsSortTimeline(order);
+  }
+  (function(){
+    var order='asc';
+    try{ order=localStorage.getItem('tech_tl_order')||'asc'; }catch(e){}
+    tsSortTimeline(order);
+    var seg=document.getElementById('tlOrderSeg');
+    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
+  })();
+</script>
+</body>
+</html>
