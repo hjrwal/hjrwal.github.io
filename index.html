@@ -99,8 +99,13 @@
   @keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
   .sc-hill-far{fill:var(--forest); opacity:.5;}
   .sc-hill-near{fill:var(--forest-d);}
-  .sc-fox{filter:drop-shadow(0 3px 4px rgba(80,50,20,.28)); animation:foxHill 3.6s ease-in-out infinite;}
-  @keyframes foxHill{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  /* v89 首页白喵 idle：探头(上下浮) + 招手(轻摆) + 眨眼(眼睑) 组合，绘本风精良 */
+  .sc-fox-wrap{ transform-box:view-box; transform-origin:62px 84px; animation:scIdle 4.2s var(--ease-io) infinite; }
+  .sc-fox{filter:drop-shadow(0 3px 4px rgba(80,50,20,.28));}
+  .sc-eyes{pointer-events:none;}
+  .sc-lid{fill:#FFF7EE; transform-box:fill-box; transform-origin:center; transform:scaleY(0); animation:scBlink 5.2s ease-in-out infinite;}
+  @keyframes scIdle{0%{transform:translateY(0) rotate(0deg);}25%{transform:translateY(-3px) rotate(-3deg);}50%{transform:translateY(0) rotate(0deg);}75%{transform:translateY(-3px) rotate(3deg);}100%{transform:translateY(0) rotate(0deg);}}
+  @keyframes scBlink{0%,90%,100%{transform:scaleY(0);}94%,97%{transform:scaleY(1);}}
   .book-body{padding:14px 16px 16px;}
   .book-title{display:flex; align-items:center; gap:8px; font-size:21px; font-weight:900; color:var(--fox-d); letter-spacing:.5px; margin-bottom:11px;}
   .bt-ribbon{background:var(--fox); color:#fff; font-size:13px; font-weight:800; padding:3px 10px; border-radius:999px; box-shadow:0 3px 8px rgba(239,130,74,.30);}
@@ -717,6 +722,11 @@
   .mascot.mood-happy .ff-happy{display:block;}
   .mascot.mood-sad .ff-sad{display:block;}
   .mascot.mood-cheer .ff-cheer{display:block;}
+  .mascot.mood-think .ff-think{display:block;}
+  .mascot.mood-welcome .ff-welcome{display:block;}
+  .mascot.mood-encourage .ff-encourage{display:block;}
+  .test-head-l{display:flex; align-items:center; gap:7px;}
+  .test-mascot{width:32px; height:36px; flex:0 0 auto; display:block; animation:none;}
   /* 狐狸加载态 */
   .loading{position:fixed; inset:0; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px;
     background:rgba(255,253,247,.84); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
@@ -958,6 +968,34 @@
           <path d="M27 47 Q32 42 37 47"/>
           <path d="M23.5 31 q-1.6 4 0 6.5 q1.6 -2.5 0 -6.5 z" fill="#4A9DB5" stroke="none"/>
         </g>
+        <g class="ff ff-think" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+          <path d="M20 23 Q23.5 20 27 23"/>
+          <path d="M37 23 Q40.5 20 44 23"/>
+          <path d="M29 42 h6"/>
+          <circle cx="47" cy="12" r="1.6" fill="#3A2B22" stroke="none"/>
+          <circle cx="51" cy="8" r="1.2" fill="#3A2B22" stroke="none"/>
+          <circle cx="54" cy="5" r="0.9" fill="#3A2B22" stroke="none"/>
+        </g>
+        <g class="ff ff-welcome" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+          <path d="M18 17 Q23.5 12.5 29 17"/>
+          <path d="M35 17 Q40.5 12.5 46 17"/>
+          <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
+          <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
+          <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
+          <ellipse cx="54" cy="46" rx="4" ry="5" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.2"/>
+          <path d="M52 44 l1 -2 M54 43 l0 -2.4 M56 44 l-1 -2" stroke="#3A2B22" stroke-width="1"/>
+        </g>
+        <g class="ff ff-encourage" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+          <path d="M19 19 Q23.5 15 28 19"/>
+          <path d="M36 19 Q40.5 15 45 19"/>
+          <path d="M28 43 Q32 48 36 43"/>
+          <path d="M32 5 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="none"/>
+          <ellipse cx="17" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
+          <ellipse cx="47" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
+        </g>
       </g>
     </svg>
     <div class="brand"><span id="brandGrade">五年级</span>英语小探险家<small id="brandSub">📗 五年级上册 · 听说读写闯关</small></div>
@@ -1045,7 +1083,13 @@
           <ellipse class="sc-cloud sc-cloud-b" cx="120" cy="20" rx="15" ry="7"/>
           <path class="sc-hill-far" d="M0 98 Q80 66 160 94 T320 86 V132 H0 Z"/>
           <path class="sc-hill-near" d="M0 114 Q90 88 190 112 T320 106 V132 H0 Z"/>
-          <use href="#i-fox" class="sc-fox" x="34" y="51" width="56" height="63"/>
+          <g class="sc-fox-wrap">
+            <use href="#i-fox" class="sc-fox" x="34" y="51" width="56" height="63"/>
+            <g class="sc-eyes" aria-hidden="true">
+              <ellipse class="sc-lid" cx="54.6" cy="79.9" rx="6.5" ry="7"/>
+              <ellipse class="sc-lid" cx="69.4" cy="79.9" rx="6.5" ry="7"/>
+            </g>
+          </g>
         </svg>
       </div>
       <div class="book-body">
@@ -1172,7 +1216,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">88</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">89</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1255,6 +1299,7 @@ update → controllerchange
       <div class="it"><b>v86 · 首次指引改为「按板块触发」</b><span>用户反馈原 v42 一次性 6 步向导「全放出来记不清」。改为：首次打开只弹 1 张简短欢迎卡（白喵打招呼 + 一句「点哪个板块我讲哪个」）；之后每次首次点进某板块，才弹该板块自己的 1-2 句小提示（轻量气泡 coachmark，贴近顶部、不挡全屏、点「知道了」即走）。覆盖全部 14 个板块：首页/词汇/句型/语法/听说读写/单元测试/错题本/闯关/单词游戏/限时挑战/成就墙/进度/词鉴/技术亮点。设置页「重新查看」改为按顺序巡览全部板块指引。状态存 STATE.guided（按板块标记已看），欢迎即覆盖首页避免重复弹。</span></div>
       <div class="it"><b>v87 · 修复错题本屏</b><span>还原缺失的 renderWrongbook 函数（v85 起被误删，导致点进错题本整屏报错）。用既有 .wb-row/.wb-en/.wb-zh/.wb-tag/.wb-times/.wb-actions/.wb-empty 样式还原列表渲染：错题总数 / 今日待复习 / 已消灭 三项统计 + 全部错题列表（🔊 发音、单元标签、练习次数、✕ 移出），空态友好提示。与 v86 按板块触发指引的「错题本」入口衔接。</span></div>
       <div class="it"><b>v88 · 做题正反馈特效（飘字·连对火苗·白喵表情）</b><span>为答题过程加入即时正反馈，提升做题爽感：①飘字——答对居中弹绿色「答对 +10」、答错弹橙色「再想想」，上浮淡出；②连对火苗——连续答对 ≥3 次触发顶部火苗横幅显示连击数（答错清零）；③白喵表情——顶部吉祥物新增 happy/cheer/sad 三种叠加线框表情（默认中性），答对变 cheer、答错变 sad，1.6 秒自动回中性。复用既有庆祝系统（confetti/playDing）与设计 token，SVG 绘本风、无 emoji 占位。</span></div>
+      <div class="it"><b>v89 · 吉祥物温度（idle 微动画 + 多场景心境 + 弹窗白喵）</b><span>让白喵像「活的小伙伴」：①首页 idle——故事书封面白喵新增探头（上下浮）+ 招手（轻摆）+ 眨眼（眼睑 scaleY 周期闭合）三组合 CSS 关键帧，常驻有生命感；②多场景心境——扩展叠加表情到 think（思考·升腾小点）/welcome（欢迎·开口笑+星屑+招手爪）/encourage（鼓励·柔笑+头顶星），与 v88 的 happy/cheer/sad 共 6 种；③修复 v88 缺陷：单元测试是整屏 modal 会盖住顶栏白喵，导致答题表情不可见——在弹窗标题处新增 `#testMascot` 白喵（替换廉价 📝 emoji），`setMascotMood` 改为作用于**所有** `.mascot`，答题时顶栏/弹窗同步反应。接线：回家→welcome、开测→encourage、出每题→think、答对→cheer、答错→sad。SVG 绘本风、零 emoji 占位。</span></div>
 
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
@@ -1628,7 +1673,52 @@ update → controllerchange
 <div class="modal-mask" id="testModal" onclick="if(event.target===this)closeTestModal()">
   <div class="modal test-modal">
     <div class="row spread" style="margin-bottom:8px">
-      <b style="font-size:16px">📝 单元测试</b>
+      <div class="test-head-l">
+        <svg class="mascot test-mascot" id="testMascot" viewBox="0 0 64 72"><use href="#i-fox"/>
+          <g class="fox-face" transform="translate(0,8)">
+            <g class="ff ff-happy" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+              <path d="M18 18 Q23.5 14 29 18"/><path d="M35 18 Q40.5 14 46 18"/><path d="M27 43 Q32 50 37 43"/>
+            </g>
+            <g class="ff ff-cheer" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+              <path d="M18 17 Q23.5 12.5 29 17"/><path d="M35 17 Q40.5 12.5 46 17"/>
+              <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
+              <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
+              <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
+            </g>
+            <g class="ff ff-sad" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+              <path d="M18 18 Q23.5 15 29 17"/><path d="M35 17 Q40.5 15 46 18"/><path d="M27 47 Q32 42 37 47"/>
+              <path d="M23.5 31 q-1.6 4 0 6.5 q1.6 -2.5 0 -6.5 z" fill="#4A9DB5" stroke="none"/>
+            </g>
+            <g class="ff ff-think" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+              <path d="M20 23 Q23.5 20 27 23"/><path d="M37 23 Q40.5 20 44 23"/><path d="M29 42 h6"/>
+              <circle cx="47" cy="12" r="1.6" fill="#3A2B22" stroke="none"/>
+              <circle cx="51" cy="8" r="1.2" fill="#3A2B22" stroke="none"/>
+              <circle cx="54" cy="5" r="0.9" fill="#3A2B22" stroke="none"/>
+            </g>
+            <g class="ff ff-welcome" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+              <path d="M18 17 Q23.5 12.5 29 17"/><path d="M35 17 Q40.5 12.5 46 17"/>
+              <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
+              <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
+              <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
+              <ellipse cx="54" cy="46" rx="4" ry="5" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.2"/>
+              <path d="M52 44 l1 -2 M54 43 l0 -2.4 M56 44 l-1 -2" stroke="#3A2B22" stroke-width="1"/>
+            </g>
+            <g class="ff ff-encourage" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
+              <path d="M19 19 Q23.5 15 28 19"/><path d="M36 19 Q40.5 15 45 19"/><path d="M28 43 Q32 48 36 43"/>
+              <path d="M32 5 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="none"/>
+              <ellipse cx="17" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
+              <ellipse cx="47" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
+            </g>
+          </g>
+        </svg>
+        <b style="font-size:16px">单元测试</b>
+      </div>
       <button class="back" onclick="closeTestModal()">✕ 退出</button>
     </div>
     <div class="test-modal-body" id="testModalBody"></div>
@@ -2695,7 +2785,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 88;
+const APP_VERSION = 89;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3263,7 +3353,7 @@ function go(name){
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
-  if(name==='home') safeRender(renderHero);
+  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); } // v89：回家时白喵打招呼
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -3839,11 +3929,11 @@ function floatText(text, type){
   setTimeout(()=>d.remove(), 1200);
 }
 function setMascotMood(mood){
-  const m=document.getElementById('mascotSvg'); if(!m) return;
-  m.classList.remove('mood-happy','mood-sad','mood-cheer');
-  if(mood) m.classList.add('mood-'+mood);
+  const ms=document.querySelectorAll('.mascot');
+  const moods=['mood-happy','mood-sad','mood-cheer','mood-think','mood-welcome','mood-encourage'];
+  ms.forEach(m=>{ m.classList.remove(...moods); if(mood) m.classList.add('mood-'+mood); });
   clearTimeout(mascotMoodT);
-  if(mood){ mascotMoodT=setTimeout(()=>{ m.classList.remove('mood-happy','mood-sad','mood-cheer'); }, 1600); }
+  if(mood){ mascotMoodT=setTimeout(()=>{ document.querySelectorAll('.mascot').forEach(m=>m.classList.remove(...moods)); }, 1600); }
 }
 function showCombo(n){
   let b=document.getElementById('comboBanner');
@@ -3957,7 +4047,7 @@ function goVocabUnit(uid){ // 闯关失败引导：选中单元并进入词汇�
 let lastTestTypes = ['en','zh','spell','sent'];
 function startTest(types){
   packMode=false;
-  comboStreak=0; hideCombo(); // v88：新测试重置连对火苗
+  comboStreak=0; hideCombo(); setMascotMood('encourage'); // v88：新测试重置连对火苗；v89：开测白喵鼓励
   // 记录/回退 types
   if(types && types.length){ lastTestTypes = types.slice(); }
   else { types = (lastTestTypes && lastTestTypes.length) ? lastTestTypes.slice() : ['en','zh','spell','sent']; }
@@ -4003,6 +4093,7 @@ function renderTestQ(){
   const area=document.getElementById('testModalBody');
   if(!area) return;
   if(testIdx>=testQs.length){ finishTest(); return; }
+  setMascotMood('think'); // v89：白喵思考中
   const q=testQs[testIdx];
   testLocked=false;
   const U=UNITS.find(x=>x.id===curUnitId);
