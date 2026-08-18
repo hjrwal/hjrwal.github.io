@@ -492,15 +492,15 @@
   .rpt-line b{font-size:16px;}
   .rpt-sec{font-size:15px; font-weight:800; color:var(--ink); margin:14px 0 8px; display:flex; align-items:center; gap:6px;}
   /* v80 家长报告·近况：每日柱+数字（详细版） */
-  .rpt-trend{display:flex; align-items:flex-end; gap:5px; height:108px; padding:6px 4px 0; position:relative;}
+  .rpt-trend{display:flex; align-items:flex-end; gap:5px; height:108px; padding:20px 4px 0; position:relative;}
   .rpt-tcol{flex:1; min-width:20px; max-width:38px; display:flex; flex-direction:column; align-items:center;}
   .rpt-tbar{width:100%; min-height:4px; background:linear-gradient(180deg,#B79BE8,var(--grape)); border-radius:5px 5px 0 0; position:relative; transition:transform .15s;}
-  .rpt-tbar:hover{transform:scaleY(1.04);}
+  .rpt-tbar:hover{filter:brightness(1.07);}
   .rpt-tbar.zero{background:linear-gradient(180deg,#E5D9C2,#CDBFA3); opacity:.6;}
   .rpt-tbar.hi{background:linear-gradient(180deg,#FFD27A,var(--amber)); box-shadow:inset 0 0 0 1.5px #E89018;}
-  .rpt-tnum{font-size:11px; font-weight:800; color:var(--grape-d); white-space:nowrap; line-height:1; margin-bottom:3px; padding:1px 5px; border-radius:6px; background:rgba(255,252,245,.92);}
-  .rpt-tnum.zero{color:var(--muted);}
-  .rpt-tnum.hi{color:#B07000; background:rgba(255,247,221,.95);}
+  .rpt-tnum{position:absolute; left:0; right:0; bottom:100%; margin-bottom:2px; text-align:center; font-size:10.5px; font-weight:800; color:#fff; line-height:1; text-shadow:0 1px 2px rgba(74,42,90,.55); z-index:2; pointer-events:none;}
+  .rpt-tnum.zero{color:#6B5B45; text-shadow:0 1px 1px rgba(255,255,255,.7);}
+  .rpt-tnum.hi{color:#7A4A00; text-shadow:0 1px 1px rgba(255,255,255,.7);}
   .rpt-tdate{font-size:10px; color:var(--muted); margin-top:7px; font-weight:600; line-height:1;}
   .rpt-weak{margin-bottom:12px;}
   .rpt-weak .row{margin-bottom:5px;}
@@ -1082,7 +1082,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">81</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">82</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1158,6 +1158,7 @@ update → controllerchange
       <div class="it"><b>v79 · 家长报告重做：精美版 + 可分享长图</b><span>用户希望「生成家长/老师报告」更精美详细。新增 buildReportData() 统一数据模型（星星/连续天数/掌握度/正确率/近 7 天新增掌握/薄弱单元 Top4/常错单词/测验最佳分/当前段位），buildAdvice() 据数据动态生成针对性学习建议。屏幕内报告改为卡片化精美排版（段位徽章 + 统计卡网格 + 摘要条 + 趋势迷你柱 + 薄弱单元进度条「去练习」+ 常错单词 + 建议清单）。新增 saveReportImage() 纯 canvas 2D 绘制竖版报告长图（零依赖、离线可用、高清），可保存 PNG 或直接调起系统分享（微信等）；导出文字版也升级为含薄弱单元/本周新增/建议的详细 txt。进度屏按钮改为「生成报告 / 保存为图片 / 导出文字版」。</span></div>
       <div class="it"><b>v80 · 近况趋势详细化：每日柱+数字</b><span>用户反馈 v79 的家长报告中「📈 近况（掌握单词趋势）」只画了几根无标签无数字的紫色柱状图，过于抽象看不出含义。重做为「每日柱+数字」详细版：14 天一日一柱（一日一格），柱顶标「+5」当天掌握数（0 掌握显示灰色 +「0」），超过当周平均的柱高亮金色渐变 + 内描边 + 数字徽章；柱底标日期简写（8/12、8/13…）；悬停 title 显示「8/12 · 掌握 5 词 · 正确率 87%」完整数据。趋势区右上加副标「峰值 +N · 均值 +M」。同步 saveReportImage() 纯 canvas 长图：每柱顶部数字 + 底部日期 + 0 值灰色 + 超均值金色渐变，区域高度从 64 增至 126 容纳新增的标签层。视觉层 CSS（.rpt-trend/.rpt-tcol/.rpt-tbar.zero/.rpt-tbar.hi/.rpt-tnum/.rpt-tdate）与数据层（trendBars 生成函数）同步升级。</span></div>
       <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值显示灰色数字 +「0」、超均值显示金色数字，悬停完整数据（日期·掌握数·正确率）均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
+      <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
 
@@ -2616,7 +2617,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 81;
+const APP_VERSION = 82;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -5003,7 +5004,7 @@ function showReport(){
       const day=parseInt((e.date||'').split('-')[2],10);
       const numTxt=e.mastered>0?'+'+e.mastered:'0';
       const tip=e.date+' · 掌握 '+e.mastered+' 词 · 正确率 '+(e.acc||0)+'%';
-      return `<div class="rpt-tcol" title="${tip}"><div class="rpt-tnum${cls}">${numTxt}</div><div class="rpt-tbar${cls}" style="height:${h}px"></div><div class="rpt-tdate">${day||''}</div></div>`;
+      return `<div class="rpt-tcol" title="${tip}"><div class="rpt-tbar${cls}" style="height:${h}px"><span class="rpt-tnum${cls}">${numTxt}</span></div><div class="rpt-tdate">${day||''}</div></div>`;
     }).join('');
   })();
   box.innerHTML=`<div class="rpt">
