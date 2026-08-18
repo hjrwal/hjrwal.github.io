@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'">
 <title>🦊 五年级英语小探险家</title>
 <meta name="theme-color" content="#3ec6ff">
 <link rel="manifest" href="manifest.json">
@@ -1276,7 +1277,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">91</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">92</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1362,6 +1363,7 @@ update → controllerchange
       <div class="it"><b>v89 · 吉祥物温度（idle 微动画 + 多场景心境 + 弹窗白喵）</b><span>让白喵像「活的小伙伴」：①首页 idle——故事书封面白喵新增探头（上下浮）+ 招手（轻摆）+ 眨眼（眼睑 scaleY 周期闭合）三组合 CSS 关键帧，常驻有生命感；②多场景心境——扩展叠加表情到 think（思考·升腾小点）/welcome（欢迎·开口笑+星屑+招手爪）/encourage（鼓励·柔笑+头顶星），与 v88 的 happy/cheer/sad 共 6 种；③修复 v88 缺陷：单元测试是整屏 modal 会盖住顶栏白喵，导致答题表情不可见——在弹窗标题处新增 `#testMascot` 白喵（替换廉价 📝 emoji），`setMascotMood` 改为作用于**所有** `.mascot`，答题时顶栏/弹窗同步反应。接线：回家→welcome、开测→encourage、出每题→think、答对→cheer、答错→sad。SVG 绘本风、零 emoji 占位。</span></div>
       <div class="it"><b>v90 · 学习闭环（SRS 掌握进度 + 复习卡升级 + 解锁动画）</b><span>把「学→练→测→复习」闭环做得看得见、摸得着：①错题消灭进度——复习弹窗每词新增 6 段式 SRS 掌握进度条（答对一次点亮一格，6 格满即移出错题本），并提示「还差 N 次彻底记住」；错题本新增「平均巩固度」统计卡，实时显示全部错题的 SRS 进度均值。②首页复习卡升级——「今日复习」卡替换廉价 🔁 emoji 为 SVG 绘本风刷新图标，并新增一条迷你进度条，直观显示「待复习占全部错题的比例」，强化闭环入口。③闯关解锁动画——地图「新解锁」缎带替换 🔓 emoji 为 SVG 开锁徽章，未解锁单元替换 🔒 为 SVG 锁图标，并在刚解锁的单元上迸发四色星火（sparkle）动效；前沿标记 🦊 也换成真正的主人公白喵 SVG。全部图标 SVG 绘本风、零 emoji 占位。</span></div>
       <div class="it"><b>v91 · 跨浏览器加固（夸克/UC/微信/360 都能稳跑）</b><span>针对国产浏览器与老 WebView 做兼容兜底：flex gap 用 @supports 自动降级为 margin（老内核不丢间距）；color-mix/aspect-ratio 改静态色与 min-height 兜底；100vh 追加 100dvh 回退（动态地址栏不再裁切弹窗）；viewport-fit=cover + 安全区内距（刘海/挖孔屏不压边）；Service Worker 被禁时用 fetch 探测 sw.js 版本号，仍主动弹「发现新版本」横条。全部图标 SVG 绘本风、零 emoji 占位。</span></div>
+      <div class="it"><b>v92 · 安全加固（CSP 同源策略 + 语音识别结果转义）</b><span>面向「静态单文件 PWA」的真实威胁模型做加固：①同源内容安全策略——head 注入 Content-Security-Policy meta（策略 default-src 'self'；script-src / style-src 因全站 JS·CSS 内联保留 'unsafe-inline'；img/media 允许 'self' data: blob:；connect-src 'self'），锁死外部脚本/图片/媒体加载与跨域数据外泄通道，价值主要在 connect-src 与 default-src 'self'。②语音跟读结果转义——Web Speech 识别文本写入 innerHTML 前先做 HTML 实体转义，杜绝识别串被当标记执行。威胁模型结论：无后端、无数据库、无第三方依赖，攻击面极小；唯一高危点是 GitHub 账号被盗导致 sw.js 被篡改，故账号开启 2FA 是最关键防线。SVG 绘本风、零 emoji 占位。</span></div>
 
     </div>
     <p class="muted" style="margin:14px 0 4px; font-size:12px;">所有功能均在本地运行，无账号、无联网上报，数据存于本机浏览器。</p>
@@ -2848,7 +2850,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 91;
+const APP_VERSION = 92;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3940,7 +3942,8 @@ function doSpeak(target){
     const score = norm(txt)===norm(target) ? 100 : (norm(txt).split(' ').filter(w=>norm(target).split(' ').includes(w)).length / norm(target).split(' ').length *100);
     const ok = score>=60;
     recordWord(curUnitId, target, ok);
-    res.innerHTML = `🗣️ 你读的是：「${txt}」<br>匹配度 <b>${Math.round(score)}%</b>`;
+    const safeTxt = String(txt).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    res.innerHTML = `🗣️ 你读的是：「${safeTxt}」<br>匹配度 <b>${Math.round(score)}%</b>`;
     toast(ok?'👏 读得不错！+2⭐':'💪 再练练，听示范跟读');
     if(ok) awardStars(2);
   });
@@ -5928,7 +5931,7 @@ function renderWeakPanel(){
   // 常错单词 chip（去重按出现频次热度排序）
   if(wrongArr.length){
     const m=new Map();
-    wrongArr.forEach(w=>{ if(!w||!w.en) return; const k=w.en+' '; const cur=m.get(k)||{en:w.en,zh:w.zh||'',n:0,unit:w.unit||''}; cur.n++; m.set(k,cur); });
+    wrongArr.forEach(w=>{ if(!w||!w.en) return; const k=w.en+''; const cur=m.get(k)||{en:w.en,zh:w.zh||'',n:0,unit:w.unit||''}; cur.n++; m.set(k,cur); });
     const arr=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,16);
     html+=`<div class="wk-sec">🔤 常错单词<span class="count">${arr.length} 词 · 已合并重复</span></div>
       <div class="wk-words">`;
