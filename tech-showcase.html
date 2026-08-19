@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 112,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v113',// 与 sw.js 的 CACHE 保持一致
+    version: 114,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v115',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    112,       // 迭代版本数
+    iter:    114,       // 迭代版本数
     updated: '2026-08-19'
   };
 </script>
@@ -351,6 +351,8 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v110 · 闯关前期互动升级（开场剧场 + 前期事件保底）</b><span>每关开场必触发「开场剧场」：狐狸介绍本关词数 / 句型数并预告守关 BOSS，点「🚀 出发！」正式开战；奇遇事件从随机 1-2 个改为「第 1-4 题位置必有一个 + 后段 50% 再插一个」——前期互动更密，不再前几题纯做题。全 SVG 绘本风。</span></div>
 <div class="it"><b>v111 · 设置新增「点击单词发音」开关</b><span>之前点连词成句等题目的单词「像有语音」实为手机系统朗读——现在 App 自带可控功能：设置里可开「点击单词发音」（默认关），开启后题目里点任意单词 / 词块即朗读该词发音（250ms 防连点叠音），关闭则完全不受打扰。全 SVG 绘本风。</span></div>
 <div class="it"><b>v112 · 点击单词自动发音（默认开启，去掉开关）</b><span>v111 加的开关用户希望默认开启——取消「点击单词发音」开关，改为默认自动开启：题目里点任意单词 / 词块即朗读该词（250ms 防连点叠音，自动去尾标点）。全 SVG 绘本风。</span></div>
+<div class="it"><b>v113 · 修复拼词题「点过的字母占布局」（同类漏洞全清）</b><span>趣味闯关拼词题（如「说英语」speak English）孩子以为无解——根因：点过的字母按钮 v108 用 visibility:hidden（仍占布局看不到空隙）+ clearGhosts 在点首字母时清空下划线提示，看不到「还差几个」。修复：所有 token 点过后 display:none 彻底移除（不留空隙）+ 保留 ghost 下划线占位（永远显示 N 个空槽 = 答案长度）。同类漏洞排查：renderPuzzle / renderSentence / renderBoss / buildSentence / 单元测试连词成句 共 5 处全部修齐。全 SVG 绘本风。</span></div>
+<div class="it"><b>v114 · 拼词题字母池只留字母（标点按钮不再残留）</b><span>全量审计 22 单元发现 89 个含撇号 / 连字符 / 省略号的词条（hard-working、aren't、have ... class 等）——拼词题字母池会多出标点按钮，拼完字母后残留「-」「'」让人以为还没拼完。修复：字母池只放字母（自动过滤标点与空格），下划线占位同步，判定兼容（norm 双侧删标点）。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
         <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
