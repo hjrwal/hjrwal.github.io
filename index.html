@@ -825,6 +825,7 @@
   /* v78 连词成句/拼词：空槽提示 + 放对反馈 */
   .build-slot:empty::before{content:"👆 点上面的词，按顺序排好句子"; color:var(--muted); font-size:13px; font-weight:600; align-self:center;}
   .basket:empty::before{content:"👆 按顺序点下面的字母拼出单词"; color:var(--muted); font-size:13px; font-weight:600; align-self:center;}
+  .lt-ghost{width:26px; height:40px; border-bottom:4px dashed var(--grape); opacity:.5; border-radius:4px; flex:none;}
   .lt.in.right, .token.in.right{background:#c8f5d0 !important; border-color:#1ca64a !important; color:#0c6b2e !important; box-shadow:0 3px 0 #14853b, 0 4px 8px rgba(28,166,74,.2) !important;}
   .lt.in.wrong-pos, .token.in.wrong-pos{background:#ffd9d9 !important; border-color:#d33 !important; color:#a00 !important;}
   /* v78 通用确认弹窗 */
@@ -1307,7 +1308,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">106</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">107</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1331,6 +1332,7 @@ update → controllerchange
 <div class="it"><b>v104 · 视觉：建议多练提示条不再刺眼</b><span>主页「建议多练」条此前用高亮米黄渐变（#fff4d6 / #ffe9c2），在暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色）+ 暗色主题专属适配（暖色文字 + 暗棕透明底），柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
 <div class="it"><b>v105 · 视觉：今日复习条不再刺眼</b><span>主页「今日复习」条在有待复习词时用高亮浅橙渐变（#fff1e2 / #ffe9df）+ 脉冲动画，暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色 + 暗色主题专属适配）+ 脉冲动画放慢，柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
 <div class="it"><b>v106 · 趣味闯关大升级（事件插曲 + BOSS 怒气战 + 隐藏星）</b><span>闯关不再纯做题：随机穿插奇遇事件（📮补给站领 ⭐双倍卡 / 🎁宝箱开星 / 🐣帮迷路小鸡回家）；BOSS 战升级为回合制——答错涨怒气、怒满放大招震屏并回 1 血，连对 2 题亮「⚡狐狸必杀」一击削 2 血，双倍卡让攻击翻倍；零失误完美通关解锁第 4 颗「隐藏星」，地图显示金色徽章。全 SVG 绘本风。</span></div>
+<div class="it"><b>v107 · 拼词/连词成句空槽提示</b><span>闯关拼词、连词成句、BOSS 战的摆入区在未操作时按答案长度渲染「下划线占位」——一眼看出要拼几个字母 / 几个词，点第一个字母后占位自动消失，不再是一排让人困惑的空白。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2910,7 +2912,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 106;
+const APP_VERSION = 107;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -5114,11 +5116,12 @@ function renderSentence(q, done){
   const distract=shuffle(wordPool).slice(0, needDistract);
   const pool=shuffle(parts.concat(distract));
   area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 连词成句：“${q.zh}”</div>
-    <div class="basket" id="lb"></div><div class="pool" id="lp"></div>
+    <div class="basket" id="lb">${ghostSlots(parts.length)}</div><div class="pool" id="lp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__lvlSentCheck('${q.en.replace(/'/g,"\\'")}')">✔ 检查</button></div>`;
   pool.forEach(w=>{
     const t=document.createElement('div'); t.className='token'; t.textContent=w;
     t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+      clearGhosts(document.getElementById('lb'));
       const s=document.createElement('span'); s.className='token in'; s.textContent=w;
       s.onclick=()=>{s.remove();t.classList.remove('used');}; document.getElementById('lb').appendChild(s); };
     document.getElementById('lp').appendChild(t);
@@ -5157,19 +5160,30 @@ function renderWhack(q, done){
   speak(answer.en);
 }
 // 拼词：字母乱序，按序点出正确单词
+/* v107：摆入区空状态渲染「N 个下划线」占位，提示答案长度（点第一个字母后清除） */
+function ghostSlots(n){
+  n=Math.max(1, Math.min(24, n||0));
+  let h='';
+  for(let i=0;i<n;i++){ h+='<span class="lt-ghost"></span>'; }
+  return h;
+}
+function clearGhosts(el){
+  if(el && el.querySelector('.lt-ghost')) el.innerHTML='';
+}
 function renderPuzzle(q, done){
   const area=document.getElementById('lvlArea');
   const answer=q.answer;
-  const letters=shuffle(answer.en.split(''));
+  const letters=shuffle(answer.en.replace(/\s/g,'').split(''));
   area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 拼词：“${answer.zh}” ${answer.emoji||''}</div>
     <button class="btn sky" style="margin-bottom:8px" onclick="__puzzlePlay()">🔊 听一听</button>
-    <div class="basket" id="pb"></div><div class="pool" id="pp"></div>
+    <div class="basket" id="pb">${ghostSlots(answer.en.replace(/\s/g,'').length)}</div><div class="pool" id="pp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__puzzleCheck()">✔ 检查</button></div>`;
   const resolve=makeResolver('puzzle', answer.en, answer.zh, done);
   const basket=document.getElementById('pb');
   letters.forEach(ch=>{
     const t=document.createElement('div'); t.className='token'; t.textContent=ch;
     t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+      clearGhosts(basket);
       const s=document.createElement('span'); s.className='token in'; s.textContent=ch;
       s.onclick=()=>{s.remove();t.classList.remove('used');}; basket.appendChild(s); };
     document.getElementById('pp').appendChild(t);
@@ -5359,10 +5373,11 @@ function renderBoss(u, done){
       </div>
       <div class="boss-bubble" id="bbub">${bossRage>=3?'🔥 别惹我，我要放大招了！':'来吧，造出正确的句子！'}</div>
       <div class="qprompt">⚔️ 第 ${idx+1}/${sents.length} 击 · 连词成句：“${s.zh}”</div>
-      <div class="basket" id="bb"></div><div class="pool" id="bp"></div>
+      <div class="basket" id="bb">${ghostSlots(parts.length)}</div><div class="pool" id="bp"></div>
       <button class="btn grass lg" style="margin-top:10px" onclick="__bossCheck('${s.en.replace(/'/g,"\\'")}')">💥 攻击！</button></div>`;
     pool.forEach(w=>{ const t=document.createElement('div'); t.className='token'; t.textContent=w;
       t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+        clearGhosts(document.getElementById('bb'));
         const sp=document.createElement('span'); sp.className='token in'; sp.textContent=w;
         sp.onclick=()=>{sp.remove();t.classList.remove('used');}; document.getElementById('bb').appendChild(sp); };
       document.getElementById('bp').appendChild(t); });
