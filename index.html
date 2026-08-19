@@ -458,6 +458,17 @@
   .boss-bubble::after{content:''; position:absolute; left:26px; bottom:-9px; border:8px solid transparent; border-top-color:var(--bc);}
   .boss-bubble.pop{animation:bossPop .45s;}
   .boss-bubble.shake{animation:bossShake .4s;}
+  /* v106 BOSS 怒气 + 必杀 + 奇遇事件 */
+  .boss-rage{margin-top:6px; padding:4px 2px;}
+  .boss-rage .rg-label{font-size:11px; color:var(--muted); font-weight:700; margin-bottom:3px;}
+  .boss-rage .rg-bar{display:flex; gap:3px;}
+  .boss-rage .rg-bar i{flex:1; height:8px; border-radius:999px; background:var(--soft); box-shadow:inset 0 0 0 1px var(--line); transition:.2s;}
+  .boss-rage .rg-bar i.on{background:linear-gradient(90deg,#ffb020,#ff7b6b);}
+  .boss-skill.ready{animation:rcPulse 1.2s ease-in-out infinite; box-shadow:0 0 0 3px rgba(255,179,32,.35);}
+  .boss-quake{animation:bossQuake .55s ease-in-out;}
+  @keyframes bossQuake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(3px);}}
+  .event-card{background:linear-gradient(160deg,rgba(124,92,255,.10),rgba(255,179,32,.08)); border:1.5px dashed rgba(124,92,255,.35); padding:22px 14px;}
+  .event-card .event-em{font-size:54px; margin-bottom:6px;}
   @keyframes bossCardIn{from{opacity:0; transform:translateY(10px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);}}
   @keyframes bossBubbleIn{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);}}
   @keyframes bossPop{0%{transform:scale(1);} 40%{transform:scale(1.07);} 100%{transform:scale(1);}}
@@ -1296,7 +1307,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">105</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">106</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1319,6 +1330,7 @@ update → controllerchange
       <div class="it"><b>v103 · 连连看：每对配对即时 +1⭐</b><span>单词游戏「连连看」此前只有整局配完才一次性给 3⭐——现改为每配成一对即时 +1⭐（配错翻回不扣星），整局通关的 +3⭐ 与彩带保留。全 SVG 绘本风。</span></div>
 <div class="it"><b>v104 · 视觉：建议多练提示条不再刺眼</b><span>主页「建议多练」条此前用高亮米黄渐变（#fff4d6 / #ffe9c2），在暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色）+ 暗色主题专属适配（暖色文字 + 暗棕透明底），柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
 <div class="it"><b>v105 · 视觉：今日复习条不再刺眼</b><span>主页「今日复习」条在有待复习词时用高亮浅橙渐变（#fff1e2 / #ffe9df）+ 脉冲动画，暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色 + 暗色主题专属适配）+ 脉冲动画放慢，柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
+<div class="it"><b>v106 · 趣味闯关大升级（事件插曲 + BOSS 怒气战 + 隐藏星）</b><span>闯关不再纯做题：随机穿插奇遇事件（📮补给站领 ⭐双倍卡 / 🎁宝箱开星 / 🐣帮迷路小鸡回家）；BOSS 战升级为回合制——答错涨怒气、怒满放大招震屏并回 1 血，连对 2 题亮「⚡狐狸必杀」一击削 2 血，双倍卡让攻击翻倍；零失误完美通关解锁第 4 颗「隐藏星」，地图显示金色徽章。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2898,7 +2910,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 105;
+const APP_VERSION = 106;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3245,7 +3257,8 @@ function touchDay(){
   saveState();
 }
 function unitStat(id){
-  if(!STATE.units[id]) STATE.units[id]={seen:[],mastered:[],correct:0,attempts:0,levelStars:0,unlocked:true};
+  if(!STATE.units[id]) STATE.units[id]={seen:[],mastered:[],correct:0,attempts:0,levelStars:0,unlocked:true,hiddenStar:0};
+  if(typeof STATE.units[id].hiddenStar!=='number') STATE.units[id].hiddenStar=0;
   return STATE.units[id];
 }
 function recordWord(id, en, ok){
@@ -4895,6 +4908,7 @@ function renderMap(){
     if(u.color) el.style.borderColor=u.color;
     let starsHtml='';
     for(let k=0;k<3;k++){ starsHtml+=`<span class="st${k<st.levelStars?' on':''}">${k<st.levelStars?'★':'☆'}</span>`; }
+    if(st.hiddenStar) starsHtml+=`<span class="st hidden" title="隐藏星：完美通关">⭐</span>`;
     el.innerHTML=`<div class="em">${u.emoji}</div>${i===frontierIdx?'<span class="fox-marker"><svg class="fm-fox" viewBox="0 0 64 72"><use href="#i-fox"/></svg></span>':''}
       <div class="meta"><b>${u.title}</b><small>${u.words.length} 词 · ${u.sentences.length} 句型</small>
         <div class="lvl-bar"><i style="width:${Math.round(st.levelStars/3*100)}%"></i></div></div>
@@ -4942,6 +4956,8 @@ function showMap(){
 }
 let levelWrong={sel:0,spell:0,sent:0}; // 闯关本关错次（按题型）：驱动弱项统计 + 结算反馈
 let levelQi=0, levelTotal=0, levelTotalNormal=0; // 关卡题目进度（供题面“第 X/Y”显示）
+let levelItems={x2:0}; // v106 闯关道具：⭐双倍卡（补给站事件获得，BOSS 战启用）
+let bossRage=0, bossSkill=0, bossHits=0, bossTotal=0; // v106 BOSS 怒气/必杀/命中统计（模块级便于测试）
 // 迷你玩法类型 → 弱项维度：句子/BOSS 归 'sent'，拼词/归类归 'spell'，其余（选择/听音/连连看/捉迷藏）归 'sel'
 function weakKeyOf(type){ return (type==='sentence'||type==='boss')?'sent':(type==='puzzle'||type==='sort')?'spell':'sel'; }
 // 首次错：入错题本 + 累加弱项（不走 recordWord，避免 recordWord(true) 把该项移出）
@@ -4994,8 +5010,38 @@ function buildLevelQuestions(u){
   const wF=wsample[4]||wsample[0];
   qs.push({type:'find', answer:{en:wF.en, zh:wF.zh, emoji:EMOJI_MAP[wF.en]||'🔤'}, distractors:sample(u.words,wF,5).map(x=>x.en)});
   const normal=shuffle(qs);
+  // v106：随机插入 1-2 个奇遇事件，打破连续做题的单调（事件为非做题插曲，不计入正式题数）
+  const evCount = Math.random()<0.6 ? 1 : 2;
+  const evKinds=['bonus','lucky','pet'];
+  for(let i=0;i<evCount;i++){
+    const kind=evKinds[Math.floor(Math.random()*evKinds.length)];
+    const ev={type:'event', kind, opts: kind==='pet' ? shuffle(u.words.slice()).slice(0,3).map(w=>w.en) : []};
+    normal.splice(Math.floor(Math.random()*(normal.length+1)), 0, ev);
+  }
   normal.push({type:'boss', u});
   return normal;
+}
+/* v106：奇遇事件插曲——非做题环节，打破连续做题的单调 */
+function renderEvent(q, done){
+  const area=document.getElementById('lvlArea');
+  let inner='';
+  if(q.kind==='bonus'){
+    inner=`<div class="event-em">📮</div><h2>补给站</h2><p class="muted">狐狸小伙伴送来补给！获得一张 <b>⭐双倍卡</b>，留着打 BOSS 时用吧！</p>
+      <button class="btn coral lg" style="margin-top:10px" onclick="__evGo()">领取 ⭐双倍卡 ▶</button>`;
+  } else if(q.kind==='lucky'){
+    inner=`<div class="event-em">🎁</div><h2>神秘宝箱</h2><p class="muted">草丛里有个亮晶晶的宝箱，打开看看有什么惊喜！</p>
+      <button class="btn coral lg" style="margin-top:10px" onclick="__evGo()">打开宝箱 ▶</button>`;
+  } else {
+    inner=`<div class="event-em">🐣</div><h2>迷路的小鸡</h2><p class="muted">一只小鸡迷路了！从下面的单词里选一个当它的名字，它就跟你走啦！</p>
+      <div class="row" style="justify-content:center">${(q.opts||[]).map(o=>`<button class="btn sky" onclick="__evGo()">${o}</button>`).join('')}</div>`;
+  }
+  area.innerHTML=`<div class="panel center event-card">${inner}</div>`;
+  window.__evGo=()=>{
+    if(q.kind==='bonus'){ levelItems.x2++; toast('获得 ⭐双倍卡 ×1！'); }
+    else if(q.kind==='lucky'){ const n=1+Math.floor(Math.random()*3); awardStars(n); foxSay('🎉 宝箱里是 '+n+' 颗星！'); toast('🎁 开箱 +'+n+'⭐'); }
+    else { awardStars(1); foxSay('🐣 谢谢你帮小鸡回家！'); toast('🐣 帮助小动物 +1⭐'); }
+    done();
+  };
 }
 function startLevel(id){
   touchDay();
@@ -5013,16 +5059,16 @@ function startLevel(id){
     const u=UNITS.find(x=>x.id===id);
     const questions=buildLevelQuestions(u);
     levelTotal=questions.length;
-    levelTotalNormal=Math.max(1, questions.length-1);
-    levelQi=0; levelCorrect=0;
+    levelTotalNormal=Math.max(1, questions.filter(q=>q.type!=='boss'&&q.type!=='event').length); // 正式题数（事件/BOSS 不计分母）
+    levelQi=0; levelCorrect=0; levelItems={x2:0}; bossRage=0; bossSkill=0; bossHits=0; bossTotal=0;
     const area=lvlArea;
     function next(){
       if(levelQi>=questions.length){ finish(); return; }
       const q=questions[levelQi];
       if(q.type==='boss'){ renderBoss(u, ()=>finish()); return; }
-      const dispatch={choose:renderChoose, sentence:renderSentence, whack:renderWhack, puzzle:renderPuzzle, match:renderMatch, find:renderFind};
+      const dispatch={choose:renderChoose, sentence:renderSentence, whack:renderWhack, puzzle:renderPuzzle, match:renderMatch, find:renderFind, event:renderEvent};
       dispatch[q.type](q, ()=>{ levelQi++; next(); });
-      updateLvlProgress(); // 每题渲染后在 #lvlArea 顶部插入进度条（BOSS 关用自身血量条，不重复加）
+      if(q.type!=='event') updateLvlProgress(); // 事件插曲不插进度条，保持节奏
     }
     next();
     // 保证加载动画至少可见 700ms，避免一闪而过
@@ -5265,7 +5311,9 @@ function renderBoss(u, done){
   const sents=shuffle(u.sentences.slice()).slice(0,3);
   if(sents.length===0){ done(); return; }
   const boss=getBoss(u);
-  let hp=sents.length, idx=0, hits=0;
+  bossRage=0; bossSkill=0; bossHits=0; bossTotal=sents.length;
+  let hp=sents.length, idx=0;
+  let dblOn=false; // ⭐双倍卡是否启用（v106）
   function intro(){
     // 首遇弹剧情卡；重遇直接开战，不重复唠叨
     if(STATE.bossSeen[u.id]){ fight(); return; }
@@ -5283,13 +5331,13 @@ function renderBoss(u, done){
   function fight(){ render(); }
   function render(){
     if(idx>=sents.length){
-      const win=hits>=sents.length;
+      const win=hp<=0; // v106：血条打空即击败（答错回血会让战斗更胶着）
       if(win){
-        awardStars(1); celebrate(); foxSay('🏆 你击败了 '+boss.name+'！获得额外 ⭐！');
-        area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss.emoji}</div><h2>🏆 ${boss.name} 被击败！</h2><p class="muted">${boss.win}</p><p class="muted">额外获得 1 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
+        awardStars(2); celebrate(); foxSay('🏆 你击败了 '+boss.name+'！获得 ⭐ 战利品！');
+        area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss.emoji}</div><h2>🏆 ${boss.name} 被击败！</h2><p class="muted">${boss.win}</p><p class="muted">额外获得 2 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       } else {
         foxSay('💪 '+boss.name+'逃走了，多练练句型再来！');
-        area.innerHTML=`<div class="panel center"><div class="boss-emoji">${boss.emoji}</div><h2>${boss.name} 还没倒下…</h2><p class="muted">${boss.lose}</p><p class="muted">连对 ${hits}/${sents.length} 句，再练练句型！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
+        area.innerHTML=`<div class="panel center"><div class="boss-emoji">${boss.emoji}</div><h2>${boss.name} 还没倒下…</h2><p class="muted">${boss.lose}</p><p class="muted">命中 ${bossHits}/${bossTotal} 击，再练练句型！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       }
       window.__bossDone=done;
       return;
@@ -5303,8 +5351,13 @@ function renderBoss(u, done){
     const distract=shuffle(wordPool).slice(0, needDistract);
     const pool=shuffle(parts.concat(distract));
     area.innerHTML=`<div class="panel boss-fight" style="--bc:${boss.color}"><div class="boss-top"><div class="boss-av"><span class="boss-emoji">${boss.emoji}</span><div class="boss-nm">${boss.name}</div></div>
-      <div class="hp"><div class="hp-label">${boss.name} 生命 ${hp}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(hp/sents.length*100)}%"></i></div></div></div>
-      <div class="boss-bubble" id="bbub">来吧，造出正确的句子！</div>
+      <div class="hp"><div class="hp-label">${boss.name} 生命 ${Math.max(0,hp)}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(Math.max(0,hp)/sents.length*100)}%"></i></div></div></div>
+      <div class="boss-rage"><div class="rg-label">怒气 ${bossRage}/3 ${bossRage>=3?'· 大招蓄满！':''}</div><div class="rg-bar">${[0,1,2].map(i=>`<i class="${i<bossRage?'on':''}"></i>`).join('')}</div></div>
+      <div class="row" style="justify-content:space-between;align-items:center;margin:6px 0">
+        <button class="btn sky" style="padding:6px 12px;font-size:13px" id="bossDbl" onclick="__bossDbl()">${dblOn?'✅ 双倍卡已启用':'⭐ 双倍卡 ×'+levelItems.x2}</button>
+        <button class="btn sun boss-skill${bossSkill>=2?' ready':''}" id="bossSkillBtn" style="padding:6px 12px;font-size:13px" onclick="__bossSkill()">⚡ 狐狸必杀 ${bossSkill>=2?'可用！':'('+bossSkill+'/2)'}</button>
+      </div>
+      <div class="boss-bubble" id="bbub">${bossRage>=3?'🔥 别惹我，我要放大招了！':'来吧，造出正确的句子！'}</div>
       <div class="qprompt">⚔️ 第 ${idx+1}/${sents.length} 击 · 连词成句：“${s.zh}”</div>
       <div class="basket" id="bb"></div><div class="pool" id="bp"></div>
       <button class="btn grass lg" style="margin-top:10px" onclick="__bossCheck('${s.en.replace(/'/g,"\\'")}')">💥 攻击！</button></div>`;
@@ -5313,20 +5366,45 @@ function renderBoss(u, done){
         const sp=document.createElement('span'); sp.className='token in'; sp.textContent=w;
         sp.onclick=()=>{sp.remove();t.classList.remove('used');}; document.getElementById('bb').appendChild(sp); };
       document.getElementById('bp').appendChild(t); });
+    window.__bossDbl=()=>{
+      if(levelItems.x2<=0){ toast('还没有双倍卡，闯关时去「补给站」领一张吧'); return; }
+      if(dblOn){ dblOn=false; const b=document.getElementById('bossDbl'); if(b) b.textContent='⭐ 双倍卡 ×'+levelItems.x2; toast('双倍卡已关闭'); return; }
+      levelItems.x2--; dblOn=true;
+      const b=document.getElementById('bossDbl'); if(b) b.textContent='✅ 双倍卡已启用';
+      toast('⭐ 双倍卡启用：答对攻击翻倍！');
+    };
+    window.__bossSkill=()=>{
+      if(bossSkill<2) return;
+      bossSkill=0; hp-=2;
+      area.classList.add('boss-quake'); setTimeout(()=>area.classList.remove('boss-quake'), 600);
+      const b=document.getElementById('bossSkillBtn'); if(b) b.classList.remove('ready');
+      toast('⚡ 狐狸必杀！'+boss.name+' -2 血');
+      setTimeout(render, 650);
+    };
     window.__bossCheck=(ans)=>{
       const got=[...document.querySelectorAll('#bb .in')].map(e=>e.textContent).join(' ');
       const ok=norm(got)===norm(ans);
       const b=document.getElementById('bbub');
       if(ok){
-        hits++; hp--; idx++;
+        bossHits++; hp-= (dblOn?2:1); idx++; bossSkill++;
         if(b){ b.textContent=boss.tr; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('pop'); }
-        toast('💥 命中！'+boss.name+'掉血');
+        toast(dblOn?'💥 双倍命中！'+boss.name+' -2 血':'💥 命中！'+boss.name+'掉血');
         setTimeout(render, 750);
       } else {
         const bb=document.getElementById('bb');
         if(bb){ bb.classList.add('wrong'); setTimeout(()=>bb.classList.remove('wrong'),500); }
         if(b){ b.textContent=boss.tw; b.classList.remove('pop'); void b.offsetWidth; b.classList.add('shake'); }
-        toast('🛡️ '+boss.name+'挡下了，再试试');
+        bossRage++;
+        if(bossRage>=3){ // v106：怒气满 → 大招震屏 + 回 1 血 + 双倍卡被震掉
+          bossRage=0; dblOn=false;
+          hp=Math.min(hp+1, sents.length);
+          area.classList.add('boss-quake'); setTimeout(()=>area.classList.remove('boss-quake'), 600);
+          toast('🔥 '+boss.name+' 怒气爆发！回 1 血，双倍卡被震掉了！');
+          if(b) b.textContent='🔥 看我的大招！回血啦！';
+        } else {
+          toast('🛡️ '+boss.name+'挡下了，怒气 +1');
+        }
+        setTimeout(render, 700); // 重渲染刷新怒气条/血量/必杀状态
       }
     };
   }
@@ -5340,6 +5418,10 @@ function finish(){
   const st=unitStat(id);
   const hadNoStar = st.levelStars<1; // 解锁判定用：本次前该关是否 0 星
   st.levelStars=Math.max(st.levelStars, stars);
+  // v106 隐藏星：正式题全对 + 零错题 + BOSS 全中 = 完美通关
+  const perfect = levelCorrect>=levelTotalNormal && (levelWrong.sel+levelWrong.spell+levelWrong.sent)===0 && bossHits>=bossTotal;
+  const hidden = perfect?1:0;
+  if(hidden) st.hiddenStar=1;
   let unlockedName=null;
   if(stars>=1 && UNITS.indexOf(u)<UNITS.length-1){
     const nx=UNITS[UNITS.indexOf(u)+1];
@@ -5351,21 +5433,23 @@ function finish(){
     const wu=STATE.weakByUnit[id]=STATE.weakByUnit[id]||{sel:0,spell:0,sent:0};
     wu.sel=(wu.sel||0)+levelWrong.sel; wu.spell=(wu.spell||0)+levelWrong.spell; wu.sent=(wu.sent||0)+levelWrong.sent;
   }
+  const showStars = stars+hidden;
   awardStars(stars);
   saveState();
   if(unlockedName) setTimeout(()=>toast('解锁新关卡：'+unlockedName), 900);
-  if(stars>0){ celebrate(); collectUnit(curUnitId); foxSay('🎉 闯关成功！你拿到了 '+stars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
+  if(stars>0){ celebrate(); collectUnit(curUnitId); foxSay('🎉 闯关成功！你拿到了 '+showStars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
   const wrongTot=levelWrong.sel+levelWrong.spell+levelWrong.sent;
   const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 拼写 ${levelWrong.spell} · 句子题 ${levelWrong.sent}</p>`:'';
   const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
   const practiceBtn=stars===0?`<button class="btn sun" onclick="goVocabUnit('${id}')">📚 先练这关单词</button>`:'';
+  const hiddenTag=hidden?`<p class="muted" style="color:var(--sun);font-weight:800">🏅 隐藏星达成：完美通关，零失误！</p>`:'';
   const area=document.getElementById('lvlArea');
   area.innerHTML=`<div class="panel center">
     <div style="font-size:60px">${stars>0?'🎉':'💪'}</div>
     <h2>${stars>0?'闯关成功！':'再接再厉！'}</h2>
-    <div class="stars" style="font-size:30px">${'★'.repeat(stars)+'☆'.repeat(3-stars)}</div>
-    <p class="muted">答对 ${levelCorrect}/${levelTotalNormal} 题 · 获得 ${stars} ⭐</p>
-    ${breakdown}${guide}
+    <div class="stars" style="font-size:30px">${'★'.repeat(showStars)+'☆'.repeat(4-showStars)}</div>
+    <p class="muted">答对 ${levelCorrect}/${levelTotalNormal} 题 · 获得 ${showStars} ⭐${hidden?'（含隐藏星）':''}</p>
+    ${hiddenTag}${breakdown}${guide}
     <div class="row" style="margin-top:10px;justify-content:center">
       <button class="btn grape" onclick="showMap()">🗺️ 返回地图</button>
       <button class="btn sky" onclick="startLevel('${id}')">🔄 再闯一次</button>
