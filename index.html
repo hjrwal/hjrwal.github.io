@@ -1287,7 +1287,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">98</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">99</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1303,6 +1303,7 @@ update → controllerchange
       <div class="it"><b>v96 · 说：三维评分 + 可选云端识别 + 下一句</b><span>「说」升级为流利度 / 准确度 / 完整度三维各 1–5 星评分；有网且浏览器支持时自动调用免费 Web Speech 云端识别转录并比对句子（准确度自动评分），不支持则降级为手动自评；流利度 / 完整度由麦克风波形估算。修复无法跳转到下一句的 bug，新增「下一句 →」按钮可随时换句。全 SVG 绘本风。</span></div>
       <div class="it"><b>v97 · 说：评分防刷（识别接入流利度/完整度）</b><span>修复「咳嗽也能拿满分」漏洞：流利度 / 完整度不再只看音量大小和时长，改为结合免费 Web Speech 云端识别覆盖率（识别出多少词给多少分）；无识别环境退回波形估算并加「爆音防刷」（一两个孤立响段不算读句子，封顶 2 星）；识别没听清时提示重读。全 SVG 绘本风。</span></div>
       <div class="it"><b>v98 · 合并「读」进「说」（说新增慢速朗读）</b><span>听说读写四格简化为 听 / 说 / 写 三格；「读」的逐词高亮跟读能力并入「说」，说模式新增「🐢 慢速朗读」按钮——点按逐词高亮播放，先学怎么读，再点「我来说」三维评分挑战。全 SVG 绘本风。</span></div>
+      <div class="it"><b>v99 · 进度：在线时长监控</b><span>新增在线时长统计：页面在前台可见即计时、切后台自动暂停，每 30 秒 / 切走 / 关闭前自动结算并存入本地进度（离线也算）；「我的进度」新增「在线时长」卡，展示累计与今日时长。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -1564,6 +1565,12 @@ update → controllerchange
       <div class="stat-card"><div class="n" id="pStars">0</div><div class="l">⭐ 星星</div></div>
       <div class="stat-card"><div class="n" id="pStreak">0</div><div class="l">🔥 连续天数</div></div>
       <div class="stat-card"><div class="n" id="pWords">0</div><div class="l">📚 掌握单词</div></div>
+    </div>
+    <div class="panel">
+      <h2 class="sec"><svg class="ic-svg" viewBox="0 0 24 24" style="width:18px;height:18px;vertical-align:-3px;margin-right:5px"><use href="#i-timer"/></svg>在线时长</h2>
+      <div class="row spread" style="padding:6px 0"><span class="muted">累计在线</span><b id="pOnlineTotal">0 分钟</b></div>
+      <div class="row spread" style="padding:6px 0"><span class="muted">今日在线</span><b id="pOnlineDay">0 分钟</b></div>
+      <p class="muted" style="margin:4px 0 0">打开 App 在前台可见就会计时，切到后台自动暂停，离线也算 ✨</p>
     </div>
     <div class="panel">
       <h2 class="sec">📈 学习趋势（近 14 天）</h2>
@@ -2870,7 +2877,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 98;
+const APP_VERSION = 99;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -2973,6 +2980,7 @@ function defaultState(){
     rankIdx:0, codex:{}, bossSeen:{},
     onboarded:false,
     guided:{},
+    onlineSec:0, onlineDay:0, onlineDate:'',
     settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc'} };
 }
 function loadState(){
@@ -3000,12 +3008,45 @@ function loadState(){
     if(typeof s.onboarded!=='boolean') s.onboarded=false;
     if(!s.guided || typeof s.guided!=='object') s.guided={};
     if(!s.settings.grade) s.settings.grade='5';
+    if(typeof s.onlineSec!=='number') s.onlineSec=0;
+    if(typeof s.onlineDay!=='number') s.onlineDay=0;
+    if(typeof s.onlineDate!=='string') s.onlineDate='';
     return s;
   } }catch(e){}
   _localEmpty=true;
   return defaultState();
 }
 function saveState(){ const _j=JSON.stringify(STATE); try{ localStorage.setItem(KEY,_j); }catch(e){} idbPut(STATE); refreshTop(); maybeAutoBackup(); }
+/* ====== 在线时长监控（v99）：前台可见即计时，切后台暂停，30s/隐藏/关闭时结算 ====== */
+let onlineStart=null, _onlineTickT=null;
+function fmtDur(sec){
+  sec=Math.max(0, Math.round(sec||0));
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60);
+  if(h>0) return (m>0? h+' 小时 '+m+' 分钟' : h+' 小时');
+  if(m>0) return m+' 分钟';
+  return sec+' 秒';
+}
+function tickOnline(){
+  if(onlineStart==null) return;
+  const s=Math.round((Date.now()-onlineStart)/1000);
+  if(s<=0) return;
+  const t=todayStr();
+  if(STATE.onlineDate!==t){ STATE.onlineDate=t; STATE.onlineDay=0; } // 跨天清零今日
+  STATE.onlineSec+=s; STATE.onlineDay+=s;
+  onlineStart=Date.now();
+  saveState();
+}
+function startOnlineWatch(){
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState==='visible'){ if(onlineStart==null) onlineStart=Date.now(); }
+    else tickOnline();
+  });
+  window.addEventListener('pagehide', tickOnline);
+  window.addEventListener('beforeunload', tickOnline);
+  if(document.visibilityState!=='hidden') onlineStart=Date.now();
+  if(_onlineTickT) clearInterval(_onlineTickT);
+  _onlineTickT=setInterval(tickOnline, 30000); // 每 30s 结算一次，防刷新/崩溃丢时长
+}
 function exportProgress(){
   try{
     const blob=new Blob([JSON.stringify(STATE)],{type:'application/json'});
@@ -3292,6 +3333,7 @@ if('serviceWorker' in navigator){
     function showUpdateBarSafe(){ const reg=navigator.serviceWorker; try{ /* 横条已在 updatefound 弹出；此处兜底再弹一次 */ const bar=document.getElementById('updateBar'); if(bar) bar.classList.add('show'); else { const b=document.createElement('div'); b.id='updateBar'; b.className='update-bar'; b.innerHTML='🎉 发现新版本，体验更稳更顺了～ <button class="ub-btn" id="ubBtn" onclick="location.reload()">立即更新</button> <button class="ub-x" onclick="this.parentNode.classList.remove(\'show\')">稍后</button>'; document.body.appendChild(b); b.classList.add('show'); } }catch(_){} }
     var _vt=document.getElementById('verTag'); if(_vt) _vt.textContent='v'+APP_VERSION;
     refreshWrongDot(); // v78：启动即同步错题/薄弱点角标
+    startOnlineWatch(); // v99：在线时长监控
     setTimeout(preloadCommonAudio, 4000); // 空闲预热常用音频（D1）
   });
 }
@@ -5268,6 +5310,8 @@ function renderProgress(){
   document.getElementById('pStars').textContent=STATE.stars;
   document.getElementById('pStreak').textContent=STATE.streak;
   document.getElementById('pWords').textContent=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
+  document.getElementById('pOnlineTotal').textContent=fmtDur(STATE.onlineSec);
+  document.getElementById('pOnlineDay').textContent=fmtDur(STATE.onlineDay);
   // 今日复习（艾宾浩斯）
   const due=dueReviews();
   document.getElementById('reviewCount').textContent='('+due.length+' 个待复习)';
