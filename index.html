@@ -209,6 +209,14 @@
   @keyframes sparkFly{0%{opacity:0; transform:scale(.2) translate(0,0);}30%{opacity:1;}100%{opacity:0; transform:scale(1) translate(var(--dx,8px),var(--dy,-14px));}}
   .eval-wave{width:100%; height:56px; background:#f5f3ff; border-radius:12px; display:block; margin:4px 0;}
   .sub-eval{margin-top:6px;}
+  .eval-3d{margin-top:10px; background:rgba(124,92,255,.05); border-radius:14px; padding:10px 12px;}
+  .eval-3d .dim{display:flex; align-items:center; gap:8px; padding:5px 0;}
+  .eval-3d .dl{width:56px; font-weight:800; font-size:13px; color:var(--ink); flex:none;}
+  .eval-3d .ds{flex:1; letter-spacing:2px; min-width:0;}
+  .eval-3d .star{color:#d9d4ee; font-size:20px; cursor:pointer; transition:transform .12s,color .12s; user-select:none;}
+  .eval-3d .star.on{color:#ffb020;}
+  .eval-3d .star:active{transform:scale(1.2);}
+  .eval-3d .dv{width:36px; text-align:right; font-size:13px; color:var(--grape); font-weight:800; flex:none;}
   .radar-wrap{margin-top:12px; padding:10px; background:rgba(124,92,255,.06); border-radius:14px;}
   .radar-title{font-weight:800; font-size:14px; margin-bottom:4px;}
   /* 首页卡片错峰浮现 */
@@ -1279,7 +1287,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">95</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">96</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1292,6 +1300,7 @@ update → controllerchange
     </div>
     <div class="tl">
       <div class="it"><b>v95 · 说：「我来说」触发跟读自评（取消语音识别依赖）</b><span>「说」练习的「我来说」按钮改为直接唤起波形跟读 + 三档自评面板，移除对浏览器语音识别（SpeechRecognition）的依赖，iPhone / 无识别环境也能用；「说」磁贴改为始终显示（文案「跟读自评」）。零 emoji 占位，沿用 SVG 绘本风。</span></div>
+      <div class="it"><b>v96 · 说：三维评分 + 可选云端识别 + 下一句</b><span>「说」升级为流利度 / 准确度 / 完整度三维各 1–5 星评分；有网且浏览器支持时自动调用免费 Web Speech 云端识别转录并比对句子（准确度自动评分），不支持则降级为手动自评；流利度 / 完整度由麦克风波形估算。修复无法跳转到下一句的 bug，新增「下一句 →」按钮可随时换句。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2859,7 +2868,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 95;
+const APP_VERSION = 96;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3897,6 +3906,7 @@ function initSkills(){
   renderSkillHome();
 }
 function renderSkillHome(){
+  stopEvalEngine();
   const stage=document.getElementById('skillStage');
   stage.innerHTML = `<div class="grid" style="gap:10px;">
     <div class="tile c-sky" onclick="startSkill('listen')"><span class="ic">👂</span><h3>听</h3><p>听音选义</p></div>
@@ -3919,16 +3929,7 @@ function startSkill(mode){
       <div class="opts" id="skOpts"></div>`;
     fillSkillOpts(opts, q.zh, q.en);
   } else if(mode==='speak'){
-    const q=u.sentences[Math.floor(Math.random()*u.sentences.length)];
-    const en=q.en.replace(/'/g,"\\'");
-    area.innerHTML=back+`<h2 class="sec">🗣️ 跟读练习</h2>
-      <div class="word-read">${q.en}</div>
-      <div class="big-word" style="color:var(--coral-d);font-size:18px">${q.zh}</div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn sky" onclick="speak('${en}')">🔊 听示范</button>
-        <button class="btn grass" id="micBtn" onclick="selfEval()">🎤 我来说</button>
-      </div>
-      <p class="muted" id="speakResult" style="margin-top:10px">听示范后大声跟读，再点「我来说」给自己打个分吧！</p>`;
+    renderSpeak(area, back, pickSpeakSentence());
   } else if(mode==='read'){
     const q=u.sentences[Math.floor(Math.random()*u.sentences.length)];
     const html=q.en.split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
@@ -3944,6 +3945,36 @@ function startSkill(mode){
       <input class="type" id="writeIn" placeholder="写出英文" style="margin-top:10px">
       <button class="btn grass lg" style="margin-top:10px" onclick="checkWrite('${q.en.replace(/'/g,"\\'")}')">✔ 提交</button>`;
   }
+}
+/* v96：说模式——渲染单句 + 下一句跳转 */
+let curSpeakQ=null;
+function pickSpeakSentence(){
+  const u=curUnit(); if(!u||!u.sentences||!u.sentences.length) return null;
+  if(u.sentences.length===1) return u.sentences[0];
+  let q,guard=0;
+  do{ q=u.sentences[Math.floor(Math.random()*u.sentences.length)]; guard++; }while(curSpeakQ && q.en===curSpeakQ.en && guard<20);
+  return q;
+}
+function renderSpeak(area, back, q){
+  stopEvalEngine();
+  curSpeakQ=q;
+  const en=q.en.replace(/'/g,"\\'");
+  area.innerHTML=back+`<h2 class="sec">🗣️ 跟读练习</h2>
+    <div class="word-read">${q.en}</div>
+    <div class="big-word" style="color:var(--coral-d);font-size:18px">${q.zh}</div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sky" onclick="speak('${en}')">🔊 听示范</button>
+      <button class="btn grass" id="micBtn" onclick="selfEval()">🎤 我来说</button>
+      <button class="btn grape" onclick="speakNext()">下一句 →</button>
+    </div>
+    <p class="muted" id="speakResult" style="margin-top:10px">听示范后大声跟读，再点「我来说」给自己打个分吧！</p>`;
+}
+function speakNext(){
+  const area=document.getElementById('skillStage');
+  const back='<button class="back" style="margin-bottom:10px" onclick="renderSkillHome()">← 返回选技能</button>';
+  const q=pickSpeakSentence();
+  if(!q){ toast('这个单元还没有句子哦'); return; }
+  renderSpeak(area, back, q);
 }
 function fillSkillOpts(opts, answer, enForRecord){
   const box=document.getElementById('skOpts'); box.innerHTML='';
@@ -4062,34 +4093,61 @@ function showLoading(){ const l=document.getElementById('loading'); if(l) l.clas
 function hideLoading(){ const l=document.getElementById('loading'); if(l) l.classList.remove('show'); }
 
 /* =========================================================
-   听说读写：跟读自评（iPhone 无语音识别也能用）
+   听说读写：跟读三维评分（v96）
+   - 流利度/完整度：由麦克风波形（音量活跃度）估算
+   - 准确度：有网且浏览器支持时，免费 Web Speech 云端识别
+             转录后比对句子；不支持则降级为手动评分
+   - 三维各 1–5 星，始终可用、离线也能用
    ========================================================= */
+function stopEvalEngine(){
+  if(_waveRAF) cancelAnimationFrame(_waveRAF); _waveRAF=null;
+  try{ if(_waveStream) _waveStream.getTracks().forEach(t=>t.stop()); }catch(e){}
+  try{ if(_waveAC) _waveAC.close(); }catch(e){}
+  try{ if(_rec && _rec.state!=='inactive' && _rec.stop) _rec.stop(); }catch(e){}
+  _rec=null;
+}
 function selfEval(){
   const res=document.getElementById('speakResult'); if(!res) return;
+  stopEvalEngine();
+  _eval3d={flu:0,acc:0,com:0};
   res.innerHTML='<div class="sub-eval">'+
     '<canvas class="eval-wave" id="evalWave" width="300" height="56"></canvas>'+
-    '<p class="muted" id="evalHint">点「🎙️ 看波形跟读」，对着手机大声读，看声波跳不跳～</p>'+
+    '<p class="muted" id="evalHint">点「🎙️ 开始跟读」，对着手机大声读，小狐狸会听你读得怎么样～</p>'+
     '<div class="row" style="justify-content:center;margin:6px 0">'+
-      '<button class="btn sky" id="waveBtn" onclick="startWaveEval()">🎙️ 看波形跟读</button>'+
+      '<button class="btn sky" id="waveBtn" onclick="startWaveEval()">🎙️ 开始跟读</button>'+
     '</div>'+
-    '<div class="row" style="justify-content:center">'+
-      '<button class="btn grass" onclick="selfEvalDone(3)">🤩 读得超棒</button>'+
-      '<button class="btn sky" onclick="selfEvalDone(2)">😀 还不错</button>'+
-      '<button class="btn coral" onclick="selfEvalDone(1)">💪 还要练</button>'+
+    '<div class="eval-3d" id="eval3d">'+
+      dimRow('flu','流利度')+dimRow('acc','准确度')+dimRow('com','完整度')+
+    '</div>'+
+    '<div class="row" style="justify-content:center;margin-top:8px">'+
+      '<button class="btn grass" onclick="selfEvalDone()">✅ 完成评分</button>'+
     '</div></div>';
 }
-let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0;
+function dimRow(key,label){
+  let s=''; for(let i=1;i<=5;i++){ s+='<span class="star" data-k="'+key+'" data-v="'+i+'" onclick="setDim(\''+key+'\','+i+')">★</span>'; }
+  return '<div class="dim"><span class="dl">'+label+'</span><span class="ds" id="ds_'+key+'">'+s+'</span><span class="dv" id="dv_'+key+'">—</span></div>';
+}
+function setDim(key,v){
+  _eval3d[key]=v;
+  const wrap=document.getElementById('ds_'+key); if(!wrap) return;
+  [...wrap.children].forEach((c,i)=>{ c.classList.toggle('on', i<v); });
+  const dv=document.getElementById('dv_'+key); if(dv) dv.textContent=v+'★';
+}
+let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0,_waveStart=0;
+let _rec=null,_recTranscript='',_recFailed=false;
+let _eval3d={flu:0,acc:0,com:0};
 function startWaveEval(){
   const c=document.getElementById('evalWave'), hint=document.getElementById('evalHint'), btn=document.getElementById('waveBtn');
-  if(!c){ selfEvalDone(1); return; }
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ hint.textContent='这台设备不支持麦克风，你给自己打个分吧～'; return; }
-  hint.textContent='正在请求麦克风…';
+  if(!c){ selfEvalDone(); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ if(hint) hint.textContent='这台设备不支持麦克风，你给自己打个分吧～'; return; }
+  if(hint) hint.textContent='正在请求麦克风…';
   navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
     _waveStream=stream;
     const AC=window.AudioContext||window.webkitAudioContext; _waveAC=new AC();
     const src=_waveAC.createMediaStreamSource(stream); const an=_waveAC.createAnalyser(); an.fftSize=256;
     src.connect(an); const buf=new Uint8Array(an.frequencyBinCount);
-    _waveActive=0; _waveSamples=0;
+    _waveActive=0; _waveSamples=0; _waveStart=Date.now();
+    startCloudRec();
     const ctx=c.getContext('2d');
     const loop=()=>{
       an.getByteTimeDomainData(buf);
@@ -4101,26 +4159,63 @@ function startWaveEval(){
       _waveRAF=requestAnimationFrame(loop);
     };
     loop();
-    hint.textContent='正在听…读完点「⏹ 停」';
-    if(btn){ btn.textContent='⏹ 我读完啦'; btn.className='btn coral'; btn.onclick=stopWaveEval; }
-  }).catch(()=>{ hint.textContent='没拿到麦克风权限，你给自己打个分吧～'; });
+    if(hint) hint.textContent='正在听…读完点「⏹ 停」';
+    if(btn){ btn.textContent='⏹ 停'; btn.className='btn coral'; btn.onclick=stopWaveEval; }
+  }).catch(()=>{ if(hint) hint.textContent='没拿到麦克风权限，你给自己打个分吧～'; });
+}
+/* 可选云端识别：免费 Web Speech（Google 云端），不支持则跳过降级自评 */
+function startCloudRec(){
+  _recTranscript=''; _recFailed=false;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) return;
+  try{
+    const r=new SR();
+    r.lang='en-US'; r.interimResults=true; r.continuous=false; r.maxAlternatives=1;
+    r.onresult=(e)=>{ let t=''; for(let i=0;i<e.results.length;i++){ t+=(e.results[i][0].transcript||''); } _recTranscript=norm(t); };
+    r.onerror=()=>{ _recFailed=true; };
+    r.onend=()=>{ if(_recTranscript && curSpeakQ) applyAccFromRec(); };
+    _rec=r; _rec.start();
+  }catch(e){ _recFailed=true; }
+}
+function applyAccFromRec(){
+  if(!curSpeakQ) return;
+  const target=norm(curSpeakQ.en).split(/\s+/).filter(Boolean);
+  const got=_recTranscript.split(/\s+/).filter(Boolean);
+  if(!got.length) return;
+  const tset=new Set(target);
+  const stem=w=>w.replace(/(ing|ed|s|es)$/,'');
+  let hit=0; got.forEach(w=>{ if(tset.has(w)) hit++; else { const r=stem(w); if([...tset].some(t=>stem(t)===r)) hit++; } });
+  const acc=Math.max(1,Math.min(5,Math.round(hit/target.length*5)));
+  setDim('acc', acc);
+  const hint=document.getElementById('evalHint');
+  if(hint) hint.textContent='云端识别听到：'+(got.join(' '))+'（准确度已自动评分，可手动微调）';
 }
 function stopWaveEval(){
   if(_waveRAF) cancelAnimationFrame(_waveRAF); _waveRAF=null;
   try{ if(_waveStream) _waveStream.getTracks().forEach(t=>t.stop()); }catch(e){}
   try{ if(_waveAC) _waveAC.close(); }catch(e){}
   const ratio=_waveSamples?_waveActive/_waveSamples:0;
-  const st = ratio>0.22?3 : ratio>0.07?2 : 1;
+  const dur=(Date.now()-_waveStart)/1000;
+  const flu=ratio>0.30?5:ratio>0.20?4:ratio>0.12?3:ratio>0.05?2:1;
+  setDim('flu', flu);
+  const wantLen=curSpeakQ?curSpeakQ.en.split(/\s+/).length:0;
+  const wantDur=Math.max(1.2, wantLen*0.45);
+  const com= dur>=wantDur*0.7 ? (ratio>0.18?5:4) : (dur>=wantDur*0.4?3:2);
+  setDim('com', Math.max(1,com));
   const hint=document.getElementById('evalHint');
-  if(hint) hint.textContent='小狐狸听到你读啦，给你 '+ '⭐'.repeat(st) + (st>=3?' 太棒了！':st>=2?' 不错哦～':' 多练练会更好！');
-  selfEvalDone(st);
+  if(hint && !_recTranscript) hint.textContent='小狐狸听到你读啦，看看三维评分，点「完成评分」吧！';
+  const btn=document.getElementById('waveBtn');
+  if(btn){ btn.textContent='🎙️ 再读一次'; btn.className='btn sky'; btn.onclick=startWaveEval; }
+  try{ if(_rec && _rec.state!=='inactive' && _rec.stop) _rec.stop(); }catch(e){}
 }
-function selfEvalDone(stars){
-  stars=stars||1;
+function selfEvalDone(){
+  const flu=_eval3d.flu||3, acc=_eval3d.acc||3, com=_eval3d.com||3;
+  const overall=Math.round((flu+acc+com)/3);
   const res=document.getElementById('speakResult');
-  if(stars>=2){ awardStars(stars); bumpGoal(true); foxSay('👏 好样的，多读就会更溜！'); toast('👏 +'+stars+'⭐ 继续保持'); }
+  if(overall>=4){ awardStars(overall); bumpGoal(true); foxSay('👏 读得真棒，多读就会更溜！'); toast('👏 +'+overall+'⭐'); }
+  else if(overall>=3){ awardStars(2); bumpGoal(true); foxSay('💪 不错哦，继续加油！'); toast('💪 +2⭐'); }
   else { foxSay('💪 没关系，多听示范跟着读就好！'); toast('💪 再练练，你可以的'); }
-  if(res) res.innerHTML='点“听示范”再读一遍，或换一题试试～';
+  if(res) res.innerHTML='评分完成：流利度 '+flu+'★ · 准确度 '+acc+'★ · 完整度 '+com+'★。点「下一句 →」换一句，或「听示范」再读一遍～';
 }
 
 /* =========================================================
