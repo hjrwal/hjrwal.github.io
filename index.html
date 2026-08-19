@@ -1308,7 +1308,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">107</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">108</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1333,6 +1333,7 @@ update → controllerchange
 <div class="it"><b>v105 · 视觉：今日复习条不再刺眼</b><span>主页「今日复习」条在有待复习词时用高亮浅橙渐变（#fff1e2 / #ffe9df）+ 脉冲动画，暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色 + 暗色主题专属适配）+ 脉冲动画放慢，柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
 <div class="it"><b>v106 · 趣味闯关大升级（事件插曲 + BOSS 怒气战 + 隐藏星）</b><span>闯关不再纯做题：随机穿插奇遇事件（📮补给站领 ⭐双倍卡 / 🎁宝箱开星 / 🐣帮迷路小鸡回家）；BOSS 战升级为回合制——答错涨怒气、怒满放大招震屏并回 1 血，连对 2 题亮「⚡狐狸必杀」一击削 2 血，双倍卡让攻击翻倍；零失误完美通关解锁第 4 颗「隐藏星」，地图显示金色徽章。全 SVG 绘本风。</span></div>
 <div class="it"><b>v107 · 拼词/连词成句空槽提示</b><span>闯关拼词、连词成句、BOSS 战的摆入区在未操作时按答案长度渲染「下划线占位」——一眼看出要拼几个字母 / 几个词，点第一个字母后占位自动消失，不再是一排让人困惑的空白。全 SVG 绘本风。</span></div>
+<div class="it"><b>v108 · 修复拼词题空格答案无解</b><span>「功夫；武术」等答案含空格的词条在闯关拼词题里永远拼不对——字母池去空格拆字母、判定却保留空格比较，导致无解。修复为去空格比对，点过的字母按钮也即时隐去，池子不再残留。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2912,7 +2913,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 107;
+const APP_VERSION = 108;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -5184,12 +5185,13 @@ function renderPuzzle(q, done){
     const t=document.createElement('div'); t.className='token'; t.textContent=ch;
     t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
       clearGhosts(basket);
+      t.style.visibility='hidden'; // v108：点过的字母从池中隐去，避免残留视觉
       const s=document.createElement('span'); s.className='token in'; s.textContent=ch;
       s.onclick=()=>{s.remove();t.classList.remove('used');}; basket.appendChild(s); };
     document.getElementById('pp').appendChild(t);
   });
   window.__puzzlePlay=()=>speak(answer.en);
-  window.__puzzleCheck=()=>{ const got=[...basket.children].map(e=>e.textContent).join(''); const ok=norm(got)===norm(answer.en);
+  window.__puzzleCheck=()=>{ const got=[...basket.children].map(e=>e.textContent).join(''); const ok=norm(got.replace(/\s/g,''))===norm(answer.en.replace(/\s/g,'')); // v108：答案含空格（如 kung fu）也可解
     if(ok){ [...basket.children].forEach(c=>{ c.classList.remove('used'); c.classList.add('right'); }); setTimeout(()=>resolve(true), 500); } // v78：拼对时字母变绿反馈
     else { basket.classList.add('wrong'); [...basket.children].forEach(c=>c.classList.add('wrong-pos')); setTimeout(()=>{ basket.classList.remove('wrong'); [...basket.children].forEach(c=>c.classList.remove('wrong-pos')); }, 500); resolve(false); } };
   speak(answer.en);
