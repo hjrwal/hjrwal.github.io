@@ -181,7 +181,8 @@
   .review-callout .rc-mini{flex:0 0 auto; width:54px; height:7px; border-radius:999px; background:var(--soft); overflow:hidden; box-shadow:inset 0 0 0 1px var(--line);}
   .review-callout .rc-mini i{display:block; height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,var(--amber),var(--brand)); transition:width .5s var(--ease-out);}
   .review-callout .rc-go{font-size:13px; color:var(--brand); font-weight:800; white-space:nowrap;}
-  .review-callout.due{background:linear-gradient(135deg,#fff1e2,#ffe9df); border-color:rgba(232,116,59,.35); box-shadow:0 6px 18px rgba(232,116,59,.18); animation:rcPulse 1.6s ease-in-out infinite;}
+  .review-callout.due{background:linear-gradient(135deg,rgba(232,116,59,.12),rgba(232,116,59,.06)); border-color:rgba(232,116,59,.30); box-shadow:0 4px 14px rgba(232,116,59,.14); animation:rcPulse 1.8s ease-in-out infinite;}
+  body.theme-dark .review-callout.due{background:linear-gradient(135deg,rgba(232,116,59,.16),rgba(232,116,59,.08)); border-color:rgba(232,116,59,.32); box-shadow:0 4px 14px rgba(232,116,59,.18);}
   @keyframes rcPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.015);}}
   /* v90 学习闭环 · SRS 掌握进度（错题消灭 stage 推进条） */
   .srs-row{display:flex; gap:6px; justify-content:center; margin:2px 0 2px;}
@@ -1295,7 +1296,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">104</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">105</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1317,6 +1318,7 @@ update → controllerchange
       <div class="it"><b>v102 · 教材切换成功提示</b><span>在设置里切换 五年级 / 六年级 或 上册 / 下册后，顶部弹出「已切换到六年级教材」「已切换下册」提示，切换结果一目了然。全 SVG 绘本风。</span></div>
       <div class="it"><b>v103 · 连连看：每对配对即时 +1⭐</b><span>单词游戏「连连看」此前只有整局配完才一次性给 3⭐——现改为每配成一对即时 +1⭐（配错翻回不扣星），整局通关的 +3⭐ 与彩带保留。全 SVG 绘本风。</span></div>
 <div class="it"><b>v104 · 视觉：建议多练提示条不再刺眼</b><span>主页「建议多练」条此前用高亮米黄渐变（#fff4d6 / #ffe9c2），在暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色）+ 暗色主题专属适配（暖色文字 + 暗棕透明底），柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
+<div class="it"><b>v105 · 视觉：今日复习条不再刺眼</b><span>主页「今日复习」条在有待复习词时用高亮浅橙渐变（#fff1e2 / #ffe9df）+ 脉冲动画，暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色 + 暗色主题专属适配）+ 脉冲动画放慢，柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2896,7 +2898,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 104;
+const APP_VERSION = 105;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
