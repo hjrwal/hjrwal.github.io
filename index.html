@@ -1287,7 +1287,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">96</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">97</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1301,6 +1301,7 @@ update → controllerchange
     <div class="tl">
       <div class="it"><b>v95 · 说：「我来说」触发跟读自评（取消语音识别依赖）</b><span>「说」练习的「我来说」按钮改为直接唤起波形跟读 + 三档自评面板，移除对浏览器语音识别（SpeechRecognition）的依赖，iPhone / 无识别环境也能用；「说」磁贴改为始终显示（文案「跟读自评」）。零 emoji 占位，沿用 SVG 绘本风。</span></div>
       <div class="it"><b>v96 · 说：三维评分 + 可选云端识别 + 下一句</b><span>「说」升级为流利度 / 准确度 / 完整度三维各 1–5 星评分；有网且浏览器支持时自动调用免费 Web Speech 云端识别转录并比对句子（准确度自动评分），不支持则降级为手动自评；流利度 / 完整度由麦克风波形估算。修复无法跳转到下一句的 bug，新增「下一句 →」按钮可随时换句。全 SVG 绘本风。</span></div>
+      <div class="it"><b>v97 · 说：评分防刷（识别接入流利度/完整度）</b><span>修复「咳嗽也能拿满分」漏洞：流利度 / 完整度不再只看音量大小和时长，改为结合免费 Web Speech 云端识别覆盖率（识别出多少词给多少分）；无识别环境退回波形估算并加「爆音防刷」（一两个孤立响段不算读句子，封顶 2 星）；识别没听清时提示重读。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2868,7 +2869,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 96;
+const APP_VERSION = 97;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4133,7 +4134,7 @@ function setDim(key,v){
   [...wrap.children].forEach((c,i)=>{ c.classList.toggle('on', i<v); });
   const dv=document.getElementById('dv_'+key); if(dv) dv.textContent=v+'★';
 }
-let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0,_waveStart=0;
+let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0,_waveStart=0,_waveBursts=0,_wavePrevActive=false;
 let _rec=null,_recTranscript='',_recFailed=false;
 let _eval3d={flu:0,acc:0,com:0};
 function startWaveEval(){
@@ -4146,13 +4147,16 @@ function startWaveEval(){
     const AC=window.AudioContext||window.webkitAudioContext; _waveAC=new AC();
     const src=_waveAC.createMediaStreamSource(stream); const an=_waveAC.createAnalyser(); an.fftSize=256;
     src.connect(an); const buf=new Uint8Array(an.frequencyBinCount);
-    _waveActive=0; _waveSamples=0; _waveStart=Date.now();
+    _waveActive=0; _waveSamples=0; _waveStart=Date.now(); _waveBursts=0; _wavePrevActive=false;
     startCloudRec();
     const ctx=c.getContext('2d');
     const loop=()=>{
       an.getByteTimeDomainData(buf);
       let v=0; for(let i=0;i<buf.length;i++){ const d=(buf[i]-128)/128; v+=d*d; } v=Math.sqrt(v/buf.length);
-      _waveSamples++; if(v>0.045) _waveActive++;
+      const active=v>0.045;
+      _waveSamples++; if(active) _waveActive++;
+      if(active && !_wavePrevActive) _waveBursts++;
+      _wavePrevActive=active;
       ctx.clearRect(0,0,c.width,c.height);
       ctx.strokeStyle='#7c5cff'; ctx.lineWidth=2; ctx.beginPath();
       for(let i=0;i<buf.length;i++){ const y=(buf[i]/255)*c.height; const x=i/buf.length*c.width; i?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke();
@@ -4177,15 +4181,21 @@ function startCloudRec(){
     _rec=r; _rec.start();
   }catch(e){ _recFailed=true; }
 }
-function applyAccFromRec(){
-  if(!curSpeakQ) return;
+function recCoverage(){
+  if(!_recTranscript || !curSpeakQ) return 0;
   const target=norm(curSpeakQ.en).split(/\s+/).filter(Boolean);
   const got=_recTranscript.split(/\s+/).filter(Boolean);
-  if(!got.length) return;
+  if(!target.length || !got.length) return 0;
   const tset=new Set(target);
   const stem=w=>w.replace(/(ing|ed|s|es)$/,'');
   let hit=0; got.forEach(w=>{ if(tset.has(w)) hit++; else { const r=stem(w); if([...tset].some(t=>stem(t)===r)) hit++; } });
-  const acc=Math.max(1,Math.min(5,Math.round(hit/target.length*5)));
+  return Math.min(1, hit/target.length);
+}
+function applyAccFromRec(){
+  if(!curSpeakQ || !_recTranscript) return;
+  const got=_recTranscript.split(/\s+/).filter(Boolean);
+  if(!got.length) return;
+  const acc=Math.max(1,Math.min(5,Math.round(recCoverage()*5)));
   setDim('acc', acc);
   const hint=document.getElementById('evalHint');
   if(hint) hint.textContent='云端识别听到：'+(got.join(' '))+'（准确度已自动评分，可手动微调）';
@@ -4196,14 +4206,34 @@ function stopWaveEval(){
   try{ if(_waveAC) _waveAC.close(); }catch(e){}
   const ratio=_waveSamples?_waveActive/_waveSamples:0;
   const dur=(Date.now()-_waveStart)/1000;
-  const flu=ratio>0.30?5:ratio>0.20?4:ratio>0.12?3:ratio>0.05?2:1;
-  setDim('flu', flu);
   const wantLen=curSpeakQ?curSpeakQ.en.split(/\s+/).length:0;
   const wantDur=Math.max(1.2, wantLen*0.45);
-  const com= dur>=wantDur*0.7 ? (ratio>0.18?5:4) : (dur>=wantDur*0.4?3:2);
+  const SR_AVAIL=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  // 识别覆盖率：0–1；识别不可用则 -1（退回波形启发式）
+  const cov=_recTranscript ? recCoverage() : (SR_AVAIL ? 0 : -1);
+  const bursty=_waveBursts<2; // 只有一两个响段（咳嗽/清嗓）→ 不算读句子
+  // 流利度：有识别以识别出的词为准；无识别看波形活跃 + 防爆音
+  let flu;
+  if(cov>=0){ flu=cov>=0.6?5:cov>=0.4?4:cov>=0.2?3:cov>=0.08?2:1; }
+  else {
+    flu=ratio>0.30?5:ratio>0.20?4:ratio>0.12?3:ratio>0.05?2:1;
+    if(bursty) flu=Math.min(flu,2);
+  }
+  setDim('flu', flu);
+  // 完整度：识别覆盖率为主；无识别则时长×活跃 + 防爆音
+  let com;
+  if(cov>=0){ com=cov>=0.8?5:cov>=0.55?4:cov>=0.3?3:cov>=0.1?2:1; }
+  else {
+    com= dur>=wantDur*0.7 ? (ratio>0.18?5:4) : (dur>=wantDur*0.4?3:2);
+    if(bursty) com=Math.min(com,2);
+  }
   setDim('com', Math.max(1,com));
+  // 识别可用但一个词都没听到 → 没读/咳嗽 → 准确度也给低分
+  if(cov===0 && SR_AVAIL) setDim('acc',1);
   const hint=document.getElementById('evalHint');
-  if(hint && !_recTranscript) hint.textContent='小狐狸听到你读啦，看看三维评分，点「完成评分」吧！';
+  if(hint) hint.textContent = (cov===0 && SR_AVAIL)
+    ? '小狐狸没听清你读的句子哦，大声清楚地读一遍试试～'
+    : '小狐狸听到你读啦，看看三维评分，点「完成评分」吧！';
   const btn=document.getElementById('waveBtn');
   if(btn){ btn.textContent='🎙️ 再读一次'; btn.className='btn sky'; btn.onclick=startWaveEval; }
   try{ if(_rec && _rec.state!=='inactive' && _rec.stop) _rec.stop(); }catch(e){}
