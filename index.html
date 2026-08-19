@@ -1308,7 +1308,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">112</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">114</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1338,6 +1338,8 @@ update → controllerchange
 <div class="it"><b>v110 · 闯关前期互动升级（开场剧场 + 前期事件保底）</b><span>每关开场必触发「开场剧场」：狐狸介绍本关词数 / 句型数并预告守关 BOSS，点「🚀 出发！」正式开战；奇遇事件从随机 1-2 个改为「第 1-4 题位置必有一个 + 后段 50% 再插一个」——前期互动更密，不再前几题纯做题。全 SVG 绘本风。</span></div>
 <div class="it"><b>v111 · 设置新增「点击单词发音」开关</b><span>之前点连词成句等题目的单词「像有语音」实为手机系统朗读——现在 App 自带可控功能：设置里可开「点击单词发音」（默认关），开启后题目里点任意单词 / 词块即朗读该词发音（250ms 防连点叠音），关闭则完全不受打扰。全 SVG 绘本风。</span></div>
 <div class="it"><b>v112 · 点击单词自动发音（默认开启，去掉开关）</b><span>v111 加的开关用户希望默认开启——取消「点击单词发音」开关，改为默认自动开启：题目里点任意单词 / 词块即朗读该词（250ms 防连点叠音，自动去尾标点）。全 SVG 绘本风。</span></div>
+<div class="it"><b>v113 · 修复拼词题「点过的字母占布局」（同类漏洞全清）</b><span>趣味闯关拼词题（如「说英语」speak English）孩子以为无解——根因：点过的字母按钮 v108 用 visibility:hidden（仍占布局看不到空隙）+ clearGhosts 在点首字母时清空下划线提示，看不到「还差几个」。修复：所有 token 点过后 display:none 彻底移除（不留空隙）+ 保留 ghost 下划线占位（永远显示 N 个空槽 = 答案长度）。同类漏洞排查：renderPuzzle / renderSentence / renderBoss / buildSentence / 单元测试连词成句 共 5 处全部修齐。全 SVG 绘本风。</span></div>
+<div class="it"><b>v114 · 拼词题字母池只留字母（标点按钮不再残留）</b><span>全量审计 22 单元发现 89 个含撇号 / 连字符 / 省略号的词条（hard-working、aren't、have ... class 等）——拼词题字母池会多出标点按钮，拼完字母后残留「-」「'」让人以为还没拼完。修复：字母池只放字母（自动过滤标点与空格），下划线占位同步，判定兼容（norm 双侧删标点）。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2917,7 +2919,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 112;
+const APP_VERSION = 114;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3971,8 +3973,9 @@ function buildSentence(){
     t.onclick=()=>{
       if(t.classList.contains('used')) return;
       t.classList.add('used'); t.classList.remove('in');
+      t.style.display='none'; // v113：彻底从布局移除（避免「字母数变少」错觉）
       const span=document.createElement('span'); span.className='token in'; span.textContent=w;
-      span.onclick=()=>{ span.remove(); t.classList.remove('used'); };
+      span.onclick=()=>{ span.remove(); t.classList.remove('used'); t.style.display=''; };
       basket.appendChild(span);
     };
     poolEl.appendChild(t);
@@ -4552,9 +4555,9 @@ function renderTestQ(){
       <button class="btn grass lg" style="width:100%" onclick="gradeTestSentence()">✔ 检查</button>`;
     area.innerHTML=html;
     pool.forEach(w=>{ const t=document.createElement('div'); t.className='lt'; t.textContent=w;
-      t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
+      t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used'); t.style.display='none'; // v113：彻底从布局移除
         const s=document.createElement('span'); s.className='lt in'; s.textContent=w;
-        s.onclick=()=>{ s.remove(); t.classList.remove('used'); };
+        s.onclick=()=>{ s.remove(); t.classList.remove('used'); t.style.display=''; };
         document.getElementById('tSlot').appendChild(s); };
       document.getElementById('tPool').appendChild(t); });
   }
@@ -5142,10 +5145,14 @@ function renderSentence(q, done){
     <button class="btn grass lg" style="margin-top:10px" onclick="__lvlSentCheck('${q.en.replace(/'/g,"\\'")}')">✔ 检查</button></div>`;
   pool.forEach(w=>{
     const t=document.createElement('div'); t.className='token'; t.textContent=w;
-    t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
-      clearGhosts(document.getElementById('lb'));
+    t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used'); t.style.display='none'; // v113：彻底从布局移除
       const s=document.createElement('span'); s.className='token in'; s.textContent=w;
-      s.onclick=()=>{s.remove();t.classList.remove('used');}; document.getElementById('lb').appendChild(s); };
+      s.onclick=()=>{s.remove();t.classList.remove('used');t.style.display='';};
+      // v113：替换第一个 ghost 占位为 token
+      const lb=document.getElementById('lb');
+      const firstGhost=lb.querySelector('.lt-ghost');
+      if(firstGhost){ lb.replaceChild(s, firstGhost); } else { lb.appendChild(s); }
+    };
     document.getElementById('lp').appendChild(t);
   });
   const resolve=makeResolver('sentence', q.en, q.zh, done);
@@ -5195,20 +5202,24 @@ function clearGhosts(el){
 function renderPuzzle(q, done){
   const area=document.getElementById('lvlArea');
   const answer=q.answer;
-  const letters=shuffle(answer.en.replace(/\s/g,'').split(''));
+  const letters=shuffle(answer.en.replace(/[^a-zA-Z]/g,'').split('')); // v114：只留字母（去空格+标点），避免 hard-working/aren't 等标点按钮残留
   area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 拼词：“${answer.zh}” ${answer.emoji||''}</div>
     <button class="btn sky" style="margin-bottom:8px" onclick="__puzzlePlay()">🔊 听一听</button>
-    <div class="basket" id="pb">${ghostSlots(answer.en.replace(/\s/g,'').length)}</div><div class="pool" id="pp"></div>
+    <div class="basket" id="pb">${ghostSlots(answer.en.replace(/[^a-zA-Z]/g,'').length)}</div><div class="pool" id="pp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__puzzleCheck()">✔ 检查</button></div>`;
   const resolve=makeResolver('puzzle', answer.en, answer.zh, done);
   const basket=document.getElementById('pb');
   letters.forEach(ch=>{
     const t=document.createElement('div'); t.className='token'; t.textContent=ch;
     t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
-      clearGhosts(basket);
-      t.style.visibility='hidden'; // v108：点过的字母从池中隐去，避免残留视觉
+      // v113：不调用 clearGhosts，保留 N 个 ghost 占位让孩子看到「还需几个字母」
+      t.style.display='none'; // 点过的字母从池中彻底移除（不再占布局避免「字母数变少」错觉）
       const s=document.createElement('span'); s.className='token in'; s.textContent=ch;
-      s.onclick=()=>{s.remove();t.classList.remove('used');}; basket.appendChild(s); };
+      s.onclick=()=>{s.remove();t.classList.remove('used');t.style.display='';};
+      // v113：替换第一个 ghost 占位为 token（不 append 末尾，避免答满时还有 ghost 显示）
+      const firstGhost=basket.querySelector('.lt-ghost');
+      if(firstGhost){ basket.replaceChild(s, firstGhost); } else { basket.appendChild(s); }
+    };
     document.getElementById('pp').appendChild(t);
   });
   window.__puzzlePlay=()=>speak(answer.en);
@@ -5412,10 +5423,14 @@ function renderBoss(u, done){
       <div class="basket" id="bb">${ghostSlots(parts.length)}</div><div class="pool" id="bp"></div>
       <button class="btn grass lg" style="margin-top:10px" onclick="__bossCheck('${s.en.replace(/'/g,"\\'")}')">💥 攻击！</button></div>`;
     pool.forEach(w=>{ const t=document.createElement('div'); t.className='token'; t.textContent=w;
-      t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used');
-        clearGhosts(document.getElementById('bb'));
+      t.onclick=()=>{ if(t.classList.contains('used'))return; t.classList.add('used'); t.style.display='none'; // v113：彻底从布局移除
         const sp=document.createElement('span'); sp.className='token in'; sp.textContent=w;
-        sp.onclick=()=>{sp.remove();t.classList.remove('used');}; document.getElementById('bb').appendChild(sp); };
+        sp.onclick=()=>{sp.remove();t.classList.remove('used');t.style.display='';};
+        // v113：替换第一个 ghost 占位为 token
+        const bb=document.getElementById('bb');
+        const firstGhost=bb.querySelector('.lt-ghost');
+        if(firstGhost){ bb.replaceChild(sp, firstGhost); } else { bb.appendChild(sp); }
+      };
       document.getElementById('bp').appendChild(t); });
     window.__bossDbl=()=>{
       if(levelItems.x2<=0){ toast('还没有双倍卡，闯关时去「补给站」领一张吧'); return; }
