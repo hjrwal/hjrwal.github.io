@@ -11,15 +11,15 @@
 -->
 <script>
   const META = {
-    version: 95,        // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v96',// 与 sw.js 的 CACHE 保持一致
+    version: 96,        // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v97',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    95,        // 迭代版本数
-    updated: '2026-08-18'
+    iter:    96,        // 迭代版本数
+    updated: '2026-08-19'
   };
 </script>
 <style>
@@ -334,6 +334,7 @@ update  → <span class="k">controllerchange</span>
       </div>
       <div class="tl">
       <div class="it"><b>v95 · 说：「我来说」触发跟读自评（取消语音识别依赖）</b><span>「说」练习的「我来说」按钮改为直接唤起波形跟读 + 三档自评面板，移除对浏览器语音识别（SpeechRecognition）的依赖，iPhone / 无识别环境也能用；「说」磁贴改为始终显示（文案「跟读自评」）。零 emoji 占位，沿用 SVG 绘本风。</span></div>
+      <div class="it"><b>v96 · 说：三维评分 + 可选云端识别 + 下一句</b><span>「说」升级为流利度 / 准确度 / 完整度三维各 1–5 星评分；有网且浏览器支持时自动调用免费 Web Speech 云端识别转录并比对句子（准确度自动评分），不支持则降级为手动自评；流利度 / 完整度由麦克风波形估算。修复无法跳转到下一句的 bug，新增「下一句 →」按钮可随时换句。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
         <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
