@@ -1308,7 +1308,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">108</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">109</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1334,6 +1334,7 @@ update → controllerchange
 <div class="it"><b>v106 · 趣味闯关大升级（事件插曲 + BOSS 怒气战 + 隐藏星）</b><span>闯关不再纯做题：随机穿插奇遇事件（📮补给站领 ⭐双倍卡 / 🎁宝箱开星 / 🐣帮迷路小鸡回家）；BOSS 战升级为回合制——答错涨怒气、怒满放大招震屏并回 1 血，连对 2 题亮「⚡狐狸必杀」一击削 2 血，双倍卡让攻击翻倍；零失误完美通关解锁第 4 颗「隐藏星」，地图显示金色徽章。全 SVG 绘本风。</span></div>
 <div class="it"><b>v107 · 拼词/连词成句空槽提示</b><span>闯关拼词、连词成句、BOSS 战的摆入区在未操作时按答案长度渲染「下划线占位」——一眼看出要拼几个字母 / 几个词，点第一个字母后占位自动消失，不再是一排让人困惑的空白。全 SVG 绘本风。</span></div>
 <div class="it"><b>v108 · 修复拼词题空格答案无解</b><span>「功夫；武术」等答案含空格的词条在闯关拼词题里永远拼不对——字母池去空格拆字母、判定却保留空格比较，导致无解。修复为去空格比对，点过的字母按钮也即时隐去，池子不再残留。全 SVG 绘本风。</span></div>
+<div class="it"><b>v109 · BOSS 挑衅对话（战斗互动）</b><span>BOSS 战穿插「英文挑衅 + 3 选 1 回应」对话轮：BOSS 用英文叫阵（附中文翻译），选出正确英文回应即「反击成功」——下一击伤害翻倍；选错 BOSS 更生气、怒气 +1（怒气满仍放大招回血）。每场最多 2 次、首轮必触发，边打边练句型。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
@@ -2913,7 +2914,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 108;
+const APP_VERSION = 109;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4961,6 +4962,8 @@ let levelWrong={sel:0,spell:0,sent:0}; // 闯关本关错次（按题型）：�
 let levelQi=0, levelTotal=0, levelTotalNormal=0; // 关卡题目进度（供题面“第 X/Y”显示）
 let levelItems={x2:0}; // v106 闯关道具：⭐双倍卡（补给站事件获得，BOSS 战启用）
 let bossRage=0, bossSkill=0, bossHits=0, bossTotal=0; // v106 BOSS 怒气/必杀/命中统计（模块级便于测试）
+let bossMomentum=false, bossChatterLeft=0; // v109 BOSS 对话互动：反击气势（下次攻击翻倍）/ 剩余挑衅次数
+let bossChatterCur=null; // v109：当前挑衅对话题（模块级便于测试/一致）
 // 迷你玩法类型 → 弱项维度：句子/BOSS 归 'sent'，拼词/归类归 'spell'，其余（选择/听音/连连看/捉迷藏）归 'sel'
 function weakKeyOf(type){ return (type==='sentence'||type==='boss')?'sent':(type==='puzzle'||type==='sort')?'spell':'sel'; }
 // 首次错：入错题本 + 累加弱项（不走 recordWord，避免 recordWord(true) 把该项移出）
@@ -5322,12 +5325,24 @@ function getBoss(u){
     tr:'哎哟，被你打中！', tw:'嘿嘿，这句没说对～',
     win:'呜，被你打败啦，我溜了！', lose:'嘻嘻，下次再来挑战我！'};
 }
+// v109：BOSS 挑衅对话池（英文挑衅 + 3 选 1 正确回应，穿插在连词成句间）
+const BOSS_CHATTER=[
+  {q:'Can you do this?', zh:'你能做到吗？', ok:'Yes, I can.', wrongs:['No, I cannot.', 'Yes, he can.']},
+  {q:'You are so slow!', zh:'你太慢啦！', ok:'No, I am fast.', wrongs:['Yes, I am slow.', 'No, she is fast.']},
+  {q:'Do you like English?', zh:'你喜欢英语吗？', ok:'Yes, I do.', wrongs:['No, he does.', 'Yes, she likes.']},
+  {q:'What can you do?', zh:'你会做什么？', ok:'I can run fast.', wrongs:['He can run fast.', 'I cannot run.']},
+  {q:'Is this your pencil?', zh:'这是你的铅笔吗？', ok:'Yes, it is mine.', wrongs:['No, it is yours.', 'Yes, it is yours.']},
+  {q:'Where is my book?', zh:'我的书在哪里？', ok:'It is on the desk.', wrongs:['It is under the desk.', 'He is in the room.']},
+  {q:'Who is your friend?', zh:'谁是你的朋友？', ok:'Amy is my friend.', wrongs:['Amy is my teacher.', 'I am her friend.']},
+  {q:'Can you help me?', zh:'你能帮我吗？', ok:'Yes, I can help you.', wrongs:['Yes, he can help.', 'No, I can help you.']}
+];
 function renderBoss(u, done){
   const area=document.getElementById('lvlArea');
   const sents=shuffle(u.sentences.slice()).slice(0,3);
   if(sents.length===0){ done(); return; }
   const boss=getBoss(u);
   bossRage=0; bossSkill=0; bossHits=0; bossTotal=sents.length;
+  bossMomentum=false; bossChatterLeft=2; // v109：BOSS 对话互动（反击气势 / 剩余挑衅次数）
   let hp=sents.length, idx=0;
   let dblOn=false; // ⭐双倍卡是否启用（v106）
   function intro(){
@@ -5358,6 +5373,7 @@ function renderBoss(u, done){
       window.__bossDone=done;
       return;
     }
+    if(bossChatterLeft>0 && (idx===0 || Math.random()<0.4)){ renderChatter(); return; } // v109：BOSS 挑衅对话（首轮必触发，后续随机）
     const s=sents[idx];
     const parts=s.en.split(/\s+/);
     // 给 BOSS 题目加 2-3 个干扰词（从本单元其他单词池里挑），避免答案摆那让人照搬
@@ -5403,9 +5419,10 @@ function renderBoss(u, done){
       const ok=norm(got)===norm(ans);
       const b=document.getElementById('bbub');
       if(ok){
-        bossHits++; hp-= (dblOn?2:1); idx++; bossSkill++;
+        const dmg=(dblOn?2:1)+(bossMomentum?1:0); // v109：反击气势让本击伤害 +1
+        bossHits++; hp-=dmg; bossMomentum=false; idx++; bossSkill++;
         if(b){ b.textContent=boss.tr; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('pop'); }
-        toast(dblOn?'💥 双倍命中！'+boss.name+' -2 血':'💥 命中！'+boss.name+'掉血');
+        toast(dmg>1?'💥 命中！'+boss.name+' -'+dmg+' 血':'💥 命中！'+boss.name+'掉血');
         setTimeout(render, 750);
       } else {
         const bb=document.getElementById('bb');
@@ -5424,6 +5441,39 @@ function renderBoss(u, done){
         setTimeout(render, 700); // 重渲染刷新怒气条/血量/必杀状态
       }
     };
+    function renderChatter(){ // v109：BOSS 挑衅对话轮（英文挑衅 + 3 选 1 回应）
+      const c=BOSS_CHATTER[Math.floor(Math.random()*BOSS_CHATTER.length)];
+      bossChatterCur=c;
+      const opts=shuffle([c.ok, ...c.wrongs]);
+      area.innerHTML=`<div class="panel boss-fight" style="--bc:${boss.color}"><div class="boss-top"><div class="boss-av"><span class="boss-emoji">${boss.emoji}</span><div class="boss-nm">${boss.name}</div></div>
+        <div class="hp"><div class="hp-label">${boss.name} 生命 ${Math.max(0,hp)}/${sents.length}</div><div class="hp-bar"><i style="width:${Math.round(Math.max(0,hp)/sents.length*100)}%"></i></div></div></div>
+        <div class="boss-rage"><div class="rg-label">怒气 ${bossRage}/3</div><div class="rg-bar">${[0,1,2].map(i=>`<i class="${i<bossRage?'on':''}"></i>`).join('')}</div></div>
+        <div class="boss-bubble" id="cbub">“${c.q}”<br><span class="muted" style="font-size:12px">${c.zh}</span></div>
+        <div class="qprompt">🗣️ ${boss.name} 在挑衅你！选出正确的英文回应：</div>
+        <div class="row" style="justify-content:center;flex-wrap:wrap;gap:8px">${opts.map(o=>`<button class="btn sky" onclick="__chatPick('${o.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>
+      </div>`;
+      window.__chatPick=(pick)=>{
+        const b=document.getElementById('cbub');
+        const ok=norm(pick)===norm(c.ok);
+        if(ok){
+          bossMomentum=true;
+          if(b){ b.textContent='🔥 反击成功！下一击伤害翻倍！'; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('pop'); }
+          toast('🗣️ 回击漂亮！气势 +1');
+        } else {
+          bossRage++;
+          if(b){ b.textContent='哈！就这？怒气 +1！'; b.classList.remove('pop'); void b.offsetWidth; b.classList.add('shake'); }
+          toast('😤 '+boss.name+' 更生气了，怒气 +1');
+          if(bossRage>=3){
+            bossRage=0; hp=Math.min(hp+1, sents.length);
+            area.classList.add('boss-quake'); setTimeout(()=>area.classList.remove('boss-quake'), 600);
+            if(b) b.textContent='🔥 看我的大招！回血啦！';
+            toast('🔥 怒气爆发！回 1 血');
+          }
+        }
+        bossChatterLeft--;
+        setTimeout(render, 900);
+      };
+    }
   }
   intro();
 }
