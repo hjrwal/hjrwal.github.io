@@ -1079,6 +1079,8 @@
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.4" width="14" height="10.2" rx="2.4"/><path d="M8 10.4V8a4 4 0 0 1 8 0v2.4"/><circle cx="12" cy="15" r="1.5"/></symbol>
     <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="10.4" width="14" height="10.2" rx="2.4"/><path d="M8 10.4V8a4 4 0 0 1 7.7-1.6"/><circle cx="12" cy="15" r="1.5"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2c.6 4.6 3.8 7.8 8.4 8.4C15.8 11 12.6 14.2 12 18.8 11.4 14.2 8.2 11 3.6 10.4 8.2 9.8 11.4 6.6 12 2Z"/></symbol>
+    <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M14 5l-7 7 7 7"/></symbol>
+    <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M10 5l7 7-7 7"/></symbol>
     <symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="9" rx="4.5"/><path d="M7 11.5h2M8 10.5v2"/><circle cx="16" cy="11" r=".9"/><circle cx="18.2" cy="13.2" r=".9"/></symbol>
     <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V9.5"/><path d="M9.5 3h5"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4.5h8V8a4 4 0 0 1-8 0z"/><path d="M8 5.5H5V8a3 3 0 0 0 3 3"/><path d="M16 5.5h3V8a3 3 0 0 1-3 3"/><path d="M12 12v4"/><path d="M9.5 20h5"/><path d="M10 16h4v4h-4z"/></symbol>
@@ -1277,7 +1279,7 @@ update → controllerchange
       <div class="mcard"><div class="n">13.6<small>MB</small></div><div class="l">音频总量</div></div>
       <div class="mcard"><div class="n">0</div><div class="l">第三方依赖</div></div>
       <div class="mcard"><div class="n">100<small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n">93</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n">95</div><div class="l">迭代版本</div></div>
     </div>
 
     <div class="tsec"><span class="bar"></span>版本演进</div>
@@ -1289,6 +1291,8 @@ update → controllerchange
       </div>
     </div>
     <div class="tl">
+      <div class="it"><b>v95 · 说：「我来说」触发跟读自评（取消语音识别依赖）</b><span>「说」练习的「我来说」按钮改为直接唤起波形跟读 + 三档自评面板，移除对浏览器语音识别（SpeechRecognition）的依赖，iPhone / 无识别环境也能用；「说」磁贴改为始终显示（文案「跟读自评」）。零 emoji 占位，沿用 SVG 绘本风。</span></div>
+      <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
       <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
@@ -1441,6 +1445,10 @@ update → controllerchange
       </div>
       <div class="test-prog" id="vocabProg" style="margin:2px 0 8px;"><i id="vocabProgFill" style="width:0%"></i></div>
       <p class="muted" id="vocabProgTxt" style="margin:-2px 0 10px;font-size:12px;"></p>
+      <div class="row spread" style="margin:2px 0 10px;">
+        <button class="btn ghost sm" id="cardPrevBtn" onclick="cardPrev()" style="display:inline-flex;align-items:center;gap:6px;"><svg class="ic svg-ic" viewBox="0 0 24 24" width="18" height="18"><use href="#i-arrow-l"/></svg> 上一张</button>
+        <button class="btn ghost sm" id="cardNextBtn" onclick="cardNext()" style="display:inline-flex;align-items:center;gap:6px;">下一张 <svg class="ic svg-ic" viewBox="0 0 24 24" width="18" height="18"><use href="#i-arrow-r"/></svg></button>
+      </div>
       <div class="flash">
         <div class="word" id="cardWord">—</div>
         <div class="meta">
@@ -2851,7 +2859,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 93;
+const APP_VERSION = 95;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3222,8 +3230,6 @@ function flyStar(n){
 let voices=[];
 function loadVoices(){ try{ voices=speechSynthesis.getVoices(); }catch(e){} }
 if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
-// 语音识别是否可用：需浏览器支持 SpeechRecognition 且为安全上下文(https/localhost)
-const SR_OK = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) && window.isSecureContext;
 // iOS Safari 首次朗读常被吞：在首次用户手势里预热一次
 let speechPrimed=false;
 function primeSpeech(){
@@ -3407,16 +3413,6 @@ async function highlightSpeak(text){
   }
   speakFxHide();
 }
-function recognize(target, cb){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){ cb(null,'unsupported'); return; }
-  try{
-    const r=new SR(); r.lang='en-US'; r.interimResults=false; r.maxAlternatives=1;
-    r.onresult=e=>{ cb(e.results[0][0].transcript, null); };
-    r.onerror=e=>{ cb(null, e.error||'error'); };
-    r.start();
-  }catch(e){ cb(null,'error'); }
-}
 function norm(s){ return (s||'').toLowerCase().replace(/[^a-z\s]/g,'').replace(/\s+/g,' ').trim(); }
 
 /* =========================================================
@@ -3577,6 +3573,8 @@ function showCard(){
   const _total=u.words.length;
   const _vp=document.getElementById('vocabProgFill'); if(_vp) _vp.style.width=Math.round(cardIdx/_total*100)+'%';
   const _vt=document.getElementById('vocabProgTxt'); if(_vt) _vt.textContent='第 '+(cardIdx+1)+' / '+_total+' 词';
+  const _pb=document.getElementById('cardPrevBtn'); if(_pb) _pb.disabled=(cardIdx<=0);
+  const _nb=document.getElementById('cardNextBtn'); if(_nb) _nb.disabled=(cardIdx>=_total-1);
 }
 function listenWord(){
   speak(curWord.en);
@@ -3587,6 +3585,30 @@ function flipCard(){
   document.getElementById('cardPos').classList.toggle('hidden', flipped);
   document.getElementById('cardExWrap').classList.toggle('hidden', flipped);
 }
+/* 前后翻动：仅切换卡片，不记录「会了/不熟」，到首/末张自动禁用对应按钮 */
+function cardPrev(){
+  const u=curUnit();
+  if(cardIdx<=0) return;
+  cardIdx--; showCard();
+}
+function cardNext(){
+  const u=curUnit();
+  if(cardIdx>=u.words.length-1) return;
+  cardIdx++; showCard();
+}
+/* 键盘翻动：词汇屏且闪卡可见、无测验/弹窗/输入框时，← 上一张 / → 下一张 */
+document.addEventListener('keydown', (e)=>{
+  if(curScreen!=='vocab') return;
+  const flash=document.getElementById('flashcardPanel');
+  if(!flash || flash.style.display==='none') return;
+  const quizBox=document.getElementById('vocabQuiz');
+  if(quizBox && !quizBox.classList.contains('hidden')) return;
+  if(document.querySelector('.modal-mask.show')) return;
+  const ae=document.activeElement;
+  if(ae && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')) return;
+  if(e.key==='ArrowLeft'){ e.preventDefault(); cardPrev(); }
+  else if(e.key==='ArrowRight'){ e.preventDefault(); cardNext(); }
+});
 function cardResult(ok){
   recordWord(curUnitId, curWord.en, ok);
   const u=curUnit();
@@ -3876,12 +3898,9 @@ function initSkills(){
 }
 function renderSkillHome(){
   const stage=document.getElementById('skillStage');
-  const speakTile = SR_OK
-    ? '<div class="tile c-grass" onclick="startSkill(\'speak\')"><span class="ic">🗣️</span><h3>说</h3><p>跟读录音</p></div>'
-    : '';
   stage.innerHTML = `<div class="grid" style="gap:10px;">
     <div class="tile c-sky" onclick="startSkill('listen')"><span class="ic">👂</span><h3>听</h3><p>听音选义</p></div>
-    ${speakTile}
+    <div class="tile c-grass" onclick="startSkill('speak')"><span class="ic">🗣️</span><h3>说</h3><p>跟读自评</p></div>
     <div class="tile c-coral" onclick="startSkill('read')"><span class="ic">📖</span><h3>读</h3><p>跟读高亮</p></div>
     <div class="tile c-sun" onclick="startSkill('write')"><span class="ic">✍️</span><h3>写</h3><p>听写拼写</p></div>
   </div>`;
@@ -3902,16 +3921,14 @@ function startSkill(mode){
   } else if(mode==='speak'){
     const q=u.sentences[Math.floor(Math.random()*u.sentences.length)];
     const en=q.en.replace(/'/g,"\\'");
-    const micBtn = SR_OK ? `<button class="btn grass" id="micBtn" onclick="doSpeak('${en}')">🎤 我来说</button>` : '';
     area.innerHTML=back+`<h2 class="sec">🗣️ 跟读练习</h2>
       <div class="word-read">${q.en}</div>
       <div class="big-word" style="color:var(--coral-d);font-size:18px">${q.zh}</div>
       <div class="row" style="margin-top:10px">
         <button class="btn sky" onclick="speak('${en}')">🔊 听示范</button>
-        ${micBtn}
-        <button class="btn sun" onclick="selfEval()">✅ 我读完了</button>
+        <button class="btn grass" id="micBtn" onclick="selfEval()">🎤 我来说</button>
       </div>
-      <p class="muted" id="speakResult" style="margin-top:10px">${SR_OK?'点“我来说”让小狐狸听你读，或点“我读完了”自己评。':'听示范后大声跟读，再点“我读完了”给自己打个分吧！'}</p>`;
+      <p class="muted" id="speakResult" style="margin-top:10px">听示范后大声跟读，再点「我来说」给自己打个分吧！</p>`;
   } else if(mode==='read'){
     const q=u.sentences[Math.floor(Math.random()*u.sentences.length)];
     const html=q.en.split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
@@ -3950,24 +3967,6 @@ function checkWrite(ans){
   toast(ok?'🎉 写对啦！+2⭐':'😅 正确拼写：'+ans);
   if(ok) awardStars(2);
 }
-function doSpeak(target){
-  const btn=document.getElementById('micBtn'); const res=document.getElementById('speakResult');
-  res.textContent='🎤 正在聆听…请说：'+target;
-  btn.disabled=true;
-  recognize(target, (txt, err)=>{
-    btn.disabled=false;
-    if(err==='unsupported'){ res.innerHTML='😢 当前环境不支持语音识别（iPhone 浏览器或 http 环境）。点“听示范”跟读并大声朗读就可以啦！'; return; }
-    if(!txt){ res.textContent='没听清，再试一次吧～'; return; }
-    const score = norm(txt)===norm(target) ? 100 : (norm(txt).split(' ').filter(w=>norm(target).split(' ').includes(w)).length / norm(target).split(' ').length *100);
-    const ok = score>=60;
-    recordWord(curUnitId, target, ok);
-    const safeTxt = String(txt).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    res.innerHTML = `🗣️ 你读的是：「${safeTxt}」<br>匹配度 <b>${Math.round(score)}%</b>`;
-    toast(ok?'👏 读得不错！+2⭐':'💪 再练练，听示范跟读');
-    if(ok) awardStars(2);
-  });
-}
-
 /* =========================================================
    通用：狐狸鼓励 + 彩带
    ========================================================= */
