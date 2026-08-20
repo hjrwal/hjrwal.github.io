@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 114,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v115',// 与 sw.js 的 CACHE 保持一致
+    version: 117,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v118',// 与 sw.js 的 CACHE 保持一致
     words:   545,       // 核心词数
     audio:   1151,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    114,       // 迭代版本数
+    iter:    117,       // 迭代版本数
     updated: '2026-08-19'
   };
 </script>
@@ -353,6 +353,8 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v112 · 点击单词自动发音（默认开启，去掉开关）</b><span>v111 加的开关用户希望默认开启——取消「点击单词发音」开关，改为默认自动开启：题目里点任意单词 / 词块即朗读该词（250ms 防连点叠音，自动去尾标点）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v113 · 修复拼词题「点过的字母占布局」（同类漏洞全清）</b><span>趣味闯关拼词题（如「说英语」speak English）孩子以为无解——根因：点过的字母按钮 v108 用 visibility:hidden（仍占布局看不到空隙）+ clearGhosts 在点首字母时清空下划线提示，看不到「还差几个」。修复：所有 token 点过后 display:none 彻底移除（不留空隙）+ 保留 ghost 下划线占位（永远显示 N 个空槽 = 答案长度）。同类漏洞排查：renderPuzzle / renderSentence / renderBoss / buildSentence / 单元测试连词成句 共 5 处全部修齐。全 SVG 绘本风。</span></div>
 <div class="it"><b>v114 · 拼词题字母池只留字母（标点按钮不再残留）</b><span>全量审计 22 单元发现 89 个含撇号 / 连字符 / 省略号的词条（hard-working、aren't、have ... class 等）——拼词题字母池会多出标点按钮，拼完字母后残留「-」「'」让人以为还没拼完。修复：字母池只放字母（自动过滤标点与空格），下划线占位同步，判定兼容（norm 双侧删标点）。全 SVG 绘本风。</span></div>
+<div class="it"><b>v115 · 全面审计修复（zh选择题/挑战范围/缺图占位/防崩溃/学习记录）</b><span>jsdom 运行时 + 静态全量审计 22 单元：①单元测试「看英文选中文」题原用 norm 比较中文（归一化为空串）致点任意中文都判对，改精确中文匹配；②限时挑战原从全部 22 单元抽词（五年级抽到六年级未学词 + 错题可能越界崩溃），改为只考当前年级 UNITS 且 recordWord 用抽词单元；③约 60 个虚词/短语无 emoji 改纯文字占位（不显示 🔤，契合零 emoji 红线，孩子看文字最直观）；④进度页错题列表 UNITS.find 越界防御 if(u) 防崩溃；⑤BOSS 战与闯关连连看补 recordWord（句型/配对词进掌握与错题本，与单元测试一致）。全 SVG 绘本风。</span></div>
+<div class="it"><b>v116 · 第二轮审计修复（切屏停麦 / 重复词归属）</b><span>换角度再审计（XSS/存档/跨年级遍历/游戏边界/语音评测资源/音频缺失）：①`go()` 全局切屏原不调 `stopEvalEngine`，「说」屏开跟读后直接点底部导航切屏会致麦克风持续监听 + RAF 波形循环 + AudioContext 泄漏（隐私/耗电）；修复：go() 开头加 `stopEvalEngine()`（空闲时全守卫 no-op，安全）。②`recordWord` 原 `realId=EN2UNIT[en]||id`，对 16 组跨单元重复词（如 house 同现 u5/u6）忽略实际所学单元、把掌握/错题记录归到 EN2UNIT 指向单元；修复：改 `realId=id`（各调用方传入 curUnitId / q.unit 均正确）。确认安全项：存档损坏/配额异常不崩、麦克风拒绝降级自评、BOSS 怒气无溢出、写模式用户输入不进 innerHTML。全 SVG 绘本风。</span></div>
       <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
         <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
@@ -439,7 +441,7 @@ update  → <span class="k">controllerchange</span>
 
   <div class="foot">
     五年级英语小探险家 · 单文件离线 PWA · 数据全部存于本机浏览器，无账号、无联网上报<br>
-    版本 <span data-meta="version">v22</span> · 缓存 <span data-meta="cache">eng5-v23</span> · 更新于 <span data-meta="updated">2026-08-15</span><br>
+    版本 <span data-meta="version">v116</span> · 缓存 <span data-meta="cache">eng5-v117</span> · 更新于 <span data-meta="updated">2026-08-20</span><br>
     <a class="backlink" style="margin-top:12px;" href="index.html">← 返回英语助手</a>
   </div>
 
