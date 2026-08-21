@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>词境冒险 / LexiQuest</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #10131a;
+        overflow: hidden;
+        /* 刘海 / 手势条安全区（架构 §7.3；真机表现待 M0-S3 真机验证） */
+        padding: env(safe-area-inset-top) env(safe-area-inset-right)
+          env(safe-area-inset-bottom) env(safe-area-inset-left);
+        box-sizing: border-box;
+      }
+      #game-root {
+        width: 100%;
+        height: 100%;
+      }
+      #game-root canvas {
+        display: block;
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/game/game-Dpkcwuvp.js"></script>
+  </head>
+  <body>
+    <div id="game-root"></div>
+  </body>
+</html>
