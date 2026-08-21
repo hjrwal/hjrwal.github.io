@@ -6732,6 +6732,12 @@ if('serviceWorker' in navigator){
   }catch(_){ }
 }
 </script>
-<a href="./game.html" target="_self" rel="noopener" style="position:fixed;right:16px;bottom:74px;z-index:9999;display:inline-flex;align-items:center;gap:6px;padding:12px 18px;border-radius:999px;background:linear-gradient(135deg,#ff8a3d,#ff5a5f);color:#fff;font:600 15px/1.2 system-ui,-apple-system,sans-serif;text-decoration:none;box-shadow:0 6px 18px rgba(255,90,80,.42);">🎮 词境冒险</a>
+<style>
+  .lexi-entry{position:fixed;right:14px;bottom:76px;z-index:9999;display:inline-flex;align-items:center;gap:7px;padding:13px 19px;border-radius:999px;color:#fff;text-decoration:none;font-family:inherit;font-weight:800;font-size:15px;line-height:1.1;background:linear-gradient(135deg,var(--fox-d),var(--amber));box-shadow:0 4px 14px rgba(232,116,59,.34);-webkit-tap-highlight-color:transparent;transition:transform .16s var(--ease-spring),box-shadow .18s var(--ease-io);}
+  .lexi-entry:active{transform:scale(.95);}
+  @media (hover:hover){.lexi-entry:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(232,116,59,.40);}}
+  body.theme-dark .lexi-entry{box-shadow:0 4px 16px rgba(232,116,59,.46);}
+</style>
+<a href="./game.html" class="lexi-entry" target="_self" rel="noopener">🎮 词境冒险</a>
 </body>
 </html>
