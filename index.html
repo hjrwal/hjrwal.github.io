@@ -346,6 +346,7 @@
     font-size:18px; font-weight:700; cursor:pointer; text-align:center; color:#2a1f17 !important;
     box-shadow:var(--shadow);
   }
+  body.theme-dark .opt{color:#f5e9da !important;}
   .opt:active{transform:scale(.97);}
   .opt.correct{background:var(--grass); border-color:var(--grass-d); color:#fff;}
   .opt.wrong{background:var(--coral); border-color:var(--coral-d); color:#fff;}
@@ -815,7 +816,8 @@
   .build-slot.wrong{border-color:#d33; background:#fff0f0;}
   .choice-emoji{font-size:64px; text-align:center; line-height:1.2; margin:6px 0;}
   .choice-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:12px;}
-  .choice-opt{border:2px solid var(--line); background:var(--card); border-radius:16px; padding:14px 8px; font-weight:800; font-size:18px; cursor:pointer; box-shadow:var(--shadow); color:var(--ink); font-family:inherit; transition:.15s;}
+  .choice-opt{border:2px solid var(--line); background:var(--card); border-radius:16px; padding:14px 8px; font-weight:800; font-size:18px; cursor:pointer; box-shadow:var(--shadow); color:#2a1f17 !important; font-family:inherit; transition:.15s;}
+  body.theme-dark .choice-opt{color:#f5e9da !important;}
   .choice-opt:active{transform:scale(.97);}
   .choice-opt.correct{border-color:var(--grass); background:var(--grass); color:#fff;}
   .choice-opt.wrong{border-color:#d33; background:#fff0f0; color:#d33;}
@@ -1342,7 +1344,10 @@ update → controllerchange
 <div class="it"><b>v114 · 拼词题字母池只留字母（标点按钮不再残留）</b><span>全量审计 22 单元发现 89 个含撇号 / 连字符 / 省略号的词条（hard-working、aren't、have ... class 等）——拼词题字母池会多出标点按钮，拼完字母后残留「-」「'」让人以为还没拼完。修复：字母池只放字母（自动过滤标点与空格），下划线占位同步，判定兼容（norm 双侧删标点）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v115 · 全面审计修复（zh选择题/挑战范围/缺图占位/防崩溃/学习记录）</b><span>jsdom 运行时 + 静态全量审计 22 单元：①单元测试「看英文选中文」题原用 norm 比较中文（归一化为空串）致点任意中文都判对，改精确中文匹配；②限时挑战原从全部 22 单元抽词（五年级抽到六年级未学词 + 错题可能越界崩溃），改为只考当前年级 UNITS 且 recordWord 用抽词单元；③约 60 个虚词/短语无 emoji 改纯文字占位（不显示 🔤，契合零 emoji 红线，孩子看文字最直观）；④进度页错题列表 UNITS.find 越界防御 if(u) 防崩溃；⑤BOSS 战与闯关连连看补 recordWord（句型/配对词进掌握与错题本，与单元测试一致）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v116 · 第二轮审计修复（切屏停麦 / 重复词归属）</b><span>换角度再审计（XSS/存档/跨年级遍历/游戏边界/语音评测资源/音频缺失）：①`go()` 全局切屏原不调 `stopEvalEngine`，「说」屏开跟读后直接点底部导航切屏会致麦克风持续监听 + RAF 波形循环 + AudioContext 泄漏（隐私/耗电）；修复：go() 开头加 `stopEvalEngine()`（空闲时全守卫 no-op，安全）。②`recordWord` 原 `realId=EN2UNIT[en]||id`，对 16 组跨单元重复词（如 house 同现 u5/u6）忽略实际所学单元、把掌握/错题记录归到 EN2UNIT 指向单元；修复：改 `realId=id`（各调用方传入 curUnitId / q.unit 均正确）。确认安全项：存档损坏/配额异常不崩、麦克风拒绝降级自评、BOSS 怒气无溢出、写模式用户输入不进 innerHTML。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
+<div class="it"><b>v117 · 三轮审计+小问题全修（计时器泄漏/常见词emoji/专属BOSS/挑衅池/按钮标题去emoji）</b><span>①go() 切屏清挑战计时器（防后台偷跑+静默加星）；②补 56 个常见词 emoji（看图识词 98→154/562）；③补 10 个 a/b 单元专属 BOSS（迷路向导精/堵车怪/摆烂精/偷信怪/冒牌经理/情绪小怪兽/颠倒尺/时光小偷/迷航旅人/时光错乱怪），getBoss 按 u.id 路由不再走兜底；④错误态去 😵🔁；⑤BOSS 挑衅池 8→16 条并修矛盾文案「No, I can help you」→「No, I cannot help you」+ 去重复 yours；⑥飘字改 visualViewport 防移动端偏移；⑦按钮/标题 132 处去 emoji 图标统一 SVG 红线。全 SVG 绘本风。</span></div>
+      <div class="it"><b>v118 · 听音选义选项文字可见性修复</b><span>技能屏「听音选义」4 个中文意思选项在手机显示文字几乎不可见（极浅色）。静态排查无 CSS 覆写根因，推断渲染/设备层面未知覆写。修复 .opt 为 color:#2a1f17 !important 覆盖任何覆写并保证对比度。全 SVG 绘本风。</span></div>
+      <div class="it"><b>v119 · 穷尽式审计第四轮（dark主题选项兜底/copyLink死链/动态标题emoji遗漏/乱码修复）</b><span>全路径复查：①v118 的 .opt 硬编码深棕在暗色主题下深字深底看不清，补 body.theme-dark .opt/.choice-opt 浅字覆盖（三种主题选项均可读）；②TTS 横幅「复制链接」按钮 copyLink 从未定义（点击报错），补实现（Clipboard API + 降级）；③上轮静态脚本漏掉 JS 动态生成的标题/qprompt/按钮 emoji（🌈🎧🎯🧩🔨🔗🔍📌🔤/GAME_LABELS/modeTxt 共 11 处）补清；④修复词汇练习「看义选词」题 prompt 乱码字符。定时器/存档/音频(1242)/死链/移动端(100dvh+safe-area)复查全部通过。全 SVG 绘本风。</span></div>
+            <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
       <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
       <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标/成就庆祝</span></div>
       <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
@@ -2927,7 +2932,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 118;
+const APP_VERSION = 119;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3606,6 +3611,24 @@ function setTimelineOrder(order){
   sortTimeline(order);
   saveState();
 }
+/* TTS 横幅「复制链接」：把当前页面地址复制到剪贴板（Clipboard API + 降级） */
+function copyLink(){
+  const url=location.href;
+  const done=()=>toast('链接已复制，发给朋友就能打开');
+  const fallback=()=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=url; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    }catch(e){ toast('复制失败，请长按地址栏手动复制'); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(fallback);
+  } else { fallback(); }
+}
 // 错误边界（D3）：单屏渲染出错只显示「重试」面板，不整页白屏；并吞掉良性资源错误
 function safeRender(fn){
   try{ fn(); }
@@ -3847,7 +3870,7 @@ function startVocabQuiz(mode){
   } else if(mode==='meaning'){
     q=pick(); answer=q.en;
     opts=shuffle([q, ...sample(pool,q,3)]).map(w=>w.en);
-    box.innerHTML=toolbar+`<div class="qprompt">� “${q.zh}” 的英文是？</div><div class="opts two" id="qopts"></div>`;
+    box.innerHTML=toolbar+`<div class="qprompt">“${q.zh}” 的英文是？</div><div class="opts two" id="qopts"></div>`;
     renderOpts(opts, answer, w=>w);
   } else if(mode==='spell'){
     q=pick(); answer=q.en;
@@ -4726,7 +4749,7 @@ function setGameMode(m){
   renderGameHome();
 }
 const GAME_STARTERS={spell:startSpell, match:startMatch, listen:()=>startChoice('listen'), emoji:()=>startChoice('emoji')};
-const GAME_LABELS={spell:'🔤 开始拼词', match:'🃏 开始连连看', listen:'🎧 开始听音选词', emoji:'🌈 开始看图选词'};
+const GAME_LABELS={spell:'开始拼词', match:'开始连连看', listen:'开始听音选词', emoji:'开始看图选词'};
 function renderGameHome(){
   if(!UNITS.find(x=>x.id===gameUnitId)) gameUnitId=UNITS[0].id;
   buildGameChips();
@@ -4818,7 +4841,7 @@ function renderChoice(mode){
     ? `<div class="choice-emoji">${EMOJI_MAP[s.w.en]||'❓'}</div><div class="muted" style="margin:4px 0 2px">${s.w.zh}</div>`
     : `<div class="center"><button class="btn sky lg" onclick="speak('${s.w.en.replace(/'/g,"\\'")}')">听发音</button><p class="muted" style="margin-top:6px">听到哪个词？从下面选出来</p></div>`;
   const optsHtml=s.opts.map((o,i)=>`<button class="choice-opt" onclick="pickChoice(${i})">${o.en}</button>`).join('');
-  area.innerHTML=`<h2 class="sec">${mode==='emoji'?'🌈 看图选词：这是什么？':'🎧 听音选词'}</h2>
+  area.innerHTML=`<h2 class="sec">${mode==='emoji'?'看图选词：这是什么？':'听音选词'}</h2>
     ${prompt}
     <div class="choice-grid">${optsHtml}</div>
     <button class="btn ghost lg" style="margin-top:12px;width:100%" onclick="startChoice('${mode}')">换一个</button>`;
@@ -5128,7 +5151,7 @@ function updateLvlProgress(){
 function renderChoose(q, done){
   const area=document.getElementById('lvlArea');
   const opts=shuffle([q.en,...q.distract]);
-  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🎯 “${q.zh}” 用英语怎么说？</div>
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · “${q.zh}” 用英语怎么说？</div>
     <div class="opts two" id="lopts"></div></div>`;
   const resolve=makeResolver('choose', q.en, q.zh, done);
   const box=document.getElementById('lopts');
@@ -5152,7 +5175,7 @@ function renderSentence(q, done){
   const wordPool=(curUnit().words||[]).map(w=>w.en).filter(w=>!parts.includes(w));
   const distract=shuffle(wordPool).slice(0, needDistract);
   const pool=shuffle(parts.concat(distract));
-  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 连词成句：“${q.zh}”</div>
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 连词成句：“${q.zh}”</div>
     <div class="basket" id="lb">${ghostSlots(parts.length)}</div><div class="pool" id="lp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__lvlSentCheck('${q.en.replace(/'/g,"\\'")}')">检查</button></div>`;
   pool.forEach(w=>{
@@ -5180,7 +5203,7 @@ function renderWhack(q, done){
   const area=document.getElementById('lvlArea');
   const answer=q.answer;
   const opts=shuffle(q.options);
-  area.innerHTML=`<div class="panel center"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🔨 听音打地鼠！</div>
+  area.innerHTML=`<div class="panel center"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 听音打地鼠！</div>
     <button class="btn sky lg" style="margin:4px 0 10px" onclick="__whackPlay()">再听一次</button>
     <div class="moles" id="moles"></div>
     <p class="muted">听到哪个词，就敲哪个地鼠！</p></div>`;
@@ -5215,7 +5238,7 @@ function renderPuzzle(q, done){
   const area=document.getElementById('lvlArea');
   const answer=q.answer;
   const letters=shuffle(answer.en.replace(/[^a-zA-Z]/g,'').split('')); // v114：只留字母（去空格+标点），避免 hard-working/aren't 等标点按钮残留
-  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🧩 拼词：“${answer.zh}” ${answer.emoji||''}</div>
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 拼词：“${answer.zh}” ${answer.emoji||''}</div>
     <button class="btn sky" style="margin-bottom:8px" onclick="__puzzlePlay()">听一听</button>
     <div class="basket" id="pb">${ghostSlots(answer.en.replace(/[^a-zA-Z]/g,'').length)}</div><div class="pool" id="pp"></div>
     <button class="btn grass lg" style="margin-top:10px" onclick="__puzzleCheck()">检查</button></div>`;
@@ -5247,7 +5270,7 @@ function renderMatch(q, done){
   let deck=[];
   pairs.forEach((p,i)=>{ deck.push({kind:'w',en:p.en,zh:p.zh,pid:i,emoji:p.emoji}); deck.push({kind:'m',en:p.en,zh:p.zh,pid:i,emoji:p.emoji}); });
   deck=shuffle(deck);
-  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🔗 连连看：点一个单词，再点它的意思</div><div class="match-grid" id="mg"></div></div>`;
+  area.innerHTML=`<div class="panel"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 连连看：点一个单词，再点它的意思</div><div class="match-grid" id="mg"></div></div>`;
   const resolve=makeResolver('match', pairs[0].en, pairs[0].zh, done);
   const mg=document.getElementById('mg');
   let sel=null, matched=0;
@@ -5279,7 +5302,7 @@ function renderFind(q, done){
   const area=document.getElementById('lvlArea');
   const answer=q.answer;
   const all=shuffle([answer.en, ...q.distractors]);
-  area.innerHTML=`<div class="panel center"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 🔍 捉迷藏：找出 “${answer.zh}” ${answer.emoji||''}</div>
+  area.innerHTML=`<div class="panel center"><div class="qprompt">第 ${levelQi+1}/${levelTotalNormal} 题 · 捉迷藏：找出 “${answer.zh}” ${answer.emoji||''}</div>
     <button class="btn sky lg" style="margin:4px 0 10px" onclick="__findPlay()">听一听</button>
     <div class="find-grid" id="fg"></div>
     <p class="muted">在卡片里找到它，点一下！</p></div>`;
@@ -6414,7 +6437,7 @@ function renderWeakPanel(){
   const rows=weakUids.slice().sort((a,b)=>b.s-a.s).slice(0,5);
   if(rows.length){
     const maxS=rows[0].s||1;
-    html+=`<div class="wk-sec">📌 最该补的单元<span class="count">Top ${rows.length}</span></div>`;
+    html+=`<div class="wk-sec">最该补的单元<span class="count">Top ${rows.length}</span></div>`;
     rows.forEach(r=>{
       const w=wb[r.uid]||{};
       const sel=w.sel||0, spell=w.spell||0, sent=w.sent||0;
@@ -6451,7 +6474,7 @@ function renderWeakPanel(){
     const m=new Map();
     wrongArr.forEach(w=>{ if(!w||!w.en) return; const k=w.en+''; const cur=m.get(k)||{en:w.en,zh:w.zh||'',n:0,unit:w.unit||''}; cur.n++; m.set(k,cur); });
     const arr=[...m.values()].sort((a,b)=>b.n-a.n).slice(0,16);
-    html+=`<div class="wk-sec">🔤 常错单词<span class="count">${arr.length} 词 · 已合并重复</span></div>
+    html+=`<div class="wk-sec">常错单词<span class="count">${arr.length} 词 · 已合并重复</span></div>
       <div class="wk-words">`;
     arr.forEach(w=>{
       let lv='h3';
@@ -6493,7 +6516,7 @@ function redoNext(){
   const full=(u0.words.find(x=>x.en===w.en))||{en:w.en,zh:w.zh||'',ph:'',ex:''};
   const modes=['listen','meaning','spell'];
   const m=modes[redoIdx%3];
-  const modeTxt = m==='listen'?'👂 听音选词' : m==='meaning'?'🈯 看义选词':'⌨️ 拼写';
+  const modeTxt = m==='listen'?'听音选词' : m==='meaning'?'看义选词':'拼写';
   let html=`<p class="muted">第 ${redoIdx+1} / ${redoList.length} 个 · ${modeTxt}</p>`;
   if(m==='listen'){
     const distract=sample(u0.words.length>1?u0.words:[full],full,3).map(x=>x.en);
