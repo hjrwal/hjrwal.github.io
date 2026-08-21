@@ -343,7 +343,7 @@
   .opts.two{grid-template-columns:1fr 1fr;}
   .opt{
     background:var(--card); border:3px solid var(--line); border-radius:18px; padding:16px;
-    font-size:18px; font-weight:700; cursor:pointer; text-align:center; color:var(--ink);
+    font-size:18px; font-weight:700; cursor:pointer; text-align:center; color:#2a1f17 !important;
     box-shadow:var(--shadow);
   }
   .opt:active{transform:scale(.97);}
@@ -2927,7 +2927,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 117;
+const APP_VERSION = 118;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -6732,12 +6732,5 @@ if('serviceWorker' in navigator){
   }catch(_){ }
 }
 </script>
-<style>
-  .lexi-entry{position:fixed;right:14px;bottom:76px;z-index:9999;display:inline-flex;align-items:center;gap:7px;padding:13px 19px;border-radius:999px;color:#fff;text-decoration:none;font-family:inherit;font-weight:800;font-size:15px;line-height:1.1;background:linear-gradient(135deg,var(--fox-d),var(--amber));box-shadow:0 4px 14px rgba(232,116,59,.34);-webkit-tap-highlight-color:transparent;transition:transform .16s var(--ease-spring),box-shadow .18s var(--ease-io);}
-  .lexi-entry:active{transform:scale(.95);}
-  @media (hover:hover){.lexi-entry:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(232,116,59,.40);}}
-  body.theme-dark .lexi-entry{box-shadow:0 4px 16px rgba(232,116,59,.46);}
-</style>
-<a href="./game.html" class="lexi-entry" target="_self" rel="noopener">🎮 词境冒险</a>
 </body>
 </html>
