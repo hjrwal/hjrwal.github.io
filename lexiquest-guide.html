@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>词境冒险 · 使用说明</title>
+<style>
+  :root { --bg:#0b0e16; --card:#161b29; --ink:#e8edf6; --sub:#9fb0c8; --acc:#7ee0a6; --warn:#ffd479; --pur:#b79bff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.7; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 18px 60px; }
+  h1 { font-size: 26px; margin: 8px 0 4px; }
+  h2 { font-size: 20px; margin: 34px 0 10px; color: var(--acc); border-left: 4px solid var(--acc); padding-left: 10px; }
+  h3 { font-size: 16px; margin: 20px 0 6px; color: var(--pur); }
+  p, li { color: var(--ink); }
+  .sub { color: var(--sub); font-size: 14px; }
+  .card { background: var(--card); border-radius: 14px; padding: 16px 18px; margin: 12px 0; box-shadow: 0 2px 10px rgba(0,0,0,.25); }
+  .btn { display:inline-block; background:#22304a; border:1px solid #3a4d6b; border-radius:8px; padding:2px 9px; font-size:14px; color:var(--ink); }
+  .tag { display:inline-block; font-size:12px; padding:1px 8px; border-radius: 20px; background:#22304a; color:var(--sub); margin-right:6px; }
+  .warn { border-left: 4px solid var(--warn); background:#241f12; padding:10px 14px; border-radius:8px; color:var(--warn); }
+  .step { counter-reset: s; }
+  .step li { list-style:none; position:relative; padding-left:30px; margin:8px 0; }
+  .step li::before { counter-increment:s; content:counter(s); position:absolute; left:0; top:2px; width:20px; height:20px; background:var(--acc); color:#0b0e16; border-radius:50%; text-align:center; font-size:12px; line-height:20px; font-weight:700; }
+  table { width:100%; border-collapse:collapse; margin:10px 0; font-size:14px; }
+  th, td { border:1px solid #2b3650; padding:8px 10px; text-align:left; }
+  th { background:#1d2436; color:var(--sub); }
+  code { background:#1d2436; padding:1px 6px; border-radius:5px; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎮 词境冒险 · 使用说明</h1>
+  <p class="sub">给家长和孩子的一份傻瓜式指南 ｜ 当前版本 v141</p>
+
+  <div class="card">
+    <p><b>怎么进游戏？</b> 打开英语学习网页（english5-helper），首页会悬浮一个 <span class="btn">🎮 词境冒险</span> 按钮，点它就进去了。原来的学习页一点没变，两个互不打扰。</p>
+    <p><b>手机最好竖着拿</b>，画面是为手机竖屏设计的；横屏也能玩，但竖屏最清楚。</p>
+  </div>
+
+  <h2>一、主菜单：四个去处 + 两个角标</h2>
+  <div class="card">
+    <table>
+      <tr><th>按钮</th><th>干嘛的</th></tr>
+      <tr><td>📖 图鉴</td><td>看已经遇到的单词"词灵"，点开有发音、例句、掌握度</td></tr>
+      <tr><td>⚔️ 战斗</td><td>开始一场随机混合出题的冒险（自定义词也会混进来）</td></tr>
+      <tr><td>🗺️ 地图</td><td>按课本单元一关关闯，从易到难解锁</td></tr>
+      <tr><td>🔁 复习</td><td>专门练"还没记牢"的词（FSRS 智能排程）</td></tr>
+    </table>
+    <p>右上角两个小图标：<span class="btn">🏆</span> 是成就墙，<span class="btn">⚙️</span> 是设置（下面重点讲）。左上角 <span class="btn">🔊</span> 开关音效。</p>
+  </div>
+
+  <h2>二、怎么玩（战斗 & 地图）</h2>
+  <div class="card">
+    <ul class="step">
+      <li>每关会出一串单词题，看英文选中文（或看中文选英文），答对词灵就被你收服。</li>
+      <li>每题有 <b>15 秒</b>倒计时，超时算答错——别磨蹭。</li>
+      <li>答错的词会自动进"难词本"，下次更容易碰到它（见设置里的"难词优先"）。</li>
+      <li>一关打完给星星和奖励，地图上一关通关才会解锁下一关。</li>
+      <li>BOSS 关是单元主题反派，血量更厚，多练几次就能过。</li>
+    </ul>
+    <p class="sub">💡 提示：孩子的发音跟着 TTS 念，点词灵上的小喇叭能听标准读音。</p>
+  </div>
+
+  <h2>三、⚙️ 设置面板（家长最常来）</h2>
+
+  <h3>1. 出题比例 · 复习:新词</h3>
+  <div class="card">
+    <p>一排按钮：<code>9:1</code> <code>8:2</code> <code>7:3</code> <code>6:4</code> <code>5:5</code>。点哪个就生效，杀了重开也记得。</p>
+    <p class="sub">意思是"每 10 道题里，几道复习旧词、几道学新词"。<b>默认 7:3</b>——多复习旧的、新词保底。想让孩子多认新词就调 5:5；想多巩固就调 9:1。</p>
+  </div>
+
+  <h3>2. 每日时长（温和提醒）</h3>
+  <div class="card">
+    <p>档位：<code>不限制</code> <code>15分</code> <code>30分</code> <code>45分</code> <code>60分</code>。</p>
+    <p>到点只会 <b>弹个提醒</b>，<b>不会强制锁屏</b>——孩子不会被突然踢出、不会慌。计时按"当天累计玩了多久"算。</p>
+    <p class="sub">想严格管控的话，目前是提醒式；真要锁屏可以后面再加，先这样不会误伤。</p>
+  </div>
+
+  <h3>3. 难词锁定</h3>
+  <div class="card">
+    <p>孩子 <b>答错过的词会自动收进难词本</b>，不用你手动挑。开关打开"优先练"后，这些词会在下一局更频繁出现，专攻薄弱环节。</p>
+    <p class="sub">面板会显示当前难词数量，方便你了解孩子卡在哪些词上。</p>
+  </div>
+
+  <h3>4. 重置进度</h3>
+  <div class="card">
+    <p>一键清空战绩、成就、记忆曲线、难词本——<b>但你自己导入的"自定义词库"会保留</b>，不会跟着被删。</p>
+    <p class="warn">⚠️ 重置要按两次确认（5 秒内再点一次才算数），防止手滑。重置后不可恢复，除非你之前做过备份（见下）。</p>
+  </div>
+
+  <h2>四、自定义词库（家长增补孩子教材外的词）</h2>
+  <div class="card">
+    <ol class="step">
+      <li>在设置面板点 <span class="btn">📥 导入 CSV</span>，选一个表格文件。</li>
+      <li>表格很简单：<b>第一列英文、第二列中文</b>，可以再加音标、例句（可选）。</li>
+      <li>用 Excel / WPS 另存为 <code>.csv</code> 就能用；第一行写"英文,中文"会被自动跳过。</li>
+      <li>导入后，这些词会混进"⚔️ 战斗"的随机出题里，和课本词一起练。</li>
+    </ol>
+    <p>想备份或搬运这些词：点 <span class="btn">📤 导出备份</span> 下载一个 CSV（带格式标记，可再导入）。</p>
+    <p class="sub">📋 示例 CSV：</p>
+    <pre style="background:#1d2436;padding:10px;border-radius:8px;font-size:13px;overflow:auto"><code>英文,中文,音标,例句
+dolphin,海豚,/ˈdɒlfɪn/,The dolphin is smart.
+rocket,火箭,/ˈrɒkɪt/,The rocket flies high.</code></pre>
+  </div>
+
+  <h2>五、整机备份（防丢进度）</h2>
+  <div class="card">
+    <p>想整台"存档"搬走或留底：</p>
+    <ol class="step">
+      <li>点 <span class="btn">💾 备份</span> → 下载一个 <code>lexiquest-backup-时间.json</code> 文件（含全部战绩、设置、记忆、自定义词）。</li>
+      <li>换手机或重装前，先备份一份存好。</li>
+      <li>要恢复：点 <span class="btn">📂 导入</span> 选这个 JSON，进度就回来了。</li>
+    </ol>
+    <p class="warn">⚠️ 导入前会自动把"当前进度"再下载一份带时间戳的备份，万一导错了还能救回来。如果文件被改坏（校验和不匹配），会拒绝导入、不破坏现有进度。</p>
+  </div>
+
+  <h2>六、给家长的几句实在话</h2>
+  <div class="card">
+    <ul>
+      <li><b>最省心组合</b>：出题比例保持 7:3、每日时长设 30 分、难词优先打开——孩子每天适量、专攻薄弱点。</li>
+      <li><b>想加孩子课外词</b>：用 CSV 导入，比让孩子死记硬背强。</li>
+      <li><b>怕丢进度</b>：每月点一次"备份"存个 JSON 到网盘/电脑。</li>
+      <li><b>换设备</b>：先备份 → 新设备导入，无缝衔接。</li>
+    </ul>
+  </div>
+
+  <p class="sub" style="text-align:center;margin-top:30px">词境冒险 v141 ｜ 玩得开心，记得复习 🙂</p>
+</div>
+</body>
+</html>
