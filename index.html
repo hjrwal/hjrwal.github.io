@@ -78,6 +78,17 @@
   @media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr);}}
   /* 首页分组 */
   .home-group{margin-top:2px;}
+  /* v120 词境冒险入口（首页悬浮条，绘本风渐变，链接独立 game.html） */
+  .lexi-entry{display:flex; align-items:center; gap:12px; margin:14px 2px 2px; padding:14px 16px;
+    background:linear-gradient(120deg,#7C5CFF 0%, #B07CFF 55%, #FF9EC7 100%);
+    border-radius:16px; box-shadow:0 6px 18px rgba(124,92,255,.28); color:#fff; text-decoration:none;
+    transition:transform .16s ease, box-shadow .16s ease;}
+  .lexi-entry:active{transform:scale(.985);}
+  .lexi-entry .svg-ic{width:30px; height:30px; flex:none;}
+  .lexi-entry .le-t{font-size:17px; font-weight:900; letter-spacing:.5px;}
+  .lexi-entry .le-s{margin-left:auto; font-size:13px; opacity:.92; font-weight:600;}
+  @media(min-width:720px){.lexi-entry{padding:16px 22px;}}
+  body.theme-dark .lexi-entry{box-shadow:0 6px 18px rgba(124,92,255,.45);}
   .group-title{display:flex; align-items:center; gap:8px; margin:18px 4px 10px; font-size:14px; font-weight:800; color:var(--ink); letter-spacing:.3px;}
   .group-title .em{font-size:18px;}
   .group-title .ln{flex:1; height:3px; background:linear-gradient(90deg,var(--fox),transparent); border-radius:3px; opacity:.55;}
@@ -1200,6 +1211,11 @@
         </div>
       </div>
     </div>
+    <a class="lexi-entry" href="game.html" target="_blank" rel="noopener">
+      <svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-gamepad"/></svg>
+      <span class="le-t">词境冒险</span>
+      <span class="le-s">全新 RPG 单词大冒险 →</span>
+    </a>
     <div class="home-group">
       <div class="group-title"><span class="em">📘</span>学一学<span class="ln"></span></div>
       <div class="grid">
