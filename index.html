@@ -55,10 +55,35 @@
     padding:10px 14px; box-shadow:var(--sh-2); margin-bottom:14px;
     position:sticky; top:8px; z-index:30;
   }
-  .mascot{width:40px; height:45px; flex:0 0 auto; display:block; animation:wob 3s ease-in-out infinite;}
-  @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
-  /* v121：小尺寸吉祥物统一用 AI PNG（<img>），object-fit 填满非方形盒 */
-  .mascot,.test-mascot,.fm-fox,.fb-fox{object-fit:cover; object-position:center 48%;}
+  .mascot{width:40px; height:45px; flex:0 0 auto; display:block;}
+  /* v122：矢量骨骼白喵（分层 SVG，呼吸/眨眼/摆尾/挥爪/心境），替代整图晃动 */
+  .cat-head,.cat-body{transform-box:fill-box; transform-origin:50% 100%; animation:catBreathe 3.4s ease-in-out infinite;}
+  .cat-eye{transform-box:fill-box; transform-origin:50% 50%; animation:catBlink 4.6s ease-in-out infinite;}
+  .cat-ear-r{transform-box:fill-box; transform-origin:50% 100%; animation:catEarTwitch 5s ease-in-out infinite;}
+  .cat-tail{transform-box:fill-box; transform-origin:0% 100%; animation:catTailSway 2.6s ease-in-out infinite;}
+  .cat-paw{transform-box:fill-box; transform-origin:15% 85%;}
+  .mood-welcome .cat-paw{animation:catWave 1s ease-in-out infinite;}
+  .mood-happy .cat-root,.mood-cheer .cat-root{animation:catHop .55s ease;}
+  @keyframes catBreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.035)}}
+  @keyframes catBlink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+  @keyframes catEarTwitch{0%,82%,100%{transform:rotate(0)}90%{transform:rotate(-12deg)}95%{transform:rotate(5deg)}}
+  @keyframes catTailSway{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+  @keyframes catWave{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(24deg)}}
+  @keyframes catHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  /* 心境表情：默认中性；happy/cheer/encourage/welcome 笑；sad 嘴下垂+泪；think 思考泡；encourage 星；happy/cheer 心 */
+  .cat-mouth-smile,.cat-mouth-sad,.cat-think,.cat-star,.cat-heart,.cat-tear{display:none;}
+  .mood-happy .cat-mouth,.mood-cheer .cat-mouth,.mood-encourage .cat-mouth,.mood-welcome .cat-mouth{display:none;}
+  .mood-happy .cat-mouth-smile,.mood-cheer .cat-mouth-smile,.mood-encourage .cat-mouth-smile,.mood-welcome .cat-mouth-smile{display:block;}
+  .mood-sad .cat-mouth{display:none;}
+  .mood-sad .cat-mouth-sad{display:block;}
+  .mood-think .cat-think{display:block;}
+  .mood-encourage .cat-star{display:block;}
+  .mood-happy .cat-heart,.mood-cheer .cat-heart{display:block;}
+  .mood-sad .cat-tear{display:block;}
+  .mood-happy .cat-cheek,.mood-cheer .cat-cheek,.mood-encourage .cat-cheek{opacity:.85;}
+  @media (prefers-reduced-motion: reduce){
+    .cat-head,.cat-body,.cat-eye,.cat-ear-r,.cat-tail,.cat-paw,.mood-welcome .cat-paw,.mood-happy .cat-root,.mood-cheer .cat-root{animation:none !important;}
+  }
   .brand{font-weight:900; font-size:18px; line-height:1.1;
     background:linear-gradient(135deg,var(--fox-d),var(--amber));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
@@ -103,12 +128,9 @@
     box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.55), inset 0 0 0 7.5px rgba(200,150,90,.16);}
   .book-scene{position:relative; height:120px; overflow:hidden;
     background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
-  /* v120 首页 Hero 改为 AI 生图场景（白喵·探头·小山坡），CSS 画的太阳/云/山/小狐狸全部替换 */
-  .scene-png{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%;
-    transform-box:view-box; transform-origin:center; animation:scIdle 4.2s var(--ease-io) infinite;
+  /* v122 首页 Hero 改为矢量骨骼白喵（内联 SVG，#heroMascot），透明背景坐在天空场景里探头 */
+  #heroMascot{position:absolute; inset:0; width:100%; height:100%;
     filter:drop-shadow(0 2px 3px rgba(80,50,20,.18));}
-  /* 复用 v89 的探头浮动关键帧，让场景有"活着"的感觉 */
-  @keyframes scIdle{0%{transform:translateY(0) rotate(0deg);}25%{transform:translateY(-3px) rotate(-3deg);}50%{transform:translateY(0) rotate(0deg);}75%{transform:translateY(-3px) rotate(3deg);}100%{transform:translateY(0) rotate(0deg);}}
   .book-body{padding:14px 16px 16px;}
   .book-title{display:flex; align-items:center; gap:8px; font-size:21px; font-weight:900; color:var(--fox-d); letter-spacing:.5px; margin-bottom:11px;}
   .bt-ribbon{background:var(--fox); color:#fff; font-size:13px; font-weight:800; padding:3px 10px; border-radius:999px; box-shadow:0 3px 8px rgba(239,130,74,.30);}
@@ -782,7 +804,7 @@
   .loading{position:fixed; inset:0; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px;
     background:rgba(255,253,247,.84); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
   .loading.show{display:flex;}
-  .loading .fox-spin-png{width:90px; height:90px; animation:foxBob .9s var(--ease-spring) infinite; object-fit:contain; filter:drop-shadow(0 3px 4px rgba(80,50,20,.25));}
+  .loading #loadingMascot{width:90px; height:90px; animation:foxBob .9s var(--ease-spring) infinite; filter:drop-shadow(0 3px 4px rgba(80,50,20,.25));}
   .loading p{margin:0; color:var(--muted); font-weight:800; letter-spacing:.5px;}
   @keyframes foxBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(5deg)}}
   /* 掌握度环 */
@@ -1023,7 +1045,35 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <img class="mascot" id="mascotImg" src="assets/mascot/default.png" alt="" width="40" height="45" loading="eager" decoding="async" draggable="false">
+    <svg class="mascot" id="mascotImg" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <g class="cat-root">
+        <path class="cat-tail" d="M49 44 q15 0 13 15 q-1 7 -8 8" fill="none" stroke="#3A2B22" stroke-width="5" stroke-linecap="round"/>
+        <path class="cat-body" d="M32 18 C17 18 10 27 10 39 C10 51 21 59 32 61 C43 59 54 51 54 39 C54 27 47 18 32 18 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+        <ellipse class="cat-mound" cx="32" cy="60" rx="34" ry="14" fill="#BFE3A8" stroke="#3A2B22" stroke-width="1.6"/>
+        <g class="cat-head">
+          <path class="cat-ear cat-ear-l" d="M18 22 L12 6 L29 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path class="cat-ear cat-ear-r" d="M46 22 L52 6 L35 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M20 19 L16 10 L26 16 Z" fill="#F5826B"/>
+          <path d="M44 19 L48 10 L38 16 Z" fill="#F5826B"/>
+          <circle cx="32" cy="30" r="17" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+          <g class="cat-face">
+            <ellipse class="cat-cheek" cx="22" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <ellipse class="cat-cheek" cx="42" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <g class="cat-eye cat-eye-l"><circle cx="25" cy="30" r="4.2" fill="#3A2B22"/><circle cx="26.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <g class="cat-eye cat-eye-r"><circle cx="39" cy="30" r="4.2" fill="#3A2B22"/><circle cx="40.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <path class="cat-nose" d="M30 36 h4 l-2 3 Z" fill="#F5826B" stroke="#3A2B22" stroke-width=".8" stroke-linejoin="round"/>
+            <path class="cat-mouth" d="M32 39 q-3 3 -6 1 M32 39 q3 3 6 1" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round"/>
+            <path class="cat-mouth-smile" d="M26 39 q6 7 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+            <path class="cat-mouth-sad" d="M26 42 q6 -6 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </g>
+        <g class="cat-paw"><path d="M50 36 q9 -2 10 -11" fill="none" stroke="#3A2B22" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="60" cy="24" rx="4" ry="3.4" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.4"/></g>
+        <g class="cat-think"><circle cx="50" cy="11" r="2" fill="#fff" stroke="#3A2B22" stroke-width="1"/><circle cx="55" cy="7" r="1.4" fill="#fff" stroke="#3A2B22" stroke-width=".9"/><circle cx="59" cy="3" r="1" fill="#fff" stroke="#3A2B22" stroke-width=".8"/></g>
+        <g class="cat-star"><path d="M32 3 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-heart"><path d="M45 9 C43.5 6.5 40 7.2 40 10 C40 12.4 44 14 45 14.6 C46 14 50 12.4 50 10 C50 7.2 46.5 6.5 45 9 Z" fill="#E94B5B" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-tear"><path d="M25 35 q-1.5 4 0 6 q1.5 -2 0 -6 Z" fill="#4A9DB5"/></g>
+      </g>
+    </svg>
     <div class="brand"><span id="brandGrade">五年级</span>英语小探险家<small id="brandSub">📗 五年级上册 · 听说读写闯关</small></div>
     <div class="stats">
       <div class="pill" id="topStars">⭐ 0</div>
@@ -1105,7 +1155,35 @@
     </div>
     <div class="hero storybook" onclick="go('progress')">
       <div class="book-scene" aria-hidden="true">
-        <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
+        <svg class="mascot" id="heroMascot" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <g class="cat-root">
+        <path class="cat-tail" d="M49 44 q15 0 13 15 q-1 7 -8 8" fill="none" stroke="#3A2B22" stroke-width="5" stroke-linecap="round"/>
+        <path class="cat-body" d="M32 18 C17 18 10 27 10 39 C10 51 21 59 32 61 C43 59 54 51 54 39 C54 27 47 18 32 18 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+        <ellipse class="cat-mound" cx="32" cy="60" rx="34" ry="14" fill="#BFE3A8" stroke="#3A2B22" stroke-width="1.6"/>
+        <g class="cat-head">
+          <path class="cat-ear cat-ear-l" d="M18 22 L12 6 L29 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path class="cat-ear cat-ear-r" d="M46 22 L52 6 L35 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M20 19 L16 10 L26 16 Z" fill="#F5826B"/>
+          <path d="M44 19 L48 10 L38 16 Z" fill="#F5826B"/>
+          <circle cx="32" cy="30" r="17" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+          <g class="cat-face">
+            <ellipse class="cat-cheek" cx="22" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <ellipse class="cat-cheek" cx="42" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <g class="cat-eye cat-eye-l"><circle cx="25" cy="30" r="4.2" fill="#3A2B22"/><circle cx="26.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <g class="cat-eye cat-eye-r"><circle cx="39" cy="30" r="4.2" fill="#3A2B22"/><circle cx="40.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <path class="cat-nose" d="M30 36 h4 l-2 3 Z" fill="#F5826B" stroke="#3A2B22" stroke-width=".8" stroke-linejoin="round"/>
+            <path class="cat-mouth" d="M32 39 q-3 3 -6 1 M32 39 q3 3 6 1" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round"/>
+            <path class="cat-mouth-smile" d="M26 39 q6 7 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+            <path class="cat-mouth-sad" d="M26 42 q6 -6 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </g>
+        <g class="cat-paw"><path d="M50 36 q9 -2 10 -11" fill="none" stroke="#3A2B22" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="60" cy="24" rx="4" ry="3.4" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.4"/></g>
+        <g class="cat-think"><circle cx="50" cy="11" r="2" fill="#fff" stroke="#3A2B22" stroke-width="1"/><circle cx="55" cy="7" r="1.4" fill="#fff" stroke="#3A2B22" stroke-width=".9"/><circle cx="59" cy="3" r="1" fill="#fff" stroke="#3A2B22" stroke-width=".8"/></g>
+        <g class="cat-star"><path d="M32 3 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-heart"><path d="M45 9 C43.5 6.5 40 7.2 40 10 C40 12.4 44 14 45 14.6 C46 14 50 12.4 50 10 C50 7.2 46.5 6.5 45 9 Z" fill="#E94B5B" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-tear"><path d="M25 35 q-1.5 4 0 6 q1.5 -2 0 -6 Z" fill="#4A9DB5"/></g>
+      </g>
+    </svg>
       </div>
       <div class="book-body">
         <div class="book-title"><span class="bt-ribbon" id="btGrade">五年级</span>英语冒险绘本</div>
@@ -1666,7 +1744,35 @@ update → controllerchange
 <div class="toast" id="toast"></div>
 <div class="speak-fx" id="speakFx">🔊 发音中<b></b><b></b><b></b><b></b><b></b></div>
 <div class="fox-bubble" id="foxBubble"></div>
-<div class="loading" id="loading"><img class="fox-spin-png" id="loadingMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async"><p>加载中…</p></div>
+<div class="loading" id="loading"><svg class="mascot" id="loadingMascot" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <g class="cat-root">
+        <path class="cat-tail" d="M49 44 q15 0 13 15 q-1 7 -8 8" fill="none" stroke="#3A2B22" stroke-width="5" stroke-linecap="round"/>
+        <path class="cat-body" d="M32 18 C17 18 10 27 10 39 C10 51 21 59 32 61 C43 59 54 51 54 39 C54 27 47 18 32 18 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+        <ellipse class="cat-mound" cx="32" cy="60" rx="34" ry="14" fill="#BFE3A8" stroke="#3A2B22" stroke-width="1.6"/>
+        <g class="cat-head">
+          <path class="cat-ear cat-ear-l" d="M18 22 L12 6 L29 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path class="cat-ear cat-ear-r" d="M46 22 L52 6 L35 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M20 19 L16 10 L26 16 Z" fill="#F5826B"/>
+          <path d="M44 19 L48 10 L38 16 Z" fill="#F5826B"/>
+          <circle cx="32" cy="30" r="17" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+          <g class="cat-face">
+            <ellipse class="cat-cheek" cx="22" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <ellipse class="cat-cheek" cx="42" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <g class="cat-eye cat-eye-l"><circle cx="25" cy="30" r="4.2" fill="#3A2B22"/><circle cx="26.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <g class="cat-eye cat-eye-r"><circle cx="39" cy="30" r="4.2" fill="#3A2B22"/><circle cx="40.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <path class="cat-nose" d="M30 36 h4 l-2 3 Z" fill="#F5826B" stroke="#3A2B22" stroke-width=".8" stroke-linejoin="round"/>
+            <path class="cat-mouth" d="M32 39 q-3 3 -6 1 M32 39 q3 3 6 1" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round"/>
+            <path class="cat-mouth-smile" d="M26 39 q6 7 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+            <path class="cat-mouth-sad" d="M26 42 q6 -6 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </g>
+        <g class="cat-paw"><path d="M50 36 q9 -2 10 -11" fill="none" stroke="#3A2B22" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="60" cy="24" rx="4" ry="3.4" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.4"/></g>
+        <g class="cat-think"><circle cx="50" cy="11" r="2" fill="#fff" stroke="#3A2B22" stroke-width="1"/><circle cx="55" cy="7" r="1.4" fill="#fff" stroke="#3A2B22" stroke-width=".9"/><circle cx="59" cy="3" r="1" fill="#fff" stroke="#3A2B22" stroke-width=".8"/></g>
+        <g class="cat-star"><path d="M32 3 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-heart"><path d="M45 9 C43.5 6.5 40 7.2 40 10 C40 12.4 44 14 45 14.6 C46 14 50 12.4 50 10 C50 7.2 46.5 6.5 45 9 Z" fill="#E94B5B" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-tear"><path d="M25 35 q-1.5 4 0 6 q1.5 -2 0 -6 Z" fill="#4A9DB5"/></g>
+      </g>
+    </svg><p>加载中…</p></div>
 
 <!-- 设置弹窗 -->
 <div class="modal-mask" id="settingsModal" onclick="if(event.target===this)closeSettings()">
@@ -1742,7 +1848,35 @@ update → controllerchange
   <div class="modal test-modal">
     <div class="row spread" style="margin-bottom:8px">
       <div class="test-head-l">
-        <img class="mascot test-mascot" id="testMascot" src="assets/mascot/default.png" alt="" width="32" height="36" loading="eager" decoding="async" draggable="false">
+        <svg class="mascot test-mascot" id="testMascot" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <g class="cat-root">
+        <path class="cat-tail" d="M49 44 q15 0 13 15 q-1 7 -8 8" fill="none" stroke="#3A2B22" stroke-width="5" stroke-linecap="round"/>
+        <path class="cat-body" d="M32 18 C17 18 10 27 10 39 C10 51 21 59 32 61 C43 59 54 51 54 39 C54 27 47 18 32 18 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+        <ellipse class="cat-mound" cx="32" cy="60" rx="34" ry="14" fill="#BFE3A8" stroke="#3A2B22" stroke-width="1.6"/>
+        <g class="cat-head">
+          <path class="cat-ear cat-ear-l" d="M18 22 L12 6 L29 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path class="cat-ear cat-ear-r" d="M46 22 L52 6 L35 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M20 19 L16 10 L26 16 Z" fill="#F5826B"/>
+          <path d="M44 19 L48 10 L38 16 Z" fill="#F5826B"/>
+          <circle cx="32" cy="30" r="17" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/>
+          <g class="cat-face">
+            <ellipse class="cat-cheek" cx="22" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <ellipse class="cat-cheek" cx="42" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/>
+            <g class="cat-eye cat-eye-l"><circle cx="25" cy="30" r="4.2" fill="#3A2B22"/><circle cx="26.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <g class="cat-eye cat-eye-r"><circle cx="39" cy="30" r="4.2" fill="#3A2B22"/><circle cx="40.4" cy="28.4" r="1.5" fill="#fff"/></g>
+            <path class="cat-nose" d="M30 36 h4 l-2 3 Z" fill="#F5826B" stroke="#3A2B22" stroke-width=".8" stroke-linejoin="round"/>
+            <path class="cat-mouth" d="M32 39 q-3 3 -6 1 M32 39 q3 3 6 1" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round"/>
+            <path class="cat-mouth-smile" d="M26 39 q6 7 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+            <path class="cat-mouth-sad" d="M26 42 q6 -6 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+        </g>
+        <g class="cat-paw"><path d="M50 36 q9 -2 10 -11" fill="none" stroke="#3A2B22" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="60" cy="24" rx="4" ry="3.4" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.4"/></g>
+        <g class="cat-think"><circle cx="50" cy="11" r="2" fill="#fff" stroke="#3A2B22" stroke-width="1"/><circle cx="55" cy="7" r="1.4" fill="#fff" stroke="#3A2B22" stroke-width=".9"/><circle cx="59" cy="3" r="1" fill="#fff" stroke="#3A2B22" stroke-width=".8"/></g>
+        <g class="cat-star"><path d="M32 3 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-heart"><path d="M45 9 C43.5 6.5 40 7.2 40 10 C40 12.4 44 14 45 14.6 C46 14 50 12.4 50 10 C50 7.2 46.5 6.5 45 9 Z" fill="#E94B5B" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g>
+        <g class="cat-tear"><path d="M25 35 q-1.5 4 0 6 q1.5 -2 0 -6 Z" fill="#4A9DB5"/></g>
+      </g>
+    </svg>
         <b style="font-size:16px">单元测试</b>
       </div>
       <button class="back" onclick="closeTestModal()">退出</button>
@@ -2817,7 +2951,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 121;
+const APP_VERSION = 122;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4069,7 +4203,7 @@ let foxT=null;
 function foxSay(msg){
   const b=document.getElementById('foxBubble'); if(!b) return;
   const m=String(msg==null?'':msg).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  b.innerHTML='<img class="fb-fox" src="assets/mascot/default.png" alt="" width="26" height="29" draggable="false"><span class="fb-msg">'+m+'</span>';
+  b.innerHTML='<svg class="fb-fox" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g class="cat-root"><path class="cat-tail" d="M49 44 q15 0 13 15 q-1 7 -8 8" fill="none" stroke="#3A2B22" stroke-width="5" stroke-linecap="round"/><path class="cat-body" d="M32 18 C17 18 10 27 10 39 C10 51 21 59 32 61 C43 59 54 51 54 39 C54 27 47 18 32 18 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/><ellipse class="cat-mound" cx="32" cy="60" rx="34" ry="14" fill="#BFE3A8" stroke="#3A2B22" stroke-width="1.6"/><g class="cat-head"><path class="cat-ear cat-ear-l" d="M18 22 L12 6 L29 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/><path class="cat-ear cat-ear-r" d="M46 22 L52 6 L35 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 19 L16 10 L26 16 Z" fill="#F5826B"/><path d="M44 19 L48 10 L38 16 Z" fill="#F5826B"/><circle cx="32" cy="30" r="17" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/><g class="cat-face"><ellipse class="cat-cheek" cx="22" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/><ellipse class="cat-cheek" cx="42" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/><g class="cat-eye cat-eye-l"><circle cx="25" cy="30" r="4.2" fill="#3A2B22"/><circle cx="26.4" cy="28.4" r="1.5" fill="#fff"/></g><g class="cat-eye cat-eye-r"><circle cx="39" cy="30" r="4.2" fill="#3A2B22"/><circle cx="40.4" cy="28.4" r="1.5" fill="#fff"/></g><path class="cat-nose" d="M30 36 h4 l-2 3 Z" fill="#F5826B" stroke="#3A2B22" stroke-width=".8" stroke-linejoin="round"/><path class="cat-mouth" d="M32 39 q-3 3 -6 1 M32 39 q3 3 6 1" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round"/><path class="cat-mouth-smile" d="M26 39 q6 7 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/><path class="cat-mouth-sad" d="M26 42 q6 -6 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/></g></g><g class="cat-paw"><path d="M50 36 q9 -2 10 -11" fill="none" stroke="#3A2B22" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="60" cy="24" rx="4" ry="3.4" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.4"/></g><g class="cat-think"><circle cx="50" cy="11" r="2" fill="#fff" stroke="#3A2B22" stroke-width="1"/><circle cx="55" cy="7" r="1.4" fill="#fff" stroke="#3A2B22" stroke-width=".9"/><circle cx="59" cy="3" r="1" fill="#fff" stroke="#3A2B22" stroke-width=".8"/></g><g class="cat-star"><path d="M32 3 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g><g class="cat-heart"><path d="M45 9 C43.5 6.5 40 7.2 40 10 C40 12.4 44 14 45 14.6 C46 14 50 12.4 50 10 C50 7.2 46.5 6.5 45 9 Z" fill="#E94B5B" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g><g class="cat-tear"><path d="M25 35 q-1.5 4 0 6 q1.5 -2 0 -6 Z" fill="#4A9DB5"/></g></g></svg><span class="fb-msg">'+m+'</span>';
   b.classList.add('show');
   clearTimeout(foxT); foxT=setTimeout(()=>b.classList.remove('show'), 2800);
 }
@@ -4133,79 +4267,18 @@ function floatText(text, type){
   setTimeout(()=>d.remove(), 1200);
 }
 function setMascotMood(mood){
-  // v121：SVG 表情层已替换为 <img>，改切 src（v88 答题反馈：顶栏 + 测试页白喵同步反应）
-  const moodMap={happy:'happy',cheer:'cheer',sad:'sad',think:'think',welcome:'welcome',encourage:'encourage'};
-  const src = (mood && HERO_FRAMES[moodMap[mood]]) ? HERO_FRAMES[moodMap[mood]] : HERO_FRAMES.base;
-  _heroMoodSrc = (mood && src!==HERO_FRAMES.base) ? src : null;
-  const heroImg=document.getElementById('heroMascot');
-  if(heroImg) _heroSetSrc(_heroBase());
-  document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=src; });
+  // v122：吉祥物改为矢量骨骼 SVG，心境用 .mood-* class 切换（v88 答题反馈：顶栏 + 测试页 + hero 同步反应）
+  const moods=['mood-happy','mood-sad','mood-cheer','mood-think','mood-welcome','mood-encourage'];
+  document.querySelectorAll('.mascot').forEach(m=>{
+    m.classList.remove(...moods);
+    if(mood) m.classList.add('mood-'+mood);
+  });
   clearTimeout(mascotMoodT);
   if(mood){ mascotMoodT=setTimeout(()=>{
-    _heroMoodSrc=null;
-    if(heroImg) _heroSetSrc(HERO_FRAMES.base);
-    document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
+    document.querySelectorAll('.mascot').forEach(m=>m.classList.remove(...moods));
   }, 1600); }
 }
 /* ===== v120 首页吉祥物 AI 生图：5 表情 PNG + hero 循环动画（眨眼/招手） ===== */
-const HERO_FRAMES = {
-  base:      'assets/mascot/default.png',
-  happy:     'assets/mascot/happy.png',
-  cheer:     'assets/mascot/happy.png',  // cheer 复用 happy（5 表情共 5 图）
-  sad:       'assets/mascot/sleep.png',  // sad 复用 sleep（闭眼/安静，1.6s 瞬时够用）
-  think:     'assets/mascot/think.png',
-  sleep:     'assets/mascot/sleep.png',
-  welcome:   'assets/mascot/default.png',
-  encourage: 'assets/mascot/encourage.png',
-  blink:     'assets/mascot/blink.png',
-  wave1:     'assets/mascot/wave1.png',
-  wave2:     'assets/mascot/wave2.png'
-};
-let _heroMoodSrc = null;     // 当前 hero "回归" 基础（被心境覆盖时）
-let _heroAnimT = null;       // 循环定时器句柄
-function _heroSetSrc(s){
-  const img=document.getElementById('heroMascot');
-  if(img) img.src=s;
-}
-function _heroBase(){
-  return _heroMoodSrc || HERO_FRAMES.base;
-}
-function startHeroAnim(){
-  if(_heroAnimT) return; // 单例
-  const tick=()=>{
-    _heroAnimT=null;
-    const img=document.getElementById('heroMascot');
-    const home=document.getElementById('home');
-    // 离开首页或元素不存在：不消耗表情帧，但保持心跳（回首页立刻活起来）
-    if(!img || !home || !home.classList.contains('active')){
-      _heroAnimT=setTimeout(tick, 1500);
-      return;
-    }
-    const r=Math.random();
-    if(r<0.40){
-      // 眨眼：base → blink → 回归（_heroBase 动态读，兼容 mood 覆盖中）
-      _heroSetSrc(HERO_FRAMES.blink);
-      setTimeout(()=>{ _heroSetSrc(_heroBase()); }, 150);
-      _heroAnimT=setTimeout(tick, 3000+Math.random()*1800);
-    } else if(r<0.60){
-      // 招手：base → wave1 → wave2 → 回归
-      _heroSetSrc(HERO_FRAMES.wave1);
-      setTimeout(()=>{ _heroSetSrc(HERO_FRAMES.wave2); }, 220);
-      setTimeout(()=>{ _heroSetSrc(_heroBase()); }, 440);
-      _heroAnimT=setTimeout(tick, 7500+Math.random()*2500);
-    } else {
-      _heroAnimT=setTimeout(tick, 2800+Math.random()*2000);
-    }
-  };
-  tick();
-}
-// 预加载 8 张 PNG，避免首次切换白闪
-(function(){
-  const seen=new Set();
-  Object.values(HERO_FRAMES).forEach(s=>{ if(!seen.has(s)){ seen.add(s); const im=new Image(); im.src=s; } });
-})();
-// 启动 hero 动画（首页默认 active，第一帧即可触发）
-startHeroAnim();
 function showCombo(n){
   let b=document.getElementById('comboBanner');
   if(!b){
@@ -4915,7 +4988,7 @@ function renderMap(){
     let starsHtml='';
     for(let k=0;k<3;k++){ starsHtml+=`<span class="st${k<st.levelStars?' on':''}">${k<st.levelStars?'★':'☆'}</span>`; }
     if(st.hiddenStar) starsHtml+=`<span class="st hidden" title="隐藏星：完美通关">⭐</span>`;
-    el.innerHTML=`<div class="em">${u.emoji}</div>${i===frontierIdx?'<span class="fox-marker"><img class="fm-fox" src="assets/mascot/default.png" alt="" width="24" height="27" draggable="false"></span>':''}
+    el.innerHTML=`<div class="em">${u.emoji}</div>${i===frontierIdx?'<span class="fox-marker"><svg class="fm-fox" viewBox="0 0 64 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g class="cat-root"><path class="cat-tail" d="M49 44 q15 0 13 15 q-1 7 -8 8" fill="none" stroke="#3A2B22" stroke-width="5" stroke-linecap="round"/><path class="cat-body" d="M32 18 C17 18 10 27 10 39 C10 51 21 59 32 61 C43 59 54 51 54 39 C54 27 47 18 32 18 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/><ellipse class="cat-mound" cx="32" cy="60" rx="34" ry="14" fill="#BFE3A8" stroke="#3A2B22" stroke-width="1.6"/><g class="cat-head"><path class="cat-ear cat-ear-l" d="M18 22 L12 6 L29 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/><path class="cat-ear cat-ear-r" d="M46 22 L52 6 L35 15 Z" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 19 L16 10 L26 16 Z" fill="#F5826B"/><path d="M44 19 L48 10 L38 16 Z" fill="#F5826B"/><circle cx="32" cy="30" r="17" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.6"/><g class="cat-face"><ellipse class="cat-cheek" cx="22" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/><ellipse class="cat-cheek" cx="42" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".5"/><g class="cat-eye cat-eye-l"><circle cx="25" cy="30" r="4.2" fill="#3A2B22"/><circle cx="26.4" cy="28.4" r="1.5" fill="#fff"/></g><g class="cat-eye cat-eye-r"><circle cx="39" cy="30" r="4.2" fill="#3A2B22"/><circle cx="40.4" cy="28.4" r="1.5" fill="#fff"/></g><path class="cat-nose" d="M30 36 h4 l-2 3 Z" fill="#F5826B" stroke="#3A2B22" stroke-width=".8" stroke-linejoin="round"/><path class="cat-mouth" d="M32 39 q-3 3 -6 1 M32 39 q3 3 6 1" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round"/><path class="cat-mouth-smile" d="M26 39 q6 7 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/><path class="cat-mouth-sad" d="M26 42 q6 -6 12 0" fill="none" stroke="#3A2B22" stroke-width="1.6" stroke-linecap="round"/></g></g><g class="cat-paw"><path d="M50 36 q9 -2 10 -11" fill="none" stroke="#3A2B22" stroke-width="4.5" stroke-linecap="round"/><ellipse cx="60" cy="24" rx="4" ry="3.4" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.4"/></g><g class="cat-think"><circle cx="50" cy="11" r="2" fill="#fff" stroke="#3A2B22" stroke-width="1"/><circle cx="55" cy="7" r="1.4" fill="#fff" stroke="#3A2B22" stroke-width=".9"/><circle cx="59" cy="3" r="1" fill="#fff" stroke="#3A2B22" stroke-width=".8"/></g><g class="cat-star"><path d="M32 3 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g><g class="cat-heart"><path d="M45 9 C43.5 6.5 40 7.2 40 10 C40 12.4 44 14 45 14.6 C46 14 50 12.4 50 10 C50 7.2 46.5 6.5 45 9 Z" fill="#E94B5B" stroke="#3A2B22" stroke-width=".9" stroke-linejoin="round"/></g><g class="cat-tear"><path d="M25 35 q-1.5 4 0 6 q1.5 -2 0 -6 Z" fill="#4A9DB5"/></g></g></svg></span>':''}
       <div class="meta"><b>${u.title}</b><small>${u.words.length} 词 · ${u.sentences.length} 句型</small>
         <div class="lvl-bar"><i style="width:${Math.round(st.levelStars/3*100)}%"></i></div></div>
       <div class="stars">${starsHtml}</div>${justUnlocked?'<span class="unlock-ribbon"><svg class="ub-ic svg-ic" viewBox="0 0 24 24"><use href="#i-unlock"/></svg>新解锁</span>':''}`;
