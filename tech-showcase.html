@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 121,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v159',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
+    version: 122,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v160',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    121,       // 迭代版本数
+    iter:    122,       // 迭代版本数
     updated: '2026-08-25'
   };
 </script>
@@ -359,6 +359,7 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v118 · 听音选义选项文字可见性修复</b><span>「听音选义」题型选项文字在部分主题下被未知覆写规则覆盖成不可见——根因某 CSS 层对 `.opt` 设了浅色/透明文字。修复：`.opt` 改为 `color:#2a1f17 !important` 强制深色可读，三处版本号 +1 同步（APP_VERSION/sw CACHE/tech META）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v119 · 第四轮穷尽式审计（暗色兜底 / 死链 / emoji 遗漏 / 乱码 / 时间线）</b><span>逐屏死链 + 全文件 emoji 扫描：①暗色主题 `.opt` / `.choice-opt` 补浅字兜底（`#f5e9da !important`，app 自动跟随系统暗色时选项可读）；②`copyLink()` 死链补实现（原 onclick 调用但未定义）；③JS 动态生成的标题/提示里 11 处遗漏的 emoji 清理（统一零 emoji 占位红线）；④修复历史遗留乱码字节；⑤版本演进时间线补录 v117-v119。全 SVG 绘本风。</span></div>
 
+            <div class="it"><b>v122 · 首页吉祥物眨眼丝滑化（双层交叉淡入，替代硬切换）</b><span>用户觉得原 v121 眨眼是 default→blink→default 硬换 src（150ms）的「啪啪」感太生硬。改为<b>双层交叉淡入</b>：底层常驻睁眼 default.png，上层叠闭眼 blink.png（<code>position:absolute;inset:0</code> 与底层完全重叠），眨眼时上层 <code>opacity</code> 在 220ms 内 <code>0→1→0</code> 渐变——因两图同一只猫、仅眼睛不同，身体完全重叠不重影，眼睛平滑合上再睁开。<b>实现</b> hero 内新增 <code>&lt;img id="heroBlink" class="scene-blink"&gt;</code>，CSS <code>@keyframes silkBlink</code> + <code>.scene-blink.run</code> 触发；<code>startHeroAnim</code> 眨眼分支由「硬换 src」改为对叠加层 <code>classList.add('run')</code>（<code>void offsetWidth</code> 强制重排以重启动画），随机间隔保持 ~3–4.8s；<code>prefers-reduced-motion</code> 下自动关闭。<b>范围</b> 仅首页 hero 大猫（原只此处眨眼）；顶栏小猫咪带 <code>wob</code> 晃动且与眨眼叠加层 transform 会错位，保持原样。<b>版本</b> 121→122，sw CACHE v159→v160，tech META 同步。全 SVG 绘本风。</span></div>
             <div class="it"><b>v121 · 小尺寸吉祥物全部切 AI PNG（顶栏 40 / 测试页 32 / 反馈气泡 26 / 单元标记 24）</b><span>用户反馈 v120 首页吉祥物换了但左上角顶栏 40px 仍是旧 SVG，整体风格不统一。本版 4 处 <code>&lt;svg&gt;&lt;use href="#i-fox"/&gt;&lt;/svg&gt;</code> → <code>&lt;img src="assets/mascot/default.png"&gt;</code>，加 <code>object-fit:cover; object-position:center 48%</code> 适配非方形盒；<b>v88 答题反馈保留</b>——<code>setMascotMood</code> 改为切所有 <code>.mascot</code> 的 <code>&lt;img src&gt;</code>（顶栏 + 测试页同步反应 welcome/encourage/think/cheer/sad，1.6s 回归 default），hero PNG 同步逻辑保持；<b>清理</b> 删 <code>.ff-*</code> 6 表情 SVG 叠加层 + <code>.mascot.mood-*</code> 6 条 CSS 死代码；<code>#i-fox</code> symbol 留 <code>&lt;defs&gt;</code> 不删（零渲染成本）；<b>取舍</b> 24-26px 极小尺寸 AI 全身场景确实糊（用户已接受），先上线看效果，如不行再为小尺寸裁「白喵脸部特写」版（曾选选项 2）；<b>版本</b> 120→121，sw CACHE v158→v159，tech META 同步。</span></div>
             <div class="it"><b>v120 · 首页吉祥物 AI 生图重做（方案 A + 完整版动态）</b><span>用户反馈 SVG「白喵」插画过于简陋，改为生图模型出图：<b>姿势</b>「小山坡探出头」（奶油白猫咪+琥珀内耳+粉蝴蝶结+头顶小红心，绘本风暖纸色描边）；<b>方案 A</b> 大尺寸位（≥64px）用 AI PNG，小尺寸位（顶栏 40px / 测试页 32px / 单元标记 24px / 反馈气泡 26px）保留 SVG 矢量避免糊；<b>完整版动态</b> ①首页 hero 用 PNG <code>&lt;img&gt;</code> 替换原 CSS 画的太阳/云/山/小狐狸，object-fit:cover 填满宽屏，CSS 复用 v89 scIdle 探头浮动 ②JS 循环动画 startHeroAnim()：每 ~3.5s 随机眨眼（base→blink→回归，150ms） + 每 ~9s 招手（base→wave1→wave2→回归，440ms） ③setMascotMood 扩展为同步切 hero 的 <code>&lt;img src&gt;</code>，6 心境映射 5 表情 PNG（happy/cheer 共享 happy，sad 复用 sleep）④加载页 fox-spin SVG 换 90×90 PNG 场景，沿用 foxBob 弹跳；<b>资源</b> 8 张 1024² 图裁掉底部 11% 水印 + 中心方形裁切 + LANCZOS 缩到 512²，Pillow optimize 输出 default/happy/think/sleep/encourage + blink/wave1/wave2，~3.5MB 总（原始 12MB 省 71%），sw.js ASSETS 预缓存；<b>清理</b> 删 .sc-sun/.sc-rays/.sc-cloud/.sc-hill-*/.sc-fox-wrap/.sc-fox/.sc-eyes/.sc-lid + @keyframes spinSlow/drift/scBlink 及 dark 主题对应变体；<b>版本号补登</b> v119 阶段一（首页词境冒险入口 .lexi-entry）代码已落但 APP_VERSION 漏升，本版统一 119→120，sw CACHE v157→v158，tech META 同步；<b>SVG 绘本风</b> 顶栏/测试页/单元标记/反馈气泡的 SVG 白喵表情层完整保留，大尺寸位视觉升级。</span></div>      <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
