@@ -55,7 +55,12 @@
     padding:10px 14px; box-shadow:var(--sh-2); margin-bottom:14px;
     position:sticky; top:8px; z-index:30;
   }
-  .mascot{width:40px; height:45px; flex:0 0 auto; display:block; animation:wob 3s ease-in-out infinite;}
+  .mascot{width:40px; height:45px; flex:0 0 auto; display:block;}
+  /* v123 顶栏丝滑眨眼：wob 移到 .mwrap（让底座+眨眼层整体同步晃，避免叠加层与底座错位）；闭眼层与 hero 同原理 */
+  .mwrap{position:relative; display:inline-flex; flex:0 0 auto; animation:wob 3s ease-in-out infinite;}
+  .mtop-blink{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:0; pointer-events:none; animation:silkBlinkLoop 4.2s ease-in-out infinite;}
+  @keyframes silkBlinkLoop{0%,88%{opacity:0}94%{opacity:1}100%{opacity:0}}
+  @media (prefers-reduced-motion: reduce){ .mtop-blink{animation:none !important;} }
   @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   /* v121：小尺寸吉祥物统一用 AI PNG（<img>），object-fit 填满非方形盒 */
   .mascot,.test-mascot,.fm-fox,.fb-fox{object-fit:cover; object-position:center 48%;}
@@ -1028,7 +1033,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <img class="mascot" id="mascotImg" src="assets/mascot/default.png" alt="" width="40" height="45" loading="eager" decoding="async" draggable="false">
+    <span class="mwrap"><img class="mascot" id="mascotImg" src="assets/mascot/default.png" alt="" width="40" height="45" loading="eager" decoding="async" draggable="false"><img class="mtop-blink" src="assets/mascot/blink.png" alt="" aria-hidden="true" decoding="async"></span>
     <div class="brand"><span id="brandGrade">五年级</span>英语小探险家<small id="brandSub">📗 五年级上册 · 听说读写闯关</small></div>
     <div class="stats">
       <div class="pill" id="topStars">⭐ 0</div>
@@ -2823,7 +2828,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 122;
+const APP_VERSION = 123;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
