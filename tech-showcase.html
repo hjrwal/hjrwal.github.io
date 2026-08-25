@@ -11,15 +11,15 @@
 -->
 <script>
   const META = {
-    version: 124,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v162',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
+    version: 125,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v163',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    124,       // 迭代版本数
-    updated: '2026-08-25'
+    iter:    125,       // 迭代版本数
+    updated: '2026-08-26'
   };
 </script>
 <style>
@@ -359,6 +359,7 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v118 · 听音选义选项文字可见性修复</b><span>「听音选义」题型选项文字在部分主题下被未知覆写规则覆盖成不可见——根因某 CSS 层对 `.opt` 设了浅色/透明文字。修复：`.opt` 改为 `color:#2a1f17 !important` 强制深色可读，三处版本号 +1 同步（APP_VERSION/sw CACHE/tech META）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v119 · 第四轮穷尽式审计（暗色兜底 / 死链 / emoji 遗漏 / 乱码 / 时间线）</b><span>逐屏死链 + 全文件 emoji 扫描：①暗色主题 `.opt` / `.choice-opt` 补浅字兜底（`#f5e9da !important`，app 自动跟随系统暗色时选项可读）；②`copyLink()` 死链补实现（原 onclick 调用但未定义）；③JS 动态生成的标题/提示里 11 处遗漏的 emoji 清理（统一零 emoji 占位红线）；④修复历史遗留乱码字节；⑤版本演进时间线补录 v117-v119。全 SVG 绘本风。</span></div>
 
+            <div class="it"><b>v125 · 首页 Hero 修裁剪 + 三件微交互(迎宾招手/点头/戳/笑赞) + 右侧 sun 装饰</b><span>v124 后用户要求再做轻量稳改。落地时发现 hero 大猫被 <code>object-fit:cover</code> 裁成 1148×120 横条，<b>wave1 爪子和 happy 大笑全在画外</b>——大猫的招手和笑赞看不出区别。<b>修裁剪</b> scene 120→210 高 + 猫改 <code>object-fit:contain</code> 完整显示（底对齐）+ 右侧加 <b>sun SVG + 「今天也闪闪 ✨ / 一起加油吧」</b> 文字装饰平衡布局。<b>微交互串成序列</b>①迎宾探出→1.05s 后眨→1.35s 后招手(wave1↔wave2 220ms 切两帧，零新图)②顶栏白喵点头（mascotNod：CSS keyframe 摇头 .5s）+ 戳一下（bindMascotPoke：抖 + foxSay「喵~ 🐾」，手型光标）③答对/闯关/BOSS/拼词胜利时顶栏切 happy + 点头。零新图、零一致性风险、不卡。<b>版本</b> 124→125，sw CACHE v162→v163，tech META 同步。</span></div>
             <div class="it"><b>v124 · 首页吉祥物迎宾探出头（纯 CSS 一次性动画）</b><span>用户认为矢量重做风险大、AI 多帧蹦跳又怪又卡，选<b>轻量稳妥路线</b>：切到首页时大猫从草坡「探出头 + 淡入 + 轻微缩放归位」一次性迎宾（替代 v89 仅靠换表情帧）。<b>实现</b> 用现成 default.png/blink.png（零新图、零一致性风险、不卡）：hero 两图包进 <code>&lt;div class="hero-cat"&gt;</code>，CSS <code>@keyframes heroPeek</code>（translateY 28→-4→0 + scale .93→1.02→1 + opacity 0→1，1.05s 弹性曲线，<code>both</code> 填充）；<code>playHeroWelcome()</code> 在 <code>go('home')</code> 内以「移除 class→强制重排→重加 class」重启动画，使每次回首页都重播；同时触发一次 <code>#heroBlink.run</code> 丝滑眨眼，迎宾更生动；<code>prefers-reduced-motion</code> 下自动关闭。<b>版本</b> 123→124，sw CACHE v161→v162，tech META 同步。全 SVG 绘本风。</span></div>
             <div class="it"><b>v123 · 顶栏吉祥物丝滑眨眼（与 hero 同原理，整体同步晃）</b><span>用户在 v122 首页 hero 丝滑眨眼后，要求<b>顶栏小猫咪也加同款</b>。难点：顶栏 <code>.mascot</code> 带 <code>wob</code> 左右晃动（±6°），若直接叠闭眼层会与底座 transform 错位。解法：把 <code>wob</code> 从 <code>.mascot</code> 移到外层 <code>.mwrap</code>（<code>position:relative;display:inline-flex</code>），让「底座+p 叠加层」整体一起晃；顶栏 HTML 用 <code>.mwrap</code> 包裹 <code>#mascotImg</code> + 新增闭眼叠加 <code>&lt;img class="mtop-blink"&gt;</code>（<code>position:absolute;inset:0;object-fit:cover;object-position:center 48%</code> 与底座完全重叠）。闭眼层 <code>@keyframes silkBlinkLoop</code> 无限循环（每 ~4.2s，<code>opacity 0→1→0</code> 220ms 渐变），<code>prefers-reduced-motion</code> 下自动关闭。<b>版本</b> 122→123，sw CACHE v160→v161，tech META 同步。全 SVG 绘本风。</span></div>
             <div class="it"><b>v122 · 首页吉祥物眨眼丝滑化（双层交叉淡入，替代硬切换）</b><span>用户觉得原 v121 眨眼是 default→blink→default 硬换 src（150ms）的「啪啪」感太生硬。改为<b>双层交叉淡入</b>：底层常驻睁眼 default.png，上层叠闭眼 blink.png（<code>position:absolute;inset:0</code> 与底层完全重叠），眨眼时上层 <code>opacity</code> 在 220ms 内 <code>0→1→0</code> 渐变——因两图同一只猫、仅眼睛不同，身体完全重叠不重影，眼睛平滑合上再睁开。<b>实现</b> hero 内新增 <code>&lt;img id="heroBlink" class="scene-blink"&gt;</code>，CSS <code>@keyframes silkBlink</code> + <code>.scene-blink.run</code> 触发；<code>startHeroAnim</code> 眨眼分支由「硬换 src」改为对叠加层 <code>classList.add('run')</code>（<code>void offsetWidth</code> 强制重排以重启动画），随机间隔保持 ~3–4.8s；<code>prefers-reduced-motion</code> 下自动关闭。<b>范围</b> 仅首页 hero 大猫（原只此处眨眼）；顶栏小猫咪带 <code>wob</code> 晃动且与眨眼叠加层 transform 会错位，保持原样。<b>版本</b> 121→122，sw CACHE v159→v160，tech META 同步。全 SVG 绘本风。</span></div>
