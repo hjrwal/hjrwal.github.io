@@ -1,7 +1,7 @@
 // Service Worker for 五年级英语小探险家
 // 缓存策略：HTML/导航 = network-first（保证新版本立即覆盖）| 其它资源 = cache-first（保留离线能力）
 // 发布新版本时，只需把 CACHE 名称的版本号 +1，SW 会自动刷新缓存
-const CACHE = 'eng5-v158';
+const CACHE = 'eng5-v159';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const ASSETS = [
   './manifest.json',
   './icon.svg',
   './icon.png',
-  // v120 吉祥物 AI 生图（5 表情 + 3 hero 动画帧）
+  // v120/v121 吉祥物 AI 生图（5 表情 + 3 hero 动画帧；v121 小尺寸位也切 PNG）
   './assets/mascot/default.png',
   './assets/mascot/happy.png',
   './assets/mascot/think.png',
