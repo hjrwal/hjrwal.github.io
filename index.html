@@ -57,6 +57,8 @@
   }
   .mascot{width:40px; height:45px; flex:0 0 auto; display:block; animation:wob 3s ease-in-out infinite;}
   @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  /* v121：小尺寸吉祥物统一用 AI PNG（<img>），object-fit 填满非方形盒 */
+  .mascot,.test-mascot,.fm-fox,.fb-fox{object-fit:cover; object-position:center 48%;}
   .brand{font-weight:900; font-size:18px; line-height:1.1;
     background:linear-gradient(135deg,var(--fox-d),var(--amber));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
@@ -773,14 +775,7 @@
   .combo-banner .cb-num{font-size:20px; line-height:1;}
   .combo-banner .cb-txt{font-size:13px; font-weight:800; opacity:.95;}
   @keyframes flameFlick{0%{transform:scale(1) rotate(-3deg);}100%{transform:scale(1.12) rotate(3deg);}}
-  /* 白喵叠加表情层（轻量，默认中性不显示） */
-  .fox-face .ff{display:none;}
-  .mascot.mood-happy .ff-happy{display:block;}
-  .mascot.mood-sad .ff-sad{display:block;}
-  .mascot.mood-cheer .ff-cheer{display:block;}
-  .mascot.mood-think .ff-think{display:block;}
-  .mascot.mood-welcome .ff-welcome{display:block;}
-  .mascot.mood-encourage .ff-encourage{display:block;}
+/* v121：白喵表情层 SVG 叠加已替换为 <img> src 切换，.ff-*/.mood-* 规则清理（dead code） */
   .test-head-l{display:flex; align-items:center; gap:7px;}
   .test-mascot{width:32px; height:36px; flex:0 0 auto; display:block; animation:none;}
   /* 狐狸加载态 */
@@ -1028,59 +1023,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <svg class="mascot" id="mascotSvg" viewBox="0 0 64 72"><use href="#i-fox"/>
-      <g class="fox-face" transform="translate(0,8)">
-        <g class="ff ff-happy" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-          <path d="M18 18 Q23.5 14 29 18"/>
-          <path d="M35 18 Q40.5 14 46 18"/>
-          <path d="M27 43 Q32 50 37 43"/>
-        </g>
-        <g class="ff ff-cheer" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-          <path d="M18 17 Q23.5 12.5 29 17"/>
-          <path d="M35 17 Q40.5 12.5 46 17"/>
-          <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
-          <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-          <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-        </g>
-        <g class="ff ff-sad" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-          <path d="M18 18 Q23.5 15 29 17"/>
-          <path d="M35 17 Q40.5 15 46 18"/>
-          <path d="M27 47 Q32 42 37 47"/>
-          <path d="M23.5 31 q-1.6 4 0 6.5 q1.6 -2.5 0 -6.5 z" fill="#4A9DB5" stroke="none"/>
-        </g>
-        <g class="ff ff-think" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-          <path d="M20 23 Q23.5 20 27 23"/>
-          <path d="M37 23 Q40.5 20 44 23"/>
-          <path d="M29 42 h6"/>
-          <circle cx="47" cy="12" r="1.6" fill="#3A2B22" stroke="none"/>
-          <circle cx="51" cy="8" r="1.2" fill="#3A2B22" stroke="none"/>
-          <circle cx="54" cy="5" r="0.9" fill="#3A2B22" stroke="none"/>
-        </g>
-        <g class="ff ff-welcome" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-          <path d="M18 17 Q23.5 12.5 29 17"/>
-          <path d="M35 17 Q40.5 12.5 46 17"/>
-          <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
-          <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-          <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-          <ellipse cx="54" cy="46" rx="4" ry="5" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.2"/>
-          <path d="M52 44 l1 -2 M54 43 l0 -2.4 M56 44 l-1 -2" stroke="#3A2B22" stroke-width="1"/>
-        </g>
-        <g class="ff ff-encourage" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-          <path d="M19 19 Q23.5 15 28 19"/>
-          <path d="M36 19 Q40.5 15 45 19"/>
-          <path d="M28 43 Q32 48 36 43"/>
-          <path d="M32 5 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="none"/>
-          <ellipse cx="17" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
-          <ellipse cx="47" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
-        </g>
-      </g>
-    </svg>
+    <img class="mascot" id="mascotImg" src="assets/mascot/default.png" alt="" width="40" height="45" loading="eager" decoding="async" draggable="false">
     <div class="brand"><span id="brandGrade">五年级</span>英语小探险家<small id="brandSub">📗 五年级上册 · 听说读写闯关</small></div>
     <div class="stats">
       <div class="pill" id="topStars">⭐ 0</div>
@@ -1799,49 +1742,7 @@ update → controllerchange
   <div class="modal test-modal">
     <div class="row spread" style="margin-bottom:8px">
       <div class="test-head-l">
-        <svg class="mascot test-mascot" id="testMascot" viewBox="0 0 64 72"><use href="#i-fox"/>
-          <g class="fox-face" transform="translate(0,8)">
-            <g class="ff ff-happy" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-              <path d="M18 18 Q23.5 14 29 18"/><path d="M35 18 Q40.5 14 46 18"/><path d="M27 43 Q32 50 37 43"/>
-            </g>
-            <g class="ff ff-cheer" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-              <path d="M18 17 Q23.5 12.5 29 17"/><path d="M35 17 Q40.5 12.5 46 17"/>
-              <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
-              <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-              <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-            </g>
-            <g class="ff ff-sad" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-              <path d="M18 18 Q23.5 15 29 17"/><path d="M35 17 Q40.5 15 46 18"/><path d="M27 47 Q32 42 37 47"/>
-              <path d="M23.5 31 q-1.6 4 0 6.5 q1.6 -2.5 0 -6.5 z" fill="#4A9DB5" stroke="none"/>
-            </g>
-            <g class="ff ff-think" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-              <path d="M20 23 Q23.5 20 27 23"/><path d="M37 23 Q40.5 20 44 23"/><path d="M29 42 h6"/>
-              <circle cx="47" cy="12" r="1.6" fill="#3A2B22" stroke="none"/>
-              <circle cx="51" cy="8" r="1.2" fill="#3A2B22" stroke="none"/>
-              <circle cx="54" cy="5" r="0.9" fill="#3A2B22" stroke="none"/>
-            </g>
-            <g class="ff ff-welcome" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-              <path d="M18 17 Q23.5 12.5 29 17"/><path d="M35 17 Q40.5 12.5 46 17"/>
-              <path d="M27 43 Q32 52 37 43 Z" fill="#F5826B" stroke="#3A2B22" stroke-width="1.1"/>
-              <path d="M12 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-              <path d="M52 13 l1.4 2.8 2.8 1.4 -2.8 1.4 -1.4 2.8 -1.4 -2.8 -2.8 -1.4 2.8 -1.4 z" fill="#FFD23F" stroke="none"/>
-              <ellipse cx="54" cy="46" rx="4" ry="5" fill="#FFF7EE" stroke="#3A2B22" stroke-width="1.2"/>
-              <path d="M52 44 l1 -2 M54 43 l0 -2.4 M56 44 l-1 -2" stroke="#3A2B22" stroke-width="1"/>
-            </g>
-            <g class="ff ff-encourage" fill="none" stroke="#3A2B22" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <ellipse cx="32" cy="44" rx="9" ry="8" fill="#FFF7EE" stroke="none"/>
-              <path d="M19 19 Q23.5 15 28 19"/><path d="M36 19 Q40.5 15 45 19"/><path d="M28 43 Q32 48 36 43"/>
-              <path d="M32 5 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" fill="#FFD23F" stroke="none"/>
-              <ellipse cx="17" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
-              <ellipse cx="47" cy="35" rx="3.4" ry="2.4" fill="#F5826B" opacity=".7"/>
-            </g>
-          </g>
-        </svg>
+        <img class="mascot test-mascot" id="testMascot" src="assets/mascot/default.png" alt="" width="32" height="36" loading="eager" decoding="async" draggable="false">
         <b style="font-size:16px">单元测试</b>
       </div>
       <button class="back" onclick="closeTestModal()">退出</button>
@@ -2916,7 +2817,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 120;
+const APP_VERSION = 121;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4168,7 +4069,7 @@ let foxT=null;
 function foxSay(msg){
   const b=document.getElementById('foxBubble'); if(!b) return;
   const m=String(msg==null?'':msg).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  b.innerHTML='<svg class="fb-fox" viewBox="0 0 64 72"><use href="#i-fox"/></svg><span class="fb-msg">'+m+'</span>';
+  b.innerHTML='<img class="fb-fox" src="assets/mascot/default.png" alt="" width="26" height="29" draggable="false"><span class="fb-msg">'+m+'</span>';
   b.classList.add('show');
   clearTimeout(foxT); foxT=setTimeout(()=>b.classList.remove('show'), 2800);
 }
@@ -4232,19 +4133,18 @@ function floatText(text, type){
   setTimeout(()=>d.remove(), 1200);
 }
 function setMascotMood(mood){
-  const ms=document.querySelectorAll('.mascot');
-  const moods=['mood-happy','mood-sad','mood-cheer','mood-think','mood-welcome','mood-encourage'];
-  ms.forEach(m=>{ m.classList.remove(...moods); if(mood) m.classList.add('mood-'+mood); });
-  // v120：同步切换 hero PNG 场景的 src（顶栏/测试页 SVG 表情层保留），6 心境→5 图
+  // v121：SVG 表情层已替换为 <img>，改切 src（v88 答题反馈：顶栏 + 测试页白喵同步反应）
   const moodMap={happy:'happy',cheer:'cheer',sad:'sad',think:'think',welcome:'welcome',encourage:'encourage'};
-  _heroMoodSrc = (mood && HERO_FRAMES[moodMap[mood]]) ? HERO_FRAMES[moodMap[mood]] : null;
+  const src = (mood && HERO_FRAMES[moodMap[mood]]) ? HERO_FRAMES[moodMap[mood]] : HERO_FRAMES.base;
+  _heroMoodSrc = (mood && src!==HERO_FRAMES.base) ? src : null;
   const heroImg=document.getElementById('heroMascot');
   if(heroImg) _heroSetSrc(_heroBase());
+  document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=src; });
   clearTimeout(mascotMoodT);
   if(mood){ mascotMoodT=setTimeout(()=>{
-    document.querySelectorAll('.mascot').forEach(m=>m.classList.remove(...moods));
     _heroMoodSrc=null;
     if(heroImg) _heroSetSrc(HERO_FRAMES.base);
+    document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
   }, 1600); }
 }
 /* ===== v120 首页吉祥物 AI 生图：5 表情 PNG + hero 循环动画（眨眼/招手） ===== */
@@ -5015,7 +4915,7 @@ function renderMap(){
     let starsHtml='';
     for(let k=0;k<3;k++){ starsHtml+=`<span class="st${k<st.levelStars?' on':''}">${k<st.levelStars?'★':'☆'}</span>`; }
     if(st.hiddenStar) starsHtml+=`<span class="st hidden" title="隐藏星：完美通关">⭐</span>`;
-    el.innerHTML=`<div class="em">${u.emoji}</div>${i===frontierIdx?'<span class="fox-marker"><svg class="fm-fox" viewBox="0 0 64 72"><use href="#i-fox"/></svg></span>':''}
+    el.innerHTML=`<div class="em">${u.emoji}</div>${i===frontierIdx?'<span class="fox-marker"><img class="fm-fox" src="assets/mascot/default.png" alt="" width="24" height="27" draggable="false"></span>':''}
       <div class="meta"><b>${u.title}</b><small>${u.words.length} 词 · ${u.sentences.length} 句型</small>
         <div class="lvl-bar"><i style="width:${Math.round(st.levelStars/3*100)}%"></i></div></div>
       <div class="stars">${starsHtml}</div>${justUnlocked?'<span class="unlock-ribbon"><svg class="ub-ic svg-ic" viewBox="0 0 24 24"><use href="#i-unlock"/></svg>新解锁</span>':''}`;
