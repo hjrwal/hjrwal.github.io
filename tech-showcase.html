@@ -11,15 +11,15 @@
 -->
 <script>
   const META = {
-    version: 119,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v141',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
+    version: 120,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v158',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    119,       // 迭代版本数
-    updated: '2026-08-24'
+    iter:    120,       // 迭代版本数
+    updated: '2026-08-25'
   };
 </script>
 <style>
@@ -358,7 +358,8 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v117 · 第三轮审计修复（挑战计时器 / 词图补全）</b><span>穷尽式再审计：①`go()` 全局切屏原不调 `clearInterval(chTimer)`，限时挑战切屏后台计时器偷跑 + 静默加星；修复：go() 开头补 `clearInterval(chTimer)`。②`EMOJI_MAP` 原仅覆盖 98 词，约 60 个常见词无图；补全 56 个高频词 emoji（覆盖 154/562 词）。③新增 10 个专属单元 BOSS 配置（此前跨单元重复词缺独立 BOSS）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v118 · 听音选义选项文字可见性修复</b><span>「听音选义」题型选项文字在部分主题下被未知覆写规则覆盖成不可见——根因某 CSS 层对 `.opt` 设了浅色/透明文字。修复：`.opt` 改为 `color:#2a1f17 !important` 强制深色可读，三处版本号 +1 同步（APP_VERSION/sw CACHE/tech META）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v119 · 第四轮穷尽式审计（暗色兜底 / 死链 / emoji 遗漏 / 乱码 / 时间线）</b><span>逐屏死链 + 全文件 emoji 扫描：①暗色主题 `.opt` / `.choice-opt` 补浅字兜底（`#f5e9da !important`，app 自动跟随系统暗色时选项可读）；②`copyLink()` 死链补实现（原 onclick 调用但未定义）；③JS 动态生成的标题/提示里 11 处遗漏的 emoji 清理（统一零 emoji 占位红线）；④修复历史遗留乱码字节；⑤版本演进时间线补录 v117-v119。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
+
+            <div class="it"><b>v120 · 首页吉祥物 AI 生图重做（方案 A + 完整版动态）</b><span>用户反馈 SVG「白喵」插画过于简陋，改为生图模型出图：<b>姿势</b>「小山坡探出头」（奶油白猫咪+琥珀内耳+粉蝴蝶结+头顶小红心，绘本风暖纸色描边）；<b>方案 A</b> 大尺寸位（≥64px）用 AI PNG，小尺寸位（顶栏 40px / 测试页 32px / 单元标记 24px / 反馈气泡 26px）保留 SVG 矢量避免糊；<b>完整版动态</b> ①首页 hero 用 PNG <code>&lt;img&gt;</code> 替换原 CSS 画的太阳/云/山/小狐狸，object-fit:cover 填满宽屏，CSS 复用 v89 scIdle 探头浮动 ②JS 循环动画 startHeroAnim()：每 ~3.5s 随机眨眼（base→blink→回归，150ms） + 每 ~9s 招手（base→wave1→wave2→回归，440ms） ③setMascotMood 扩展为同步切 hero 的 <code>&lt;img src&gt;</code>，6 心境映射 5 表情 PNG（happy/cheer 共享 happy，sad 复用 sleep）④加载页 fox-spin SVG 换 90×90 PNG 场景，沿用 foxBob 弹跳；<b>资源</b> 8 张 1024² 图裁掉底部 11% 水印 + 中心方形裁切 + LANCZOS 缩到 512²，Pillow optimize 输出 default/happy/think/sleep/encourage + blink/wave1/wave2，~3.5MB 总（原始 12MB 省 71%），sw.js ASSETS 预缓存；<b>清理</b> 删 .sc-sun/.sc-rays/.sc-cloud/.sc-hill-*/.sc-fox-wrap/.sc-fox/.sc-eyes/.sc-lid + @keyframes spinSlow/drift/scBlink 及 dark 主题对应变体；<b>版本号补登</b> v119 阶段一（首页词境冒险入口 .lexi-entry）代码已落但 APP_VERSION 漏升，本版统一 119→120，sw CACHE v157→v158，tech META 同步；<b>SVG 绘本风</b> 顶栏/测试页/单元标记/反馈气泡的 SVG 白喵表情层完整保留，大尺寸位视觉升级。</span></div>      <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
         <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
         <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
         <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
