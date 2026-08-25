@@ -106,25 +106,45 @@
     border:2px solid var(--line);
     border-radius:26px 24px 22px 26px/24px 26px 24px 22px;
     box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.55), inset 0 0 0 7.5px rgba(200,150,90,.16);}
-  .book-scene{position:relative; height:120px; overflow:hidden;
+  /* v125 首页 Hero 修裁剪：scene 加高(120→210)+猫完整显示(object-fit:contain)+右侧 sun+加油 平衡布局 */
+  .book-scene{position:relative; height:210px; overflow:hidden;
+    display:flex; align-items:flex-end; justify-content:space-between;
+    padding:10px 16px 0;
     background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
-  /* v120 首页 Hero 改为 AI 生图场景（白喵·探头·小山坡），CSS 画的太阳/云/山/小狐狸全部替换 */
-  .scene-png{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%;}
+  .scene-png{display:block; height:100%; width:auto; max-width:none;
+    object-fit:contain; object-position:center bottom;}
   /* v122 丝滑眨眼：睁眼底层 + 闭眼上层交叉淡入（替代原硬切换 default→blink→default） */
-  .scene-blink{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:0; pointer-events:none;}
+  .scene-blink{position:absolute; inset:0; width:100%; height:100%;
+    object-fit:contain; object-position:center bottom; opacity:0; pointer-events:none;}
   .scene-blink.run{animation:silkBlink .22s ease-in-out;}
   @keyframes silkBlink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
   /* v124 迎宾探出头：切到首页时大猫从草坡探出 + 淡入（一次性，纯 CSS 不卡、零新图） */
-  .hero-cat{position:absolute; inset:0; width:100%; height:100%; transform-origin:50% 100%;}
+  .hero-cat{position:relative; flex:0 0 auto; height:100%; display:flex; align-items:flex-end;
+    transform-origin:50% 100%;}
   .hero-cat.peek{animation:heroPeek 1.05s cubic-bezier(.18,.9,.32,1.18) both;}
   @keyframes heroPeek{
     0%{transform:translateY(28px) scale(.93); opacity:0;}
     55%{transform:translateY(-4px) scale(1.02); opacity:1;}
     100%{transform:translateY(0) scale(1); opacity:1;}
   }
+  /* v125 右侧装饰：太阳 + 一句加油，平衡猫在左布局 */
+  .scene-deco{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:6px;
+    padding-bottom:14px; max-width:60%;}
+  .scene-deco .deco-sun{width:44px; height:44px; filter:drop-shadow(0 2px 4px rgba(255,180,80,.45));}
+  .scene-deco .deco-text{font-size:13px; font-weight:800; color:#7a5a3a; line-height:1.4;
+    background:rgba(255,255,255,.62); border:1.5px solid rgba(122,90,58,.18); border-radius:12px;
+    padding:5px 9px; text-align:right; white-space:nowrap;}
   @media (prefers-reduced-motion: reduce){
     .scene-blink.run{animation:none !important;}
     .hero-cat.peek{animation:none !important;}
+  }
+  /* v125 顶栏白喵点头 + 被戳抖动：叠加在 .mwrap 的 wob 轻晃之上（不同元素，transform 不冲突），零新图 */
+  .mascot.nod{animation:nod .5s ease;}
+  @keyframes nod{0%{transform:rotate(0)}28%{transform:rotate(-11deg) translateY(2px)}58%{transform:rotate(7deg)}100%{transform:rotate(0)}}
+  .mascot.poke{animation:poke .45s ease;}
+  @keyframes poke{0%{transform:scale(1)}22%{transform:scale(.85) rotate(-7deg)}48%{transform:scale(1.1) rotate(6deg)}74%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1)}}
+  @media (prefers-reduced-motion: reduce){
+    .mascot.nod,.mascot.poke{animation:none !important;}
   }
     transform-box:view-box; transform-origin:center; animation:scIdle 4.2s var(--ease-io) infinite;
     filter:drop-shadow(0 2px 3px rgba(80,50,20,.18));}
@@ -1125,12 +1145,28 @@
       <button class="btn" onclick="copyLink()">复制链接</button>
     </div>
     <div class="hero storybook" onclick="go('progress')">
-      <div class="book-scene" aria-hidden="true">
-        <div class="hero-cat peek" id="heroCat">
-          <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
-          <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
+<div class="book-scene" aria-hidden="true">
+          <div class="hero-cat peek" id="heroCat">
+            <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
+            <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
+          </div>
+          <div class="scene-deco" aria-hidden="true">
+            <svg class="deco-sun" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="10" fill="#FFD23F" stroke="#E8A93A" stroke-width="1.5"/>
+              <g stroke="#E8A93A" stroke-width="2.2" stroke-linecap="round">
+                <line x1="24" y1="6" x2="24" y2="11"/>
+                <line x1="24" y1="37" x2="24" y2="42"/>
+                <line x1="6" y1="24" x2="11" y2="24"/>
+                <line x1="37" y1="24" x2="42" y2="24"/>
+                <line x1="11" y1="11" x2="14.5" y2="14.5"/>
+                <line x1="33.5" y1="33.5" x2="37" y2="37"/>
+                <line x1="11" y1="37" x2="14.5" y2="33.5"/>
+                <line x1="33.5" y1="14.5" x2="37" y2="11"/>
+              </g>
+            </svg>
+            <div class="deco-text">今天也闪闪 ✨<br>一起加油吧</div>
+          </div>
         </div>
-      </div>
       <div class="book-body">
         <div class="book-title"><span class="bt-ribbon" id="btGrade">五年级</span>英语冒险绘本</div>
         <div class="speech">
@@ -2841,7 +2877,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 124;
+const APP_VERSION = 125;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3555,7 +3591,7 @@ function go(name){
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
-  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); playHeroWelcome(); } // v89 打招呼 + v124 迎宾探出头
+  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -4223,13 +4259,41 @@ function startHeroAnim(){
   };
   tick();
 }
-// v124 迎宾探出头：每次进入首页触发一次性探出动画 + 一次丝滑眨眼
+// v124 迎宾探出头；v125 探出→眨→招手 串成连贯迎宾序列（招手复用循环逻辑里的 wave 帧，零新图、不卡）
 function playHeroWelcome(){
   const c=document.getElementById('heroCat');
-  if(c){ c.classList.remove('peek'); void c.offsetWidth; c.classList.add('peek'); }
   const bl=document.getElementById('heroBlink');
-  if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); }
+  const hw=document.getElementById('heroMascot');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(c){ c.classList.remove('peek'); void c.offsetWidth; c.classList.add('peek'); }
+  if(reduce) return; // 减少动效：仅探出，不眨不招手
+  // 探出头结束后先眨一下
+  setTimeout(()=>{ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } }, 1050);
+  // 眨后再接招手收尾：base → wave1 → wave2 → 回归 default 定格
+  setTimeout(()=>{
+    if(hw){
+      hw.src=HERO_FRAMES.wave1;
+      setTimeout(()=>{ if(hw) hw.src=HERO_FRAMES.wave2; }, 220);
+      setTimeout(()=>{ if(hw) _heroSetSrc(_heroBase()); }, 460);
+    }
+  }, 1350);
 }
+// v125 顶栏白喵点头（成功反馈）+ 戳一下（点击互动），零新图、叠加在 .mwrap 轻晃之上
+function mascotNod(){
+  const m=document.getElementById('mascotImg');
+  if(!m || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  m.classList.remove('nod'); void m.offsetWidth; m.classList.add('nod');
+}
+(function bindMascotPoke(){
+  const m=document.getElementById('mascotImg');
+  if(!m || m.dataset.pokeBound) return;
+  m.dataset.pokeBound='1'; m.style.cursor='pointer';
+  m.addEventListener('click', ()=>{
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    m.classList.remove('poke'); void m.offsetWidth; m.classList.add('poke');
+    if(typeof foxSay==='function') foxSay('喵~ 🐾');
+  });
+})();
 // 预加载 8 张 PNG，避免首次切换白闪
 (function(){
   const seen=new Set();
@@ -4621,7 +4685,7 @@ function commitTest(ok, enForWrong, delay){
   bumpAb(cat, ok); // 能力雷达：累计各维度答题次数与正确数
   if(ok){
     testCorrect++; awardStars(1);
-    comboStreak++; floatText('答对 +10', 'ok'); setMascotMood('cheer'); playDing();
+    comboStreak++; floatText('答对 +10', 'ok'); setMascotMood('cheer'); mascotNod(); playDing();
     if(comboStreak>=3) showCombo(comboStreak);
   } else {
     comboStreak=0; hideCombo();
@@ -4786,7 +4850,7 @@ function gradeSpellGame(){
   const btnCheck=area.querySelector('button.btn.grass');
   if(ok){
     STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(2);
-    confetti(); foxSay('🎉 拼对啦，你真棒！');
+    confetti(); mascotNod(); foxSay('🎉 拼对啦，你真棒！');
     area.insertAdjacentHTML('beforeend','<p class="center" style="color:var(--grass-d);font-weight:800;margin-top:10px">✅ 正确！+2⭐　下一题来啦…</p>');
     if(btnCheck){ btnCheck.disabled=true; btnCheck.style.opacity='.45'; btnCheck.style.pointerEvents='none'; }
     setTimeout(()=>{ if(spellState===s) startSpell(); }, 900);
@@ -4841,7 +4905,7 @@ function pickChoice(i){
     else if(idx===i) b.classList.add('wrong');
   });
   if(ok){ bumpAb('listen',true);
-    STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(2); confetti(); foxSay('🎉 选对啦，你真棒！');
+    STATE.gameWins=(STATE.gameWins||0)+1; saveState(); awardStars(2); confetti(); mascotNod(); foxSay('🎉 选对啦，你真棒！');
     area.insertAdjacentHTML('beforeend','<p class="center" style="color:var(--grass-d);font-weight:800;margin-top:10px">✅ 正确！+2⭐　下一题来啦…</p>');
   } else { bumpAb('listen',false);
     area.insertAdjacentHTML('beforeend',`<p class="center" style="color:#d33;font-weight:800;margin-top:10px">❌ 不对哦，正确是：<b style="letter-spacing:1px">${s.w.en}</b>　点「换一个」再来</p>`);
@@ -5470,7 +5534,7 @@ function renderBoss(u, done){
     if(idx>=sents.length){
       const win=hp<=0; // v106：血条打空即击败（答错回血会让战斗更胶着）
       if(win){
-        awardStars(2); celebrate(); foxSay('🏆 你击败了 '+boss.name+'！获得 ⭐ 战利品！');
+        awardStars(2); celebrate(); setMascotMood('cheer'); mascotNod(); foxSay('🏆 你击败了 '+boss.name+'！获得 ⭐ 战利品！');
         area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss.emoji}</div><h2>${boss.name} 被击败！</h2><p class="muted">${boss.win}</p><p class="muted">额外获得 2 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       } else {
         foxSay('💪 '+boss.name+'逃走了，多练练句型再来！');
@@ -5616,7 +5680,7 @@ function finish(){
   awardStars(stars);
   saveState();
   if(unlockedName) setTimeout(()=>toast('解锁新关卡：'+unlockedName), 900);
-  if(stars>0){ celebrate(); collectUnit(curUnitId); foxSay('🎉 闯关成功！你拿到了 '+showStars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
+  if(stars>0){ celebrate(); collectUnit(curUnitId); setMascotMood('cheer'); mascotNod(); foxSay('🎉 闯关成功！你拿到了 '+showStars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
   const wrongTot=levelWrong.sel+levelWrong.spell+levelWrong.sent;
   const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 拼写 ${levelWrong.spell} · 句子题 ${levelWrong.sent}</p>`:'';
   const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
