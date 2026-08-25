@@ -114,7 +114,18 @@
   .scene-blink{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:0; pointer-events:none;}
   .scene-blink.run{animation:silkBlink .22s ease-in-out;}
   @keyframes silkBlink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
-  @media (prefers-reduced-motion: reduce){ .scene-blink.run{animation:none !important;} }
+  /* v124 迎宾探出头：切到首页时大猫从草坡探出 + 淡入（一次性，纯 CSS 不卡、零新图） */
+  .hero-cat{position:absolute; inset:0; width:100%; height:100%; transform-origin:50% 100%;}
+  .hero-cat.peek{animation:heroPeek 1.05s cubic-bezier(.18,.9,.32,1.18) both;}
+  @keyframes heroPeek{
+    0%{transform:translateY(28px) scale(.93); opacity:0;}
+    55%{transform:translateY(-4px) scale(1.02); opacity:1;}
+    100%{transform:translateY(0) scale(1); opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .scene-blink.run{animation:none !important;}
+    .hero-cat.peek{animation:none !important;}
+  }
     transform-box:view-box; transform-origin:center; animation:scIdle 4.2s var(--ease-io) infinite;
     filter:drop-shadow(0 2px 3px rgba(80,50,20,.18));}
   /* 复用 v89 的探头浮动关键帧，让场景有"活着"的感觉 */
@@ -1115,8 +1126,10 @@
     </div>
     <div class="hero storybook" onclick="go('progress')">
       <div class="book-scene" aria-hidden="true">
-        <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
-        <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
+        <div class="hero-cat peek" id="heroCat">
+          <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
+          <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
+        </div>
       </div>
       <div class="book-body">
         <div class="book-title"><span class="bt-ribbon" id="btGrade">五年级</span>英语冒险绘本</div>
@@ -2828,7 +2841,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 123;
+const APP_VERSION = 124;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3542,7 +3555,7 @@ function go(name){
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
-  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); } // v89：回家时白喵打招呼
+  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); playHeroWelcome(); } // v89 打招呼 + v124 迎宾探出头
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -4209,6 +4222,13 @@ function startHeroAnim(){
     }
   };
   tick();
+}
+// v124 迎宾探出头：每次进入首页触发一次性探出动画 + 一次丝滑眨眼
+function playHeroWelcome(){
+  const c=document.getElementById('heroCat');
+  if(c){ c.classList.remove('peek'); void c.offsetWidth; c.classList.add('peek'); }
+  const bl=document.getElementById('heroBlink');
+  if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); }
 }
 // 预加载 8 张 PNG，避免首次切换白闪
 (function(){
