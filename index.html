@@ -101,23 +101,12 @@
     box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.55), inset 0 0 0 7.5px rgba(200,150,90,.16);}
   .book-scene{position:relative; height:120px; overflow:hidden;
     background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
-  .scene-svg{position:absolute; inset:0; width:100%; height:100%;}
-  .sc-sun{fill:var(--amber);}
-  .sc-rays line{stroke:var(--amber); stroke-width:2.6; stroke-linecap:round; transform-origin:262px 30px; animation:spinSlow 26s linear infinite;}
-  @keyframes spinSlow{to{transform:rotate(360deg)}}
-  .sc-cloud{fill:#fff; opacity:.92;}
-  .sc-cloud-a{animation:drift 9s ease-in-out infinite;}
-  .sc-cloud-b{animation:drift 11s ease-in-out infinite reverse;}
-  @keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
-  .sc-hill-far{fill:var(--forest); opacity:.5;}
-  .sc-hill-near{fill:var(--forest-d);}
-  /* v89 首页白喵 idle：探头(上下浮) + 招手(轻摆) + 眨眼(眼睑) 组合，绘本风精良 */
-  .sc-fox-wrap{ transform-box:view-box; transform-origin:62px 84px; animation:scIdle 4.2s var(--ease-io) infinite; }
-  .sc-fox{filter:drop-shadow(0 3px 4px rgba(80,50,20,.28));}
-  .sc-eyes{pointer-events:none;}
-  .sc-lid{fill:#FFF7EE; transform-box:fill-box; transform-origin:center; transform:scaleY(0); animation:scBlink 5.2s ease-in-out infinite;}
+  /* v120 首页 Hero 改为 AI 生图场景（白喵·探头·小山坡），CSS 画的太阳/云/山/小狐狸全部替换 */
+  .scene-png{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%;
+    transform-box:view-box; transform-origin:center; animation:scIdle 4.2s var(--ease-io) infinite;
+    filter:drop-shadow(0 2px 3px rgba(80,50,20,.18));}
+  /* 复用 v89 的探头浮动关键帧，让场景有"活着"的感觉 */
   @keyframes scIdle{0%{transform:translateY(0) rotate(0deg);}25%{transform:translateY(-3px) rotate(-3deg);}50%{transform:translateY(0) rotate(0deg);}75%{transform:translateY(-3px) rotate(3deg);}100%{transform:translateY(0) rotate(0deg);}}
-  @keyframes scBlink{0%,90%,100%{transform:scaleY(0);}94%,97%{transform:scaleY(1);}}
   .book-body{padding:14px 16px 16px;}
   .book-title{display:flex; align-items:center; gap:8px; font-size:21px; font-weight:900; color:var(--fox-d); letter-spacing:.5px; margin-bottom:11px;}
   .bt-ribbon{background:var(--fox); color:#fff; font-size:13px; font-weight:800; padding:3px 10px; border-radius:999px; box-shadow:0 3px 8px rgba(239,130,74,.30);}
@@ -601,11 +590,8 @@
   body.theme-dark .hero.storybook{ background:linear-gradient(180deg,#3a2c20 0%, var(--paper) 40%); box-shadow:var(--sh-3), inset 0 0 0 6px rgba(60,46,34,.5), inset 0 0 0 7.5px rgba(232,116,59,.22);}
   body.theme-dark .speech{background:#3a2e24; border-color:var(--line);}
   body.theme-dark .speech::before{background:#3a2e24; border-color:var(--line);}
-  /* 暖夜下绘本插画改为黄昏暮色，狐狸依旧在岗 */
+  /* 暖夜下绘本插画改为黄昏暮色，狐狸依旧在岗（v120 hero 改 AI 生图 PNG，暗色背景下场景贴片自带暖色调，反而像夜里翻到一页彩绘） */
   body.theme-dark .book-scene{ background:linear-gradient(180deg,#3a3150 0%, #46324a 100%);}
-  body.theme-dark .sc-cloud{fill:#cdd2e0; opacity:.55;}
-  body.theme-dark .sc-hill-far{fill:#2f5a44; opacity:.7;}
-  body.theme-dark .sc-hill-near{fill:#244634;}
   body.theme-dark .pill{color:#5b3a00;}
   /* 护眼暖纸下插画稍柔 */
   body.theme-sepia .book-scene{ background:linear-gradient(180deg,#dcebd8 0%, #f0ead0 100%);}
@@ -801,7 +787,7 @@
   .loading{position:fixed; inset:0; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center; gap:12px;
     background:rgba(255,253,247,.84); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
   .loading.show{display:flex;}
-  .loading .fox-spin{width:76px; height:86px; animation:foxBob .9s var(--ease-spring) infinite;}
+  .loading .fox-spin-png{width:90px; height:90px; animation:foxBob .9s var(--ease-spring) infinite; object-fit:contain; filter:drop-shadow(0 3px 4px rgba(80,50,20,.25));}
   .loading p{margin:0; color:var(--muted); font-weight:800; letter-spacing:.5px;}
   @keyframes foxBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(5deg)}}
   /* 掌握度环 */
@@ -1176,25 +1162,7 @@
     </div>
     <div class="hero storybook" onclick="go('progress')">
       <div class="book-scene" aria-hidden="true">
-        <svg class="scene-svg" viewBox="0 0 320 132" preserveAspectRatio="xMidYMid slice">
-          <circle class="sc-sun" cx="262" cy="30" r="16"/>
-          <g class="sc-rays">
-            <line x1="262" y1="6" x2="262" y2="0"/><line x1="286" y1="30" x2="292" y2="30"/>
-            <line x1="279" y1="13" x2="284" y2="8"/><line x1="279" y1="47" x2="284" y2="52"/>
-            <line x1="245" y1="13" x2="240" y2="8"/><line x1="245" y1="47" x2="240" y2="52"/>
-          </g>
-          <ellipse class="sc-cloud sc-cloud-a" cx="58" cy="30" rx="22" ry="10"/>
-          <ellipse class="sc-cloud sc-cloud-b" cx="120" cy="20" rx="15" ry="7"/>
-          <path class="sc-hill-far" d="M0 98 Q80 66 160 94 T320 86 V132 H0 Z"/>
-          <path class="sc-hill-near" d="M0 114 Q90 88 190 112 T320 106 V132 H0 Z"/>
-          <g class="sc-fox-wrap">
-            <use href="#i-fox" class="sc-fox" x="34" y="51" width="56" height="63"/>
-            <g class="sc-eyes" aria-hidden="true">
-              <ellipse class="sc-lid" cx="54.6" cy="79.9" rx="6.5" ry="7"/>
-              <ellipse class="sc-lid" cx="69.4" cy="79.9" rx="6.5" ry="7"/>
-            </g>
-          </g>
-        </svg>
+        <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
       </div>
       <div class="book-body">
         <div class="book-title"><span class="bt-ribbon" id="btGrade">五年级</span>英语冒险绘本</div>
@@ -1755,7 +1723,7 @@ update → controllerchange
 <div class="toast" id="toast"></div>
 <div class="speak-fx" id="speakFx">🔊 发音中<b></b><b></b><b></b><b></b><b></b></div>
 <div class="fox-bubble" id="foxBubble"></div>
-<div class="loading" id="loading"><svg class="fox-spin" viewBox="0 0 64 72"><use href="#i-fox"/></svg><p>加载中…</p></div>
+<div class="loading" id="loading"><img class="fox-spin-png" id="loadingMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async"><p>加载中…</p></div>
 
 <!-- 设置弹窗 -->
 <div class="modal-mask" id="settingsModal" onclick="if(event.target===this)closeSettings()">
@@ -2948,7 +2916,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 119;
+const APP_VERSION = 120;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4267,9 +4235,77 @@ function setMascotMood(mood){
   const ms=document.querySelectorAll('.mascot');
   const moods=['mood-happy','mood-sad','mood-cheer','mood-think','mood-welcome','mood-encourage'];
   ms.forEach(m=>{ m.classList.remove(...moods); if(mood) m.classList.add('mood-'+mood); });
+  // v120：同步切换 hero PNG 场景的 src（顶栏/测试页 SVG 表情层保留），6 心境→5 图
+  const moodMap={happy:'happy',cheer:'cheer',sad:'sad',think:'think',welcome:'welcome',encourage:'encourage'};
+  _heroMoodSrc = (mood && HERO_FRAMES[moodMap[mood]]) ? HERO_FRAMES[moodMap[mood]] : null;
+  const heroImg=document.getElementById('heroMascot');
+  if(heroImg) _heroSetSrc(_heroBase());
   clearTimeout(mascotMoodT);
-  if(mood){ mascotMoodT=setTimeout(()=>{ document.querySelectorAll('.mascot').forEach(m=>m.classList.remove(...moods)); }, 1600); }
+  if(mood){ mascotMoodT=setTimeout(()=>{
+    document.querySelectorAll('.mascot').forEach(m=>m.classList.remove(...moods));
+    _heroMoodSrc=null;
+    if(heroImg) _heroSetSrc(HERO_FRAMES.base);
+  }, 1600); }
 }
+/* ===== v120 首页吉祥物 AI 生图：5 表情 PNG + hero 循环动画（眨眼/招手） ===== */
+const HERO_FRAMES = {
+  base:      'assets/mascot/default.png',
+  happy:     'assets/mascot/happy.png',
+  cheer:     'assets/mascot/happy.png',  // cheer 复用 happy（5 表情共 5 图）
+  sad:       'assets/mascot/sleep.png',  // sad 复用 sleep（闭眼/安静，1.6s 瞬时够用）
+  think:     'assets/mascot/think.png',
+  sleep:     'assets/mascot/sleep.png',
+  welcome:   'assets/mascot/default.png',
+  encourage: 'assets/mascot/encourage.png',
+  blink:     'assets/mascot/blink.png',
+  wave1:     'assets/mascot/wave1.png',
+  wave2:     'assets/mascot/wave2.png'
+};
+let _heroMoodSrc = null;     // 当前 hero "回归" 基础（被心境覆盖时）
+let _heroAnimT = null;       // 循环定时器句柄
+function _heroSetSrc(s){
+  const img=document.getElementById('heroMascot');
+  if(img) img.src=s;
+}
+function _heroBase(){
+  return _heroMoodSrc || HERO_FRAMES.base;
+}
+function startHeroAnim(){
+  if(_heroAnimT) return; // 单例
+  const tick=()=>{
+    _heroAnimT=null;
+    const img=document.getElementById('heroMascot');
+    const home=document.getElementById('home');
+    // 离开首页或元素不存在：不消耗表情帧，但保持心跳（回首页立刻活起来）
+    if(!img || !home || !home.classList.contains('active')){
+      _heroAnimT=setTimeout(tick, 1500);
+      return;
+    }
+    const r=Math.random();
+    if(r<0.40){
+      // 眨眼：base → blink → 回归（_heroBase 动态读，兼容 mood 覆盖中）
+      _heroSetSrc(HERO_FRAMES.blink);
+      setTimeout(()=>{ _heroSetSrc(_heroBase()); }, 150);
+      _heroAnimT=setTimeout(tick, 3000+Math.random()*1800);
+    } else if(r<0.60){
+      // 招手：base → wave1 → wave2 → 回归
+      _heroSetSrc(HERO_FRAMES.wave1);
+      setTimeout(()=>{ _heroSetSrc(HERO_FRAMES.wave2); }, 220);
+      setTimeout(()=>{ _heroSetSrc(_heroBase()); }, 440);
+      _heroAnimT=setTimeout(tick, 7500+Math.random()*2500);
+    } else {
+      _heroAnimT=setTimeout(tick, 2800+Math.random()*2000);
+    }
+  };
+  tick();
+}
+// 预加载 8 张 PNG，避免首次切换白闪
+(function(){
+  const seen=new Set();
+  Object.values(HERO_FRAMES).forEach(s=>{ if(!seen.has(s)){ seen.add(s); const im=new Image(); im.src=s; } });
+})();
+// 启动 hero 动画（首页默认 active，第一帧即可触发）
+startHeroAnim();
 function showCombo(n){
   let b=document.getElementById('comboBanner');
   if(!b){
