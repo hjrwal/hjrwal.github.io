@@ -104,7 +104,12 @@
   .book-scene{position:relative; height:120px; overflow:hidden;
     background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
   /* v120 首页 Hero 改为 AI 生图场景（白喵·探头·小山坡），CSS 画的太阳/云/山/小狐狸全部替换 */
-  .scene-png{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%;
+  .scene-png{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%;}
+  /* v122 丝滑眨眼：睁眼底层 + 闭眼上层交叉淡入（替代原硬切换 default→blink→default） */
+  .scene-blink{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 48%; opacity:0; pointer-events:none;}
+  .scene-blink.run{animation:silkBlink .22s ease-in-out;}
+  @keyframes silkBlink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+  @media (prefers-reduced-motion: reduce){ .scene-blink.run{animation:none !important;} }
     transform-box:view-box; transform-origin:center; animation:scIdle 4.2s var(--ease-io) infinite;
     filter:drop-shadow(0 2px 3px rgba(80,50,20,.18));}
   /* 复用 v89 的探头浮动关键帧，让场景有"活着"的感觉 */
@@ -1106,6 +1111,7 @@
     <div class="hero storybook" onclick="go('progress')">
       <div class="book-scene" aria-hidden="true">
         <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
+        <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
       </div>
       <div class="book-body">
         <div class="book-title"><span class="bt-ribbon" id="btGrade">五年级</span>英语冒险绘本</div>
@@ -2817,7 +2823,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 121;
+const APP_VERSION = 122;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4183,9 +4189,9 @@ function startHeroAnim(){
     }
     const r=Math.random();
     if(r<0.40){
-      // 眨眼：base → blink → 回归（_heroBase 动态读，兼容 mood 覆盖中）
-      _heroSetSrc(HERO_FRAMES.blink);
-      setTimeout(()=>{ _heroSetSrc(_heroBase()); }, 150);
+      // 眨眼：闭眼上层交叉淡入（v122 丝滑，不再硬换 src）。base 保持睁眼，叠加 blink 层 0→1→0
+      const bl=document.getElementById('heroBlink');
+      if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); }
       _heroAnimT=setTimeout(tick, 3000+Math.random()*1800);
     } else if(r<0.60){
       // 招手：base → wave1 → wave2 → 回归
