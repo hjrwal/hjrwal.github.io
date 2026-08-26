@@ -2877,7 +2877,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 126;
+const APP_VERSION = 127;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3204,21 +3204,37 @@ document.addEventListener('visibilitychange', ()=>{
 function importProgress(input){
   const f=input.files&&input.files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=()=>{ try{
-    const obj=JSON.parse(r.result);
-    if(!obj || obj.version!==1 || !obj.settings){ toast('文件格式不对，无法导入'); input.value=''; return; }
-    STATE=obj;
-    applyTheme(STATE.settings.theme||'light');
-    applyFont();
-    UNITS=pickBook();
-    curUnitId=UNITS[0].id; updateBookUI();
-    saveState();
-    if(curScreen==='progress') renderProgress();
-    if(curScreen==='wrongbook') renderWrongbook();
-    if(curScreen==='achievements') renderAchievements();
-    refreshTop();
-    toast('进度已恢复 ✅');
-  }catch(e){ toast('导入失败：'+e.message); } input.value=''; };
+  r.onload=()=>{
+    const finish=()=>{ try{ input.value=''; }catch(_){} };
+    try{
+      const obj=JSON.parse(r.result);
+      if(!obj || typeof obj!=='object' || Array.isArray(obj) || obj.version!==1 || !obj.settings){ toast('文件格式不对，无法导入'); finish(); return; }
+      const backup=STATE; // v127：容错回滚点
+      try{
+        STATE=obj;
+        // v127：容错合并——补齐缺失字段，避免后续渲染/统计连锁崩溃
+        STATE.settings = (STATE.settings&&typeof STATE.settings==='object')?STATE.settings:{};
+        STATE.wrong    = Array.isArray(STATE.wrong)?STATE.wrong:[];
+        STATE.weakByUnit = (STATE.weakByUnit&&typeof STATE.weakByUnit==='object')?STATE.weakByUnit:{};
+        STATE.codex    = (STATE.codex&&typeof STATE.codex==='object')?STATE.codex:{};
+        STATE.tests    = (STATE.tests&&typeof STATE.tests==='object')?STATE.tests:{};
+        STATE.bossSeen = (STATE.bossSeen&&typeof STATE.bossSeen==='object')?STATE.bossSeen:{};
+        STATE.trend    = Array.isArray(STATE.trend)?STATE.trend:[];
+        STATE.stars    = Number(STATE.stars)||0;
+        applyTheme(STATE.settings.theme||'light');
+        applyFont();
+        UNITS=pickBook();
+        curUnitId=UNITS[0].id; updateBookUI();
+        saveState();
+        if(curScreen==='progress') renderProgress();
+        if(curScreen==='wrongbook') renderWrongbook();
+        if(curScreen==='achievements') renderAchievements();
+        refreshTop();
+        toast('进度已恢复 ✅');
+      }catch(e){ STATE=backup; toast('导入失败：文件内容不完整，已保留原进度'); }
+    }catch(e){ toast('导入失败：文件不是有效的进度备份'); }
+    finish();
+  };
   r.readAsText(f);
 }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -3585,7 +3601,8 @@ function safeRender(fn){
 }
 function go(name){
   stopEvalEngine();
-  if(chTimer){ clearInterval(chTimer); chTimer=null; } // v117：切屏清理限时挑战倒计时，防后台偷跑+静默加星
+  if(chTimer){ clearInterval(chTimer); chTimer=null; } // v117：切屏清理限时挑战倒计时
+  bossActive=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）
   curScreen=name;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
@@ -4556,6 +4573,7 @@ function startTest(types){
 }
 function lockOpts(box){ [...box.children].forEach(c=>{ c.style.pointerEvents='none'; }); }
 function renderTestQ(){
+  if(!testModalOpen) return; // v127：测试弹窗已关，丢弃游离的 setTimeout(renderTestQ)
   const area=document.getElementById('testModalBody');
   if(!area) return;
   if(testIdx>=testQs.length){ finishTest(); return; }
@@ -5065,6 +5083,7 @@ let levelQi=0, levelTotal=0, levelTotalNormal=0; // 关卡题目进度（供题�
 let levelItems={x2:0}; // v106 闯关道具：⭐双倍卡（补给站事件获得，BOSS 战启用）
 let bossRage=0, bossSkill=0, bossHits=0, bossTotal=0; // v106 BOSS 怒气/必杀/命中统计（模块级便于测试）
 let bossMomentum=false, bossChatterLeft=0; // v109 BOSS 对话互动：反击气势（下次攻击翻倍）/ 剩余挑衅次数
+let bossActive=false; // v127：BOSS 战进行中标志，render() 据此丢弃切屏后的游离定时器渲染
 let bossChatterCur=null; // v109：当前挑衅对话题（模块级便于测试/一致）
 // 迷你玩法类型 → 弱项维度：句子/BOSS 归 'sent'，拼词/归类归 'spell'，其余（选择/听音/连连看/捉迷藏）归 'sel'
 function weakKeyOf(type){ return (type==='sentence'||type==='boss')?'sent':(type==='puzzle'||type==='sort')?'spell':'sel'; }
@@ -5520,6 +5539,7 @@ function renderBoss(u, done){
   bossMomentum=false; bossChatterLeft=2; // v109：BOSS 对话互动（反击气势 / 剩余挑衅次数）
   let hp=sents.length, idx=0;
   let dblOn=false; // ⭐双倍卡是否启用（v106）
+  bossActive=true; // v127：进入 BOSS 战置真，render() 才允许渲染
   function intro(){
     // 首遇弹剧情卡；重遇直接开战，不重复唠叨
     if(STATE.bossSeen[u.id]){ fight(); return; }
@@ -5536,6 +5556,7 @@ function renderBoss(u, done){
   }
   function fight(){ render(); }
   function render(){
+    if(!bossActive) return; // v127：BOSS 已退出/切屏，丢弃游离定时器的后续渲染
     if(idx>=sents.length){
       const win=hp<=0; // v106：血条打空即击败（答错回血会让战斗更胶着）
       if(win){
@@ -5546,6 +5567,7 @@ function renderBoss(u, done){
         area.innerHTML=`<div class="panel center"><div class="boss-emoji">${boss.emoji}</div><h2>${boss.name} 还没倒下…</h2><p class="muted">${boss.lose}</p><p class="muted">命中 ${bossHits}/${bossTotal} 击，再练练句型！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       }
       window.__bossDone=done;
+      bossActive=false; // v127：BOSS 结束，停止后续 render 定时器
       return;
     }
     if(bossChatterLeft>0 && (idx===0 || Math.random()<0.4)){ renderChatter(); return; } // v109：BOSS 挑衅对话（首轮必触发，后续随机）
@@ -6307,8 +6329,10 @@ function confirmPickType(){
 /* v76 单元测试 · 题目弹窗开关（取代整屏切到 test 屏） */
 let testModalReturnTo='home';
 let testActive=false; // v78：题目是否处于答题进行中（用于退出确认）
+let testModalOpen=false; // v127：测试弹窗可见标志，renderTestQ 据此丢弃切屏/关闭后的游离渲染
 function openTestModal(){
   testModalReturnTo = (typeof curScreen!=='undefined' && curScreen) ? curScreen : 'home';
+  testModalOpen=true; // v127
   const m=document.getElementById('testModal'); if(m) m.classList.add('show');
 }
 function closeTestModal(force){
@@ -6321,6 +6345,7 @@ function closeTestModal(force){
   _realCloseTest();
 }
 function _realCloseTest(){
+  testModalOpen=false; // v127：弹窗关闭即停 renderTestQ 游离定时器
   const m=document.getElementById('testModal'); if(m) m.classList.remove('show');
   go(testModalReturnTo||'home');
 }
@@ -6728,6 +6753,7 @@ function startChallenge(){
 }
 function chNext(){
   if(chTime<=0) return;
+  if(curScreen!=='challenge') return; // v127：切屏后丢弃游离的 setTimeout(chNext)（防隐藏屏误加分/渲染）
   const all=UNITS.reduce((a,u)=>a.concat(u.words.map(w=>({en:w.en, unit:u.id}))),[]);
   const q=all[Math.floor(Math.random()*all.length)];
   const distract=sample(all,q,3).map(x=>x.en);
