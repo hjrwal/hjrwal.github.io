@@ -2877,7 +2877,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 128;
+const APP_VERSION = 129;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4569,6 +4569,7 @@ function startTest(types){
     questions.push({type:t, w:left.shift()});
   }
   testQs = shuffle(questions).slice(0, T);
+  if(!testQs.length){ toast('本单元暂无可练习的题目，换个题型或单元试试～'); return; } // v129：0 题不进弹窗/不写 NaN 进存档
   testIdx=0; testCorrect=0; testTypeStat={};
   testActive=true;
   openTestModal();
@@ -4731,6 +4732,7 @@ function addTestWrong(en, unitId){
 function finishTest(){
   testActive=false; // v78：结束屏关闭不再弹退出确认
   const total=testQs.length;
+  if(!total){ closeTestModal(); return; } // v129：防御性双重保险，绝不写 NaN 进 STATE.tests
   const score=Math.round(testCorrect/total*100);
   STATE.tests[curUnitId]=Math.max(STATE.tests[curUnitId]||0, score);
   saveState();
