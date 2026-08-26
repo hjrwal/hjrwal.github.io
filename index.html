@@ -1512,7 +1512,7 @@ update → controllerchange
     </div>
     <div class="panel">
       <h2 class="sec">测验模式</h2>
-      <div class="row">
+      <div class="row" id="vocabQuizPicker">
         <button class="btn sun" onclick="startVocabQuiz('listen')">听音选词</button>
         <button class="btn grape" onclick="startVocabQuiz('meaning')">看义选词</button>
         <button class="btn grass" onclick="startVocabQuiz('spell')">拼写</button>
@@ -2877,7 +2877,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 125;
+const APP_VERSION = 126;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3681,6 +3681,8 @@ function initVocab(){
   showCard();
   const flash=document.getElementById('flashcardPanel'); if(flash) flash.style.display='';
   document.getElementById('vocabQuiz').classList.add('hidden');
+  const _picker=document.getElementById('vocabQuizPicker'); if(_picker) _picker.style.display=''; // v126：进入词汇页时复位题型选择器（防离开测验后选择器残留隐藏，导致再也开不了测验）
+  curQuizMode='';
 }
 function onVocabUnitPick(){
   cardIdx=0;
@@ -3797,6 +3799,7 @@ function vocabDoneClose(){
 }
 function startVocabQuiz(mode){
   curQuizMode=mode;
+  const picker=document.getElementById('vocabQuizPicker'); if(picker) picker.style.display='none'; // v126：开始后隐藏题型选择器
   touchDay();
   const flash=document.getElementById('flashcardPanel'); if(flash) flash.style.display='none';
   const u=curUnit(); const box=document.getElementById('vocabQuiz'); box.classList.remove('hidden');
@@ -3844,12 +3847,14 @@ function exitQuiz(){
   const flash=document.getElementById('flashcardPanel'); if(flash) flash.style.display='';
   document.getElementById('vocabQuiz').classList.add('hidden');
   curQuizMode='';
+  const picker=document.getElementById('vocabQuizPicker'); if(picker) picker.style.display='';
 }
 function renderOpts(opts, answer, getVal){
   const box=document.getElementById('qopts'); box.innerHTML='';
   opts.forEach(o=>{
     const el=document.createElement('div'); el.className='opt'; el.textContent=o;
     el.onclick=()=>{
+      if(el.disabled) return; // v126：div 的 disabled 不阻止点击，需显式守卫防重复生成下一题
       const ok = norm(o)===norm(answer);
       recordWord(curUnitId, answer, ok);
       [...box.children].forEach(c=>{ c.disabled=true; if(norm(c.textContent)===norm(answer)) c.classList.add('correct'); });
@@ -6678,6 +6683,7 @@ function showGramQ(){
   q.opts.forEach((t,i)=>{
     const el=document.createElement('div'); el.className='opt'; el.textContent=t;
     el.onclick=()=>{
+      if(el.disabled) return; // v126：div 的 disabled 不阻止点击，需显式守卫防重复生成「下一题」
       [...o.children].forEach(c=>{ c.disabled=true; });
       const expEl=document.getElementById('gqExp');
       if(i===q.ans){ el.classList.add('correct'); awardStars(1); bumpGoal(true); STATE.gramRight=(STATE.gramRight||0)+1; saveState(); toast('🎉 答对啦！+1⭐'); }
@@ -6733,6 +6739,7 @@ function chNext(){
   opts.forEach(o=>{
     const el=document.createElement('div'); el.className='opt'; el.textContent=o;
     el.onclick=()=>{
+      if(el.disabled) return; // v126：div 的 disabled 不阻止点击，需显式守卫防重复触发 chNext 导致跳题
       if(chTime<=0) return;
       [...box.children].forEach(c=>{ c.disabled=true; });
       const ok=norm(o)===norm(q.en);
