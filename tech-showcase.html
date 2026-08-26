@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 127,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    version: 128,       // 与 english5-helper.html 的 APP_VERSION 保持一致
     cache:   'eng5-v165',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    126,       // 迭代版本数
+    iter:    128,       // 迭代版本数
     updated: '2026-08-26'
   };
 </script>
@@ -359,6 +359,7 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v118 · 听音选义选项文字可见性修复</b><span>「听音选义」题型选项文字在部分主题下被未知覆写规则覆盖成不可见——根因某 CSS 层对 `.opt` 设了浅色/透明文字。修复：`.opt` 改为 `color:#2a1f17 !important` 强制深色可读，三处版本号 +1 同步（APP_VERSION/sw CACHE/tech META）。全 SVG 绘本风。</span></div>
 <div class="it"><b>v119 · 第四轮穷尽式审计（暗色兜底 / 死链 / emoji 遗漏 / 乱码 / 时间线）</b><span>逐屏死链 + 全文件 emoji 扫描：①暗色主题 `.opt` / `.choice-opt` 补浅字兜底（`#f5e9da !important`，app 自动跟随系统暗色时选项可读）；②`copyLink()` 死链补实现（原 onclick 调用但未定义）；③JS 动态生成的标题/提示里 11 处遗漏的 emoji 清理（统一零 emoji 占位红线）；④修复历史遗留乱码字节；⑤版本演进时间线补录 v117-v119。全 SVG 绘本风。</span></div>
 
+            <div class="it"><b>v128 · 推版前强制漏洞自检 + 6 处游离回调/定时器修复</b><span>用户指令"每次推送新版本前先自检有无漏洞"。在 v127 基础上再扫一轮，挖到 6 处同源漏洞（切屏/关弹窗/返回地图后游离定时器与回调仍后台幽灵执行）：①`commitTest` 加 `if(!testModalOpen) return;`（关弹窗后 600/900ms 超时提交仍静默加星/记错/推进 testIdx）②`startVocabQuiz` 加 `if(curScreen!=='vocab') return;` ③`gradeSentence` 的 nextSent、`gradeSentDict`/`startSentDict` 加 `curScreen!=='sentences'` 守卫（原只判 `if(curSent)` 不防切屏）④引入 `levelActive` 标志（`startLevel` 置 true + 60ms 渲染回调守卫 + `makeResolver` 的 done 守卫 + `go()`/`showMap` 置 false），杜绝"返回地图"后 BOSS 后台渲染与题间幽灵推进 ⑤`go()` 清 `_heroAnimT`（首页吉祥物循环动画后台空转）。<b>版本</b> 127→128，sw CACHE v165→v166，tech META 同步。</span></div>
             <div class="it"><b>v127 · 全量审计续：BOSS 幽灵定时器 / importProgress 容错 / pending 定时器守卫</b><span>用户要求「继续挖漏洞」，在 v126 基础上再扫一轮。<b>结论：安全面干净</b>——无 <code>eval</code>/<code>document.write</code>、两处 <code>JSON.parse</code>（本地存储 + 导入文件）均在 <code>try/catch</code> 内、所有用户输入框只做字符串比对不回显 innerHTML、importProgress 已有基础 try/catch。<b>挖到 1 中高危 + 2 低危</b>：①<b>BOSS 战游离定时器</b>——<code>renderBoss</code> 内 4 个 <code>setTimeout(render,…)</code> 无句柄、不在 <code>go()</code> 清理；打到一半点导航离开，pending 的 <code>render()</code> 仍触发，若赶上末尾 <code>idx>=sents.length</code> 分支会在隐藏的 <code>#lvlArea</code> 里直接 <code>awardStars(2); celebrate(); foxSay('🏆 你击败了…')</code>，等于「中途逃跑白拿 BOSS 星 + 首页弹胜利气泡」。修：加 <code>bossActive</code> 标志，<code>render()</code> 开头 <code>if(!bossActive) return;</code>、<code>go()</code> 与 BOSS 结束置 <code>false</code>。②<b>importProgress 校验浅</b>——只查 <code>version===1 &amp;&amp; settings</code>，导入「version 对但字段残缺」的文件会让后续渲染连锁崩溃；修：容错合并补齐 <code>wrong/weakByUnit/codex/tests/bossSeen/trend</code> 等字段 + 失败时回滚到导入前 STATE。③<b>pending 定时器</b>——挑战 <code>chNext</code>(350ms)/测试 <code>renderTestQ</code>(480ms) 切屏后回调落在隐藏屏；修：<code>chNext</code> 加 <code>if(curScreen!=='challenge') return;</code>、<code>renderTestQ</code> 加 <code>if(!testModalOpen) return;</code>（新增 <code>testModalOpen</code> 标志）。<b>版本</b> 126→127，sw CACHE v164→v165，tech META 同步。</span></div>
             <div class="it"><b>v126 · 全量审计修复词汇测验「下一题」堆叠 / 题型选择器双显</b><span>用户截图反馈两个 bug：①词汇测验「下一题 →」按钮叠了 3 个；②题型选择器（听音选词/看义选词/拼写/听写填空）和「测验中」面板同时显示。<b>根因</b>：选项用 <code>div.className='opt'</code>，HTML 的 <code>disabled</code> 属性只对表单元素生效，<code>el.disabled=true</code> 无法阻止点击——重复点已禁用的选项会再 <code>appendChild</code> 一个「下一题」；题型按钮是 <code>#vocabQuiz</code> 的<b>兄弟节点</b>，<code>startVocabQuiz</code> 只显示答题区、从不隐藏选择器。<b>全量审计</b> 顺手又扒出 3 处同类隐患：语法测验 <code>showGramQ</code> / 限时挑战 <code>chNext</code> 的 div 选项同样缺守卫会堆叠、双跳；<code>initVocab</code> 进入词汇页只隐藏 quiz 不复位选择器，开测验后全局导航离开再回来题型选择器永久隐藏、开不了测验。<b>修复</b>（均 <5 行、零新图）：①renderOpts/showGramQ/chNext 选项 onclick 开头加 <code>if(el.disabled) return;</code>（照搬单元测试弹窗既有守卫）②题型按钮行加 <code>id="vocabQuizPicker"</code>，<code>startVocabQuiz</code> 开头 <code>picker.style.display='none'</code>、<code>exitQuiz</code> 恢复 <code>''</code>、<code>initVocab</code> 进入词汇页复位显示。<b>版本</b> 125→126，sw CACHE v163→v164，tech META 同步。</span></div>
             <div class="it"><b>v125 · 首页 Hero 修裁剪 + 三件微交互(迎宾招手/点头/戳/笑赞) + 右侧 sun 装饰</b><span>v124 后用户要求再做轻量稳改。落地时发现 hero 大猫被 <code>object-fit:cover</code> 裁成 1148×120 横条，<b>wave1 爪子和 happy 大笑全在画外</b>——大猫的招手和笑赞看不出区别。<b>修裁剪</b> scene 120→210 高 + 猫改 <code>object-fit:contain</code> 完整显示（底对齐）+ 右侧加 <b>sun SVG + 「今天也闪闪 ✨ / 一起加油吧」</b> 文字装饰平衡布局。<b>微交互串成序列</b>①迎宾探出→1.05s 后眨→1.35s 后招手(wave1↔wave2 220ms 切两帧，零新图)②顶栏白喵点头（mascotNod：CSS keyframe 摇头 .5s）+ 戳一下（bindMascotPoke：抖 + foxSay「喵~ 🐾」，手型光标）③答对/闯关/BOSS/拼词胜利时顶栏切 happy + 点头。零新图、零一致性风险、不卡。<b>版本</b> 124→125，sw CACHE v162→v163，tech META 同步。</span></div>
