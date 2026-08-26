@@ -2877,7 +2877,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 127;
+const APP_VERSION = 128;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3603,12 +3603,14 @@ function go(name){
   stopEvalEngine();
   if(chTimer){ clearInterval(chTimer); chTimer=null; } // v117：切屏清理限时挑战倒计时
   bossActive=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）
+  levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
+  if(_heroAnimT){ clearTimeout(_heroAnimT); _heroAnimT=null; } // v128：切屏停首页吉祥物循环动画（防隐藏屏后台空转）
   curScreen=name;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
-  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头
+  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); startHeroAnim(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头 + v128 重启首页循环动画
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -3815,6 +3817,7 @@ function vocabDoneClose(){
   cardIdx=0; showCard();
 }
 function startVocabQuiz(mode){
+  if(curScreen!=='vocab') return; // v128：切屏后丢弃游离的 setTimeout(startVocabQuiz)（防往隐藏的 vocabQuiz 区注入内容并误 unhidden）
   curQuizMode=mode;
   const picker=document.getElementById('vocabQuizPicker'); if(picker) picker.style.display='none'; // v126：开始后隐藏题型选择器
   touchDay();
@@ -3999,7 +4002,7 @@ function gradeSentence(){
     awardStars(2); toast('🎉 句子正确！+2⭐');
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
     if(basket) basket.classList.add('ok');
-    setTimeout(()=>{ if(curSent) nextSent(); }, 800);
+    setTimeout(()=>{ if(curScreen!=='sentences') return; if(curSent) nextSent(); }, 800); // v128：切屏后丢弃游离的自动下一句
   } else {
     toast('💡 正确顺序：'+curSent.en);
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
@@ -4008,6 +4011,7 @@ function gradeSentence(){
 }
 // 句型听写填空：听整句音频，挖空一个内容词，填空判分（听写从单词扩展到句型层级）
 function startSentDict(){
+  if(curScreen!=='sentences') return; // v128：切屏后丢弃游离的听写跳转
   const u=curUnit();
   const parts=(s)=>s.en.split(' ');
   const cands=(s)=>parts(s).map((p,i)=>({raw:p,i})).filter(o=>o.raw.replace(/[^A-Za-z']/g,'').length>=4);
@@ -4036,7 +4040,7 @@ function gradeSentDict(ans){
     awardStars(2); toast('🎉 填对啦！+2⭐');
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
     if(input){ input.disabled=true; input.style.borderColor='var(--grass)'; }
-    setTimeout(startSentDict, 800);
+    setTimeout(()=>{ if(curScreen!=='sentences') return; startSentDict(); }, 800); // v128：切屏后丢弃游离的听写跳转
   } else {
     toast('😅 正确答案：'+ans);
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
@@ -5072,6 +5076,7 @@ function openLevelCard(id){
 }
 // 「🗺️ 返回地图」：从关卡结算/题目面板回到关卡地图。清理 #lvlArea、显示 #mapPanel、重新渲染地图
 function showMap(){
+  bossActive=false; levelActive=false; // v128：返回地图即彻底停 BOSS 与关卡推进（防 #lvlArea 清空后游离定时器仍往隐藏面板渲染）
   const la=document.getElementById('lvlArea');
   if(la){ la.innerHTML=''; la.style.display='none'; }
   const mp=document.getElementById('mapPanel');
@@ -5084,6 +5089,7 @@ let levelItems={x2:0}; // v106 闯关道具：⭐双倍卡（补给站事件获�
 let bossRage=0, bossSkill=0, bossHits=0, bossTotal=0; // v106 BOSS 怒气/必杀/命中统计（模块级便于测试）
 let bossMomentum=false, bossChatterLeft=0; // v109 BOSS 对话互动：反击气势（下次攻击翻倍）/ 剩余挑衅次数
 let bossActive=false; // v127：BOSS 战进行中标志，render() 据此丢弃切屏后的游离定时器渲染
+let levelActive=false; // v128：闯关进行中标志，done/next 据此丢弃切屏/返回地图后的游离推进
 let bossChatterCur=null; // v109：当前挑衅对话题（模块级便于测试/一致）
 // 迷你玩法类型 → 弱项维度：句子/BOSS 归 'sent'，拼词/归类归 'spell'，其余（选择/听音/连连看/捉迷藏）归 'sel'
 function weakKeyOf(type){ return (type==='sentence'||type==='boss')?'sent':(type==='puzzle'||type==='sort')?'spell':'sel'; }
@@ -5106,7 +5112,7 @@ function makeResolver(type, en, zh, done){
       if(firstWrong){ bumpGoal(true); toast('🎉 终于对啦！'); }
       else { recordWord(curUnitId, en, true); bumpGoal(true); toast('🎉 答对 +1⭐'); }
       levelCorrect++; awardStars(1);
-      setTimeout(done, 700);
+      setTimeout(()=>{ if(!levelActive) return; done(); }, 700); // v128：切屏/返回地图后丢弃题间游离推进
     } else {
       const we=(wEn!=null)?wEn:en, wz=(wZh!=null)?wZh:zh;
       if(!firstWrong){ firstWrong=true; levelFirstWrong(we, wz, type); }
@@ -5178,6 +5184,7 @@ function renderEvent(q, done){
 }
 function startLevel(id){
   touchDay();
+  levelActive=true; // v128：进入关卡置真，done/next 才允许推进
   levelWrong={sel:0,spell:0,sent:0};
   curUnitId=id;
   // 关卡屏与地图屏互斥：进入关卡时隐藏地图面板，渲染到独立 #lvlArea
@@ -5189,6 +5196,7 @@ function startLevel(id){
   // 延后让“加载中”狐狸动画先绘出，且保证至少可见 700ms（避免一帧闪过）
   const startedAt = Date.now();
   setTimeout(()=>{
+    if(!levelActive) return; // v128：进入关卡后若已切屏/返回地图，丢弃本次渲染
     const u=UNITS.find(x=>x.id===id);
     const questions=buildLevelQuestions(u);
     levelTotal=questions.length;
