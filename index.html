@@ -65,6 +65,8 @@
   @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   /* v121：小尺寸吉祥物统一用 AI PNG（<img>），object-fit 填满非方形盒 */
   .mascot,.test-mascot,.fm-fox,.fb-fox{object-fit:cover; object-position:center 48%;}
+  /* v132 像素风小猫：缩放时保持像素锐利，不被双线性插值糊掉 */
+  img[src*="assets/mascot/"]{image-rendering:pixelated; image-rendering:crisp-edges;}
   .brand{font-weight:900; font-size:18px; line-height:1.1;
     background:linear-gradient(135deg,var(--fox-d),var(--amber));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
@@ -2878,7 +2880,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 131;
+const APP_VERSION = 132;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
