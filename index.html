@@ -123,13 +123,9 @@
   .scene-blink.run{animation:heroBlinkSlow .62s ease-in-out;}
   @keyframes heroBlinkSlow{0%{opacity:0}28%{opacity:1}60%{opacity:1}100%{opacity:0}}
   @keyframes silkBlink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
-  /* v134 hero 大猫点击互动（戳一下 → 抖 + 眨眼 + 喵气泡，复用顶栏小喵 poke 逻辑，零新图） */
+  /* v136 修：点击互动不再对整张方形 PNG 做任何 transform（v134 用 rotate、v135 用 scale 都会让米色方框跟着转/放大）；
+     改为只切小猫表情帧(笑)+慢眨眼+喵气泡，方框(img 盒子)尺寸/位置完全不变 */
   #heroMascot{cursor:pointer;}
-  /* v135 修：原 heroPoke 用 rotate 旋转整张方形 PNG（含透明边距），方形边界会跟着转圈；
-     改为底部弹性缩放（不旋转），方形边界保持不动、只有小猫在弹动 */
-  #heroMascot{transform-origin:50% 100%;}
-  @keyframes heroPoke{0%{transform:scale(1)}20%{transform:scale(.9) translateY(3px)}45%{transform:scale(1.07) translateY(-2px)}70%{transform:scale(.97)}100%{transform:scale(1)}}
-  #heroMascot.poke{animation:heroPoke .42s ease;}
   /* v124 迎宾探出头：切到首页时大猫从草坡探出 + 淡入（一次性，纯 CSS 不卡、零新图） */
   .hero-cat{position:relative; flex:0 0 auto; height:100%; display:flex; align-items:flex-end;
     transform-origin:50% 100%;}
@@ -2889,7 +2885,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 135;
+const APP_VERSION = 136;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4355,7 +4351,8 @@ function mascotNod(){
   m.addEventListener('click', (e)=>{
     if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     e.stopPropagation(); // 阻止冒泡到 .hero.storybook 的 onclick=go('progress')，点猫只互动不跳页
-    m.classList.remove('poke'); void m.offsetWidth; m.classList.add('poke');
+    // v136 修：方框(整张方形 PNG)完全不动，只让小猫本身动 -> 切笑帧(换图,img 盒不变) + 慢眨眼 + 喵气泡
+    if(typeof setMascotMood==='function') setMascotMood('cheer');
     if(typeof heroBlinkOnce==='function') heroBlinkOnce();
     if(typeof foxSay==='function') foxSay('喵~ 🐾');
   });
