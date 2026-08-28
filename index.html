@@ -119,7 +119,9 @@
   /* v122 丝滑眨眼：睁眼底层 + 闭眼上层交叉淡入（替代原硬切换 default→blink→default） */
   .scene-blink{position:absolute; inset:0; width:100%; height:100%;
     object-fit:contain; object-position:center bottom; opacity:0; pointer-events:none;}
-  .scene-blink.run{animation:silkBlink .22s ease-in-out;}
+  /* v133 招手换眨眼 + 放慢：hero 大猫专用慢眨眼（闭眼层停留更久，读起来是"慢慢眨"而非闪一下） */
+  .scene-blink.run{animation:heroBlinkSlow .62s ease-in-out;}
+  @keyframes heroBlinkSlow{0%{opacity:0}28%{opacity:1}60%{opacity:1}100%{opacity:0}}
   @keyframes silkBlink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
   /* v124 迎宾探出头：切到首页时大猫从草坡探出 + 淡入（一次性，纯 CSS 不卡、零新图） */
   .hero-cat{position:relative; flex:0 0 auto; height:100%; display:flex; align-items:flex-end;
@@ -2880,7 +2882,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 132;
+const APP_VERSION = 133;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4272,17 +4274,10 @@ function _heroSetSrc(s){
 function _heroBase(){
   return _heroMoodSrc || HERO_FRAMES.base;
 }
-// v131 放慢招手：wave1↔wave2 交替摆 3 下、每半拍停留 320ms，回归 base；全程约 2.2s，清晰可见
-function heroDoWave(){
-  heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[];
-  const seq=[HERO_FRAMES.wave1, HERO_FRAMES.wave2, HERO_FRAMES.wave1, HERO_FRAMES.wave2, HERO_FRAMES.wave1, HERO_FRAMES.wave2];
-  const lead=180, step=320;
-  seq.forEach((src,i)=>{
-    const t=setTimeout(()=>{ _heroSetSrc(src); }, lead + i*step);
-    heroWelcomeTimers.push(t);
-  });
-  const backT=setTimeout(()=>{ _heroSetSrc(_heroBase()); }, lead + seq.length*step + 160);
-  heroWelcomeTimers.push(backT);
+// v133 招手换眨眼：触发 hero 大猫慢眨眼（复用 .scene-blink 闭眼层 + 慢关键帧，零新图、不换 src）
+function heroBlinkOnce(){
+  const bl=document.getElementById('heroBlink');
+  if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); }
 }
 function startHeroAnim(){
   if(_heroAnimT) return; // 单例
@@ -4302,9 +4297,9 @@ function startHeroAnim(){
       if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); }
       _heroAnimT=setTimeout(tick, 3000+Math.random()*1800);
     } else if(r<0.60){
-      // 招手（v131 放慢：多摆几下、清晰可见）
-      heroDoWave();
-      _heroAnimT=setTimeout(tick, 7800+Math.random()*2500); // 招手变长，下一拍间隔相应拉长
+      // v133 招手换眨眼：多眨一下而非挥手
+      heroBlinkOnce();
+      _heroAnimT=setTimeout(tick, 4200+Math.random()*2200);
     } else {
       _heroAnimT=setTimeout(tick, 2800+Math.random()*2000);
     }
@@ -4321,10 +4316,10 @@ function playHeroWelcome(){
   heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[];
   if(c){ c.classList.remove('peek'); void c.offsetWidth; c.classList.add('peek'); }
   if(reduce) return; // 减少动效：仅探出，不眨不招手
-  // 探出头结束后先眨一下
+  // 探出头结束后先慢慢眨一下
   setTimeout(()=>{ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } }, 1050);
-  // 眨后再接招手收尾（v131 放慢：多摆几下、清晰可见）
-  const t2=setTimeout(()=>{ heroDoWave(); }, 1350);
+  // v133 招手换眨眼：迎宾以两次慢眨眼收尾，不再挥手
+  const t2=setTimeout(()=>{ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } }, 2050);
   heroWelcomeTimers.push(t2);
 }
 // v125 顶栏白喵点头（成功反馈）+ 戳一下（点击互动），零新图、叠加在 .mwrap 轻晃之上
