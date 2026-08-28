@@ -11,15 +11,15 @@
 -->
 <script>
   const META = {
-    version: 130,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v171',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
+    version: 131,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v172',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    130,       // 迭代版本数
-    updated: '2026-08-26'
+    iter:    131,       // 迭代版本数
+    updated: '2026-08-28'
   };
 </script>
 <style>
@@ -360,6 +360,7 @@ update  → <span class="k">controllerchange</span>
 <div class="it"><b>v119 · 第四轮穷尽式审计（暗色兜底 / 死链 / emoji 遗漏 / 乱码 / 时间线）</b><span>逐屏死链 + 全文件 emoji 扫描：①暗色主题 `.opt` / `.choice-opt` 补浅字兜底（`#f5e9da !important`，app 自动跟随系统暗色时选项可读）；②`copyLink()` 死链补实现（原 onclick 调用但未定义）；③JS 动态生成的标题/提示里 11 处遗漏的 emoji 清理（统一零 emoji 占位红线）；④修复历史遗留乱码字节；⑤版本演进时间线补录 v117-v119。全 SVG 绘本风。</span></div>
 
             <div class="it"><b>v130 · 顶栏小喵「可响应眨眼」互动增强</b><span>用户选「顶栏小喵互动增强」并指定"招手换成眨眼"——把互动从歪头/跟随改为<b>可响应眨眼</b>。复用既有 `.mtop-blink` 闭眼层 + `silkBlink` 关键帧（零新图、零风格漂移）：①新增 `mascotBlink()` 一次性明显眨眼（`.mtop-blink.run` 0.22s，260ms 后回归 4.2s 循环眨眼），内置 550ms 节流防连发狂眨 ②`#mascotImg` 加 `mouseenter`→眨眼（hover 即眨）③戳一下时同步眨眼 ④`foxSay` 开口说话时眨眼 ⑤`setMascotMood('cheer')` 答对/胜利额外眨眼（与 foxSay 节流合并不双眨）。保留现有点头(nod)与循环丝滑眨眼。<b>修版本漂移</b>：上游 sw.js 被单独 bump 到 eng5-v170 未同步 index/tech，三处严重不一致；本版统一收口 130 / eng5-v171 / tech 130·v171（sw 自 v170 续 +1，不回退）。<b>版本</b> 129→130，sw CACHE v170→v171，tech META 同步。</span></div>
+            <div class="it"><b>v131 · 放慢 hero 大猫招手（wave1↔wave2 多摆几下、清晰可见）</b><span>用户选「回到 hero 大猫的招手幅度微调」并指定"招手做的慢一点，太快了看不清楚"。根因：原招手 wave1→wave2→base 在 ~460ms 内一次完成，几乎看不清。<b>改法</b> 新增 `heroDoWave()`——wave1↔wave2 交替摆 3 下、每半拍停留 320ms、回归 base，全程约 2.2s；循环空闲招手与迎宾招手序列均改调 `heroDoWave()`，循环下一拍间隔相应拉长到 7.8s+。<b>防游离定时器</b>：招手 setTimeout 句柄纳入 `heroWelcomeTimers` 数组，在 `playHeroWelcome` 重入与 `go()` 切屏时统一 `clearTimeout` 清理（铁律#6 自检：不引入新的切屏后幽灵渲染）。零新图、零风格漂移。<b>版本</b> 130→131，sw CACHE v171→v172，tech META 同步。</span></div>
             <div class="it"><b>v129 · 单元测试 0 题防御（finishTest NaN 污染存档）</b><span>继续审计"空数据/题型边界"面：发现 `finishTest` 用 `score=Math.round(testCorrect/total*100)`，若 `testQs` 为空（`total=0`）→ `score=NaN` → `STATE.tests[unit]=Math.max(0,NaN)=NaN` 把单元测试成绩写脏进 localStorage（重载后该单元成绩变 null）。当前 22 单元皆有 words+sentences、选择器"只选连词成句"最少也产 1 题，故<b>现网不可触达</b>，属潜在代码异味。按用户"推版前自检"铁律做防御性加固：①`startTest` 在 `testQs` 赋值后若为空直接 `toast('本单元暂无可练习的题目…')+return`，从源头不进弹窗/不写脏数据 ②`finishTest` 在 `total===0` 时 `closeTestModal()+return` 双重保险。<b>版本</b> 128→129，sw CACHE v166→v167，tech META 同步。</span></div>
             <div class="it"><b>v128 · 推版前强制漏洞自检 + 6 处游离回调/定时器修复</b><span>用户指令"每次推送新版本前先自检有无漏洞"。在 v127 基础上再扫一轮，挖到 6 处同源漏洞（切屏/关弹窗/返回地图后游离定时器与回调仍后台幽灵执行）：①`commitTest` 加 `if(!testModalOpen) return;`（关弹窗后 600/900ms 超时提交仍静默加星/记错/推进 testIdx）②`startVocabQuiz` 加 `if(curScreen!=='vocab') return;` ③`gradeSentence` 的 nextSent、`gradeSentDict`/`startSentDict` 加 `curScreen!=='sentences'` 守卫（原只判 `if(curSent)` 不防切屏）④引入 `levelActive` 标志（`startLevel` 置 true + 60ms 渲染回调守卫 + `makeResolver` 的 done 守卫 + `go()`/`showMap` 置 false），杜绝"返回地图"后 BOSS 后台渲染与题间幽灵推进 ⑤`go()` 清 `_heroAnimT`（首页吉祥物循环动画后台空转）。<b>版本</b> 127→128，sw CACHE v165→v166，tech META 同步。</span></div>
             <div class="it"><b>v127 · 全量审计续：BOSS 幽灵定时器 / importProgress 容错 / pending 定时器守卫</b><span>用户要求「继续挖漏洞」，在 v126 基础上再扫一轮。<b>结论：安全面干净</b>——无 <code>eval</code>/<code>document.write</code>、两处 <code>JSON.parse</code>（本地存储 + 导入文件）均在 <code>try/catch</code> 内、所有用户输入框只做字符串比对不回显 innerHTML、importProgress 已有基础 try/catch。<b>挖到 1 中高危 + 2 低危</b>：①<b>BOSS 战游离定时器</b>——<code>renderBoss</code> 内 4 个 <code>setTimeout(render,…)</code> 无句柄、不在 <code>go()</code> 清理；打到一半点导航离开，pending 的 <code>render()</code> 仍触发，若赶上末尾 <code>idx>=sents.length</code> 分支会在隐藏的 <code>#lvlArea</code> 里直接 <code>awardStars(2); celebrate(); foxSay('🏆 你击败了…')</code>，等于「中途逃跑白拿 BOSS 星 + 首页弹胜利气泡」。修：加 <code>bossActive</code> 标志，<code>render()</code> 开头 <code>if(!bossActive) return;</code>、<code>go()</code> 与 BOSS 结束置 <code>false</code>。②<b>importProgress 校验浅</b>——只查 <code>version===1 &amp;&amp; settings</code>，导入「version 对但字段残缺」的文件会让后续渲染连锁崩溃；修：容错合并补齐 <code>wrong/weakByUnit/codex/tests/bossSeen/trend</code> 等字段 + 失败时回滚到导入前 STATE。③<b>pending 定时器</b>——挑战 <code>chNext</code>(350ms)/测试 <code>renderTestQ</code>(480ms) 切屏后回调落在隐藏屏；修：<code>chNext</code> 加 <code>if(curScreen!=='challenge') return;</code>、<code>renderTestQ</code> 加 <code>if(!testModalOpen) return;</code>（新增 <code>testModalOpen</code> 标志）。<b>版本</b> 126→127，sw CACHE v164→v165，tech META 同步。</span></div>
