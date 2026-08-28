@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 140,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v181',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
+    version: 141,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v182',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    140,       // 迭代版本数
+    iter:    141,       // 迭代版本数
     updated: '2026-08-28'
   };
 </script>
@@ -362,6 +362,7 @@ update  → <span class="k">controllerchange</span>
             <div class="it"><b>v130 · 顶栏小喵「可响应眨眼」互动增强</b><span>用户选「顶栏小喵互动增强」并指定"招手换成眨眼"——把互动从歪头/跟随改为<b>可响应眨眼</b>。复用既有 `.mtop-blink` 闭眼层 + `silkBlink` 关键帧（零新图、零风格漂移）：①新增 `mascotBlink()` 一次性明显眨眼（`.mtop-blink.run` 0.22s，260ms 后回归 4.2s 循环眨眼），内置 550ms 节流防连发狂眨 ②`#mascotImg` 加 `mouseenter`→眨眼（hover 即眨）③戳一下时同步眨眼 ④`foxSay` 开口说话时眨眼 ⑤`setMascotMood('cheer')` 答对/胜利额外眨眼（与 foxSay 节流合并不双眨）。保留现有点头(nod)与循环丝滑眨眼。<b>修版本漂移</b>：上游 sw.js 被单独 bump 到 eng5-v170 未同步 index/tech，三处严重不一致；本版统一收口 130 / eng5-v171 / tech 130·v171（sw 自 v170 续 +1，不回退）。<b>版本</b> 129→130，sw CACHE v170→v171，tech META 同步。</span></div>
             <div class="it"><b>v131 · 放慢 hero 大猫招手（wave1↔wave2 多摆几下、清晰可见）</b><span>用户选「回到 hero 大猫的招手幅度微调」并指定"招手做的慢一点，太快了看不清楚"。根因：原招手 wave1→wave2→base 在 ~460ms 内一次完成，几乎看不清。<b>改法</b> 新增 `heroDoWave()`——wave1↔wave2 交替摆 3 下、每半拍停留 320ms、回归 base，全程约 2.2s；循环空闲招手与迎宾招手序列均改调 `heroDoWave()`，循环下一拍间隔相应拉长到 7.8s+。<b>防游离定时器</b>：招手 setTimeout 句柄纳入 `heroWelcomeTimers` 数组，在 `playHeroWelcome` 重入与 `go()` 切屏时统一 `clearTimeout` 清理（铁律#6 自检：不引入新的切屏后幽灵渲染）。零新图、零风格漂移。<b>版本</b> 130→131，sw CACHE v171→v172，tech META 同步。</span></div>
             <div class="it"><b>v132 · 吉祥物小猫全面改像素风（原图模板 AI 重绘 8 帧 + 归一化对齐）</b><span>用户要求「将小猫改成像素风」，选定<b>真·像素风重绘 + 全部位置统一</b>。关键决策：以<b>原 8 张 PNG 为模板</b>做 img2img（<code>input_fidelity=high</code>），保留每帧姿态与构图——对 wave1↔wave2 交替挥爪、眨眼这类帧间动画而言，姿态一致性远比「生成一只新猫」重要。<b>踩坑与解法</b>：①首轮生成（文字生图 / 首版 img2img）右下角带「AI生成 WORKBUDDY&gt;」水印，且底部被擅自加了绿色地面 → 提示词显式加 <code>No text, no watermark, no logo</code> 与 <code>no floor, no ground, no grass, no shadow</code> 后，水印与绿地全部消失；②<code>background:transparent</code> 参数对 img2img 无效（输出仍 100% 不透明），改为<b>保留米底不透明</b>——与原图在 app 内的合成方式完全一致（靠米底与书本场景同色实现无缝），不强行抠图；③后处理用 Pillow：自动检测生成图背景色 C，把<b>接近 C 的像素</b>统一填回原图精确米色 (234,214,191)，顺带抹掉残留的背景漂移；④生成帧存在<b>位置/大小漂移</b>（happy 偏小偏高、think 偏低、sleep 巨大铺满、encourage 偏大偏低），切换时会跳变缩放 → 归一化处理：裁猫包围盒 → 按比例缩到统一 330×345 框 → 居中贴回 512 米底，8 帧中心统一落在 (240~255)、尺寸 329~348，帧间差异 &lt;15px 不跳；⑤CSS 新增 <code>img[src*="assets/mascot/"]{image-rendering:pixelated}</code>，缩放时保持像素锐利不被插值糊掉。SW 预缓存列表不变（文件名未变），仅升缓存号强制刷新。<b>版本</b> 131→132，sw CACHE v172→v173，tech META 同步。</span></div>
+            <div class="it"><b>v141 · think/encourage 以 default 为模板 img2img 重绘（像素风 + 100% 同族）</b><span>v140 两帧被用户指出"不行，要像素风格的，风格样子要以首页那只猫为原型"——v140 是平滑插画且带贴纸白边，与 v132 像素体系不符。<b>改法</b>：改用 <b>img2img（以 default.png 为输入模板，input_fidelity=high）</b>重绘两帧——只改表情/姿态，风格构图全继承：think=一只爪抬贴脸颊 + 柔和思考眼；encourage=月牙笑眼 + 张嘴吐舌 + 点赞爪 + 头顶红心加橘粉火苗。后处理：裁右下水印 + flood fill 统一背景为 default 精确米色 <code>(234,214,191)</code> + 包围盒 NEAREST 缩放对齐 default 尺度（think 289×325 / encourage 279×329，default 289×329）居中贴回 512 米底。<b>踩坑</b>：纯文字 prompt 即使写 pixel-art 也会漂成插画/贴纸风，吉祥物帧一律 img2img 以 default 为模板。原 v140 版备份 <code>_bak_*_v140px.png</code>。<b>版本</b> 140→141，sw CACHE v181→v182，tech META 同步。</span></div>
             <div class="it"><b>v140 · 重画 think/encourage 两帧：异类猫 → 原型白喵同族</b><span>用户反馈点击随机动作里"这个动作不好看，明显和原型不一样"。全帧对比发现 <code>assets/mascot/</code> 8 帧里 <b>think.png（卡其色像素猫）与 encourage.png（灰白点赞猫）是两张风格完全异类的猫</b>——点击随机动作抽中"思考"、开测鼓励时白喵会突然变成另一只猫（default/happy/blink/sleep/wave1/wave2 均为同族白喵，仅这 2 张漂移）。<b>改法</b>：以 default.png 原型为基准 AI 重绘两帧（粉心/粉耳内/粉腮红/粉蝴蝶结全保留）——think=白爪点下巴 + 斜眼向上 + 思考嘴角；encourage=月牙笑眼 + 张嘴加油 + 头顶橘粉火苗与爱心 + 白爪点赞 + 蝴蝶结归位脖子正中（首版蝴蝶结缺失位置贴底且无点赞爪，二版修正）；Pillow 裁"AI生成"水印 + 缩 512×512 替换，原版备份 <code>_bak_*_v139/v140a.png</code>。<b>版本</b> 139→140，sw CACHE v180→v181，tech META 同步。</span></div>
             <div class="it"><b>v139 · 修：探头动作时方框(200→186)被 heroPeek 的 scale 缩了一下</b><span>v138 验证发现"探头看"动作触发 <code>.hero-cat.peek</code> 时，<code>heroPeek</code> 关键帧含 <code>scale(.93→1.02)</code>，作用在 <code>#heroCat</code> 容器上、连带 <code>#heroMascot</code> 的方框一起缩放（实测 200→186）。这与用户"方框固定不要动"的要求相违（即使探头是用户自己选的动作）。<b>改法</b>：<code>heroPeek</code> 去掉 <code>scale</code>，只保留 <code>translateY(22px→-4px→0)</code> + <code>opacity</code> 淡入，探头时方框宽度恒定 200、只有上下探出 + 淡入。欢迎序列的 peek 同享此修。<b>版本</b> 138→139，sw CACHE v179→v180，tech META 同步。</span></div>
             <div class="it"><b>v138 · hero 大猫点击互动"随机做不同动作"（笑/眨眼/探头/思考，各配不同气泡）</b><span>用户要求"动作只做一次、做几个不同的动作、每次点击随机做一个"。<b>改法</b>：新增 <code>heroDoAction(name,dur)</code> 统一复位机制（<code>heroActionT</code> 定时器，覆盖 setMascotMood 默认 1.6s），点击时从四动作池随机挑一个、且不连续重复同一动作：①笑一下（切 happy 帧 + 「喵~ 🐾」）②眨眼（慢眨眼层 + 「眨眨眼 👀」）③探头看（#heroCat 加 peek 类 + 「喵? 🐾」）④思考（切 think 帧 + 「让我想想… 🤔」）；每个动作只播放一次、到时统一复位回 default，方框(整张方形 PNG)始终不动、只小猫表情/眨眼层/探头变化。删掉 v137 的 <code>heroPokeT</code> 死代码。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 137→138，sw CACHE v178→v179，tech META 同步。</span></div>
