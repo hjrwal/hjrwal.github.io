@@ -2878,7 +2878,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 130;
+const APP_VERSION = 131;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3606,6 +3606,7 @@ function go(name){
   bossActive=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）
   levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
   if(_heroAnimT){ clearTimeout(_heroAnimT); _heroAnimT=null; } // v128：切屏停首页吉祥物循环动画（防隐藏屏后台空转）
+  heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[]; // v131：切屏清招手游离定时器（防隐藏屏后台空转挥手）
   curScreen=name;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
@@ -4261,12 +4262,25 @@ const HERO_FRAMES = {
 };
 let _heroMoodSrc = null;     // 当前 hero "回归" 基础（被心境覆盖时）
 let _heroAnimT = null;       // 循环定时器句柄
+let heroWelcomeTimers = [];  // v131：招手游离定时器句柄，go()/重入时统一清理
 function _heroSetSrc(s){
   const img=document.getElementById('heroMascot');
   if(img) img.src=s;
 }
 function _heroBase(){
   return _heroMoodSrc || HERO_FRAMES.base;
+}
+// v131 放慢招手：wave1↔wave2 交替摆 3 下、每半拍停留 320ms，回归 base；全程约 2.2s，清晰可见
+function heroDoWave(){
+  heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[];
+  const seq=[HERO_FRAMES.wave1, HERO_FRAMES.wave2, HERO_FRAMES.wave1, HERO_FRAMES.wave2, HERO_FRAMES.wave1, HERO_FRAMES.wave2];
+  const lead=180, step=320;
+  seq.forEach((src,i)=>{
+    const t=setTimeout(()=>{ _heroSetSrc(src); }, lead + i*step);
+    heroWelcomeTimers.push(t);
+  });
+  const backT=setTimeout(()=>{ _heroSetSrc(_heroBase()); }, lead + seq.length*step + 160);
+  heroWelcomeTimers.push(backT);
 }
 function startHeroAnim(){
   if(_heroAnimT) return; // 单例
@@ -4286,11 +4300,9 @@ function startHeroAnim(){
       if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); }
       _heroAnimT=setTimeout(tick, 3000+Math.random()*1800);
     } else if(r<0.60){
-      // 招手：base → wave1 → wave2 → 回归
-      _heroSetSrc(HERO_FRAMES.wave1);
-      setTimeout(()=>{ _heroSetSrc(HERO_FRAMES.wave2); }, 220);
-      setTimeout(()=>{ _heroSetSrc(_heroBase()); }, 440);
-      _heroAnimT=setTimeout(tick, 7500+Math.random()*2500);
+      // 招手（v131 放慢：多摆几下、清晰可见）
+      heroDoWave();
+      _heroAnimT=setTimeout(tick, 7800+Math.random()*2500); // 招手变长，下一拍间隔相应拉长
     } else {
       _heroAnimT=setTimeout(tick, 2800+Math.random()*2000);
     }
@@ -4303,18 +4315,15 @@ function playHeroWelcome(){
   const bl=document.getElementById('heroBlink');
   const hw=document.getElementById('heroMascot');
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // 清掉上次可能残留的迎宾/招手定时器（连续进首页避免叠加）
+  heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[];
   if(c){ c.classList.remove('peek'); void c.offsetWidth; c.classList.add('peek'); }
   if(reduce) return; // 减少动效：仅探出，不眨不招手
   // 探出头结束后先眨一下
   setTimeout(()=>{ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } }, 1050);
-  // 眨后再接招手收尾：base → wave1 → wave2 → 回归 default 定格
-  setTimeout(()=>{
-    if(hw){
-      hw.src=HERO_FRAMES.wave1;
-      setTimeout(()=>{ if(hw) hw.src=HERO_FRAMES.wave2; }, 220);
-      setTimeout(()=>{ if(hw) _heroSetSrc(_heroBase()); }, 460);
-    }
-  }, 1350);
+  // 眨后再接招手收尾（v131 放慢：多摆几下、清晰可见）
+  const t2=setTimeout(()=>{ heroDoWave(); }, 1350);
+  heroWelcomeTimers.push(t2);
 }
 // v125 顶栏白喵点头（成功反馈）+ 戳一下（点击互动），零新图、叠加在 .mwrap 轻晃之上
 function mascotNod(){
