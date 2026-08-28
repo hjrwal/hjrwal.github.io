@@ -2885,7 +2885,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 137;
+const APP_VERSION = 138;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4270,7 +4270,7 @@ const HERO_FRAMES = {
 let _heroMoodSrc = null;     // 当前 hero "回归" 基础（被心境覆盖时）
 let _heroAnimT = null;       // 循环定时器句柄
 let heroWelcomeTimers = [];  // v131：招手游离定时器句柄，go()/重入时统一清理
-let heroPokeT = null;         // v137：hero 大猫点击笑帧维持定时器（覆盖 setMascotMood 默认 1.6s，放慢到 3s 收尾）
+let heroActionT = null;        // v138：hero 大猫点击随机动作复位定时器（统一收尾，覆盖 setMascotMood 默认 1.6s）
 function _heroSetSrc(s){
   const img=document.getElementById('heroMascot');
   if(img) img.src=s;
@@ -4344,26 +4344,50 @@ function mascotNod(){
     if(typeof foxSay==='function') foxSay('喵~ 🐾');
   });
 })();
-// v134 首页 hero 大猫点击互动：戳一下 → 抖 + 眨眼 + 「喵~ 🐾」气泡（复用顶栏小喵 poke 逻辑，零新图、不破坏现有卡片跳进度页）
+// v138 hero 大猫点击互动：每次随机做一个动作（笑/眨眼/探头/思考），方框(整张方形 PNG)不动、只换小猫表情帧/眨眼层/探头，各动作配不同气泡；不跳页
+function heroDoAction(name, dur){
+  // 先复位上一动作残留（帧/眨眼层/探头/心境），再统一定时器收尾，避免游离渲染
+  clearTimeout(heroActionT);
+  const h=document.getElementById('heroMascot');
+  const bl=document.getElementById('heroBlink');
+  const heroCat=document.getElementById('heroCat');
+  document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
+  _heroMoodSrc=null;
+  if(h) _heroSetSrc(HERO_FRAMES.base);
+  if(bl) bl.classList.remove('run');
+  if(heroCat){ heroCat.classList.remove('peek'); void heroCat.offsetWidth; }
+  if(name==='smile'){ if(h) _heroSetSrc(HERO_FRAMES.happy); if(typeof foxSay==='function') foxSay('喵~ 🐾'); }
+  else if(name==='blink'){ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } if(typeof foxSay==='function') foxSay('眨眨眼 👀'); }
+  else if(name==='peek'){ if(heroCat){ heroCat.classList.add('peek'); } if(typeof foxSay==='function') foxSay('喵? 🐾'); }
+  else if(name==='think'){ if(h) _heroSetSrc(HERO_FRAMES.think); if(typeof foxSay==='function') foxSay('让我想想… 🤔'); }
+  heroActionT=setTimeout(()=>{
+    document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
+    _heroMoodSrc=null;
+    if(h) _heroSetSrc(HERO_FRAMES.base);
+    if(bl) bl.classList.remove('run');
+    if(heroCat) heroCat.classList.remove('peek');
+  }, dur);
+}
 (function bindHeroPoke(){
   const m=document.getElementById('heroMascot');
   if(!m || m.dataset.heroPokeBound) return;
   m.dataset.heroPokeBound='1';
+  const HERO_CLICK_ACTIONS=[
+    {name:'smile', dur:3000, txt:'喵~ 🐾'},
+    {name:'blink',  dur:900,  txt:'眨眨眼 👀'},
+    {name:'peek',   dur:1150, txt:'喵? 🐾'},
+    {name:'think',  dur:3000, txt:'让我想想… 🤔'}
+  ];
+  let _lastHeroAct=-1;
   m.addEventListener('click', (e)=>{
     if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     e.stopPropagation(); // 阻止冒泡到 .hero.storybook 的 onclick=go('progress')，点猫只互动不跳页
-    // v136 修：方框(整张方形 PNG)完全不动，只让小猫本身动 -> 切笑帧(换图,img 盒不变) + 慢眨眼 + 喵气泡
-    // v137：笑帧维持放慢（1.6s -> 3s），让点击反馈"慢一点"收尾；覆盖 setMascotMood 默认 1600ms 复位
-    if(typeof setMascotMood==='function') setMascotMood('cheer');
-    if(typeof heroBlinkOnce==='function') heroBlinkOnce();
-    if(typeof foxSay==='function') foxSay('喵~ 🐾');
-    clearTimeout(mascotMoodT); // 取消 setMascotMood 内部的 1600ms 复位
-    clearTimeout(heroPokeT);
-    heroPokeT=setTimeout(()=>{
-      _heroMoodSrc=null;
-      const h=document.getElementById('heroMascot'); if(h) _heroSetSrc(HERO_FRAMES.base);
-      document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
-    }, 3000);
+    // 每次随机挑一个动作，且不连续重复同一个，保证"做几个不同动作"的观感
+    let i;
+    do { i=Math.floor(Math.random()*HERO_CLICK_ACTIONS.length); } while(HERO_CLICK_ACTIONS.length>1 && i===_lastHeroAct);
+    _lastHeroAct=i;
+    const a=HERO_CLICK_ACTIONS[i];
+    heroDoAction(a.name, a.dur);
   });
 })();
 // 预加载 8 张 PNG，避免首次切换白闪
