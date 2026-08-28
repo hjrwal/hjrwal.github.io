@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 137,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v178',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
+    version: 138,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v179',// 与 sw.js 的 CACHE 保持一致（含词境冒险独立迭代）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    137,       // 迭代版本数
+    iter:    138,       // 迭代版本数
     updated: '2026-08-28'
   };
 </script>
@@ -362,6 +362,7 @@ update  → <span class="k">controllerchange</span>
             <div class="it"><b>v130 · 顶栏小喵「可响应眨眼」互动增强</b><span>用户选「顶栏小喵互动增强」并指定"招手换成眨眼"——把互动从歪头/跟随改为<b>可响应眨眼</b>。复用既有 `.mtop-blink` 闭眼层 + `silkBlink` 关键帧（零新图、零风格漂移）：①新增 `mascotBlink()` 一次性明显眨眼（`.mtop-blink.run` 0.22s，260ms 后回归 4.2s 循环眨眼），内置 550ms 节流防连发狂眨 ②`#mascotImg` 加 `mouseenter`→眨眼（hover 即眨）③戳一下时同步眨眼 ④`foxSay` 开口说话时眨眼 ⑤`setMascotMood('cheer')` 答对/胜利额外眨眼（与 foxSay 节流合并不双眨）。保留现有点头(nod)与循环丝滑眨眼。<b>修版本漂移</b>：上游 sw.js 被单独 bump 到 eng5-v170 未同步 index/tech，三处严重不一致；本版统一收口 130 / eng5-v171 / tech 130·v171（sw 自 v170 续 +1，不回退）。<b>版本</b> 129→130，sw CACHE v170→v171，tech META 同步。</span></div>
             <div class="it"><b>v131 · 放慢 hero 大猫招手（wave1↔wave2 多摆几下、清晰可见）</b><span>用户选「回到 hero 大猫的招手幅度微调」并指定"招手做的慢一点，太快了看不清楚"。根因：原招手 wave1→wave2→base 在 ~460ms 内一次完成，几乎看不清。<b>改法</b> 新增 `heroDoWave()`——wave1↔wave2 交替摆 3 下、每半拍停留 320ms、回归 base，全程约 2.2s；循环空闲招手与迎宾招手序列均改调 `heroDoWave()`，循环下一拍间隔相应拉长到 7.8s+。<b>防游离定时器</b>：招手 setTimeout 句柄纳入 `heroWelcomeTimers` 数组，在 `playHeroWelcome` 重入与 `go()` 切屏时统一 `clearTimeout` 清理（铁律#6 自检：不引入新的切屏后幽灵渲染）。零新图、零风格漂移。<b>版本</b> 130→131，sw CACHE v171→v172，tech META 同步。</span></div>
             <div class="it"><b>v132 · 吉祥物小猫全面改像素风（原图模板 AI 重绘 8 帧 + 归一化对齐）</b><span>用户要求「将小猫改成像素风」，选定<b>真·像素风重绘 + 全部位置统一</b>。关键决策：以<b>原 8 张 PNG 为模板</b>做 img2img（<code>input_fidelity=high</code>），保留每帧姿态与构图——对 wave1↔wave2 交替挥爪、眨眼这类帧间动画而言，姿态一致性远比「生成一只新猫」重要。<b>踩坑与解法</b>：①首轮生成（文字生图 / 首版 img2img）右下角带「AI生成 WORKBUDDY&gt;」水印，且底部被擅自加了绿色地面 → 提示词显式加 <code>No text, no watermark, no logo</code> 与 <code>no floor, no ground, no grass, no shadow</code> 后，水印与绿地全部消失；②<code>background:transparent</code> 参数对 img2img 无效（输出仍 100% 不透明），改为<b>保留米底不透明</b>——与原图在 app 内的合成方式完全一致（靠米底与书本场景同色实现无缝），不强行抠图；③后处理用 Pillow：自动检测生成图背景色 C，把<b>接近 C 的像素</b>统一填回原图精确米色 (234,214,191)，顺带抹掉残留的背景漂移；④生成帧存在<b>位置/大小漂移</b>（happy 偏小偏高、think 偏低、sleep 巨大铺满、encourage 偏大偏低），切换时会跳变缩放 → 归一化处理：裁猫包围盒 → 按比例缩到统一 330×345 框 → 居中贴回 512 米底，8 帧中心统一落在 (240~255)、尺寸 329~348，帧间差异 &lt;15px 不跳；⑤CSS 新增 <code>img[src*="assets/mascot/"]{image-rendering:pixelated}</code>，缩放时保持像素锐利不被插值糊掉。SW 预缓存列表不变（文件名未变），仅升缓存号强制刷新。<b>版本</b> 131→132，sw CACHE v172→v173，tech META 同步。</span></div>
+            <div class="it"><b>v138 · hero 大猫点击互动"随机做不同动作"（笑/眨眼/探头/思考，各配不同气泡）</b><span>用户要求"动作只做一次、做几个不同的动作、每次点击随机做一个"。<b>改法</b>：新增 <code>heroDoAction(name,dur)</code> 统一复位机制（<code>heroActionT</code> 定时器，覆盖 setMascotMood 默认 1.6s），点击时从四动作池随机挑一个、且不连续重复同一动作：①笑一下（切 happy 帧 + 「喵~ 🐾」）②眨眼（慢眨眼层 + 「眨眨眼 👀」）③探头看（#heroCat 加 peek 类 + 「喵? 🐾」）④思考（切 think 帧 + 「让我想想… 🤔」）；每个动作只播放一次、到时统一复位回 default，方框(整张方形 PNG)始终不动、只小猫表情/眨眼层/探头变化。删掉 v137 的 <code>heroPokeT</code> 死代码。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 137→138，sw CACHE v178→v179，tech META 同步。</span></div>
             <div class="it"><b>v137 · hero 大猫点击互动"动作慢一点"（笑帧维持 1.6s → 3s）</b><span>用户要求点击互动"动作做的慢一点"。<b>根因</b>：v136 点击后小猫切 happy 笑帧由 <code>setMascotMood('cheer')</code> 内部 <code>mascotMoodT</code> 定时器（1600ms）复位回 default，笑一下就收回、节奏偏快。<b>改法</b>：在 <code>bindHeroPoke</code> 点击处理里 <code>clearTimeout(mascotMoodT)</code> 取消默认 1600ms 复位，改用 hero 专属 <code>heroPokeT</code> 在 3000ms 才复位（仅影响 hero 大猫点击互动，不动全局其它 cheer 反馈如答对/BOSS胜利/闯关成功的 1.6s）；笑帧切换、慢眨眼、喵气泡、方框固定不动等全部保留。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 136→137，sw CACHE v177→v178，tech META 同步。</span></div>
             <div class="it"><b>v136 · 修：hero 大猫点击互动"方框固定不要放大"</b><span>用户反馈 v135 点击时"方框固定不要放大"。<b>根因</b>：v135 把点击抖动改为底部弹性 <code>scale .9→1.07</code>，仍是对整张 512² 方形 PNG 做 transform，米色方框边界随之放大。v134/v135 两次都是"对整张方形图做 transform"导致框动/框放大。<b>改法</b>：彻底不再对 <code>#heroMascot</code> 做任何 transform——点击改为 <code>setMascotMood('cheer')</code> 切到 happy 帧（笑，换图动画、img 盒子尺寸/位置完全不变）+ <code>heroBlinkOnce()</code> 慢眨眼 + <code>foxSay('喵~ 🐾')</code> 气泡；删掉 <code>@keyframes heroPoke</code> 与 <code>#heroMascot.poke</code> 动画、<code>transform-origin</code>。方框(img 盒子)彻底固定不动、只有小猫表情在变（笑/眨眼）。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 135→136，sw CACHE v176→v177，tech META 同步。</span></div>
             <div class="it"><b>v135 · 修：hero 大猫点击互动的"正方形框"跟着转圈</b><span>用户反馈点击大猫时"旁边那个正方形框不要动，只要小猫动"。<b>根因</b>：hero 大猫 <code>#heroMascot</code> 是一张 512×512 方形 PNG（含透明边距、猫居中），v134 的 <code>@keyframes heroPoke</code> 用 <code>rotate</code> 旋转整张方形图，于是方形图片边界跟着转圈，用户感知为"框在动"。<b>改法</b>：<code>heroPoke</code> 去掉 <code>rotate</code>，改为底部弹性缩放（<code>scale .9→1.07→1</code> + 轻微 <code>translateY</code>），并设 <code>#heroMascot{transform-origin:50% 100%}</code>；方形边界不再旋转、只小猫从底部弹一下。点击互动的"慢眨眼 + 喵气泡 + 不跳页"逻辑全部保留（零新图、零风格漂移）。<b>版本</b> 134→135，sw CACHE v175→v176，tech META 同步。</span></div>
