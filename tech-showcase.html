@@ -499,8 +499,8 @@ update  → <span class="k">controllerchange</span>
     tsSortTimeline(order);
   }
   (function(){
-    var order='asc';
-    try{ order=localStorage.getItem('tech_tl_order')||'asc'; }catch(e){}
+    var order='desc';  // 本版调成 desc：默认「高 → 低」，最新项顶在最上。原默认 asc 会让 v8 顶在最上、v143 底在最下，让用户「看不到最新项」
+    try{ order=localStorage.getItem('tech_tl_order')||'desc'; }catch(e){}
     tsSortTimeline(order);
     var seg=document.getElementById('tlOrderSeg');
     if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
