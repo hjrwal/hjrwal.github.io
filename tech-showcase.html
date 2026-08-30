@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 143,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v189',// 与 sw.js 的 CACHE 保持一致（v142->v143：重排技术亮点页时间线 + APP_VERSION+1）
+    version: 144,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v190',// 与 sw.js 的 CACHE 保持一致（v143->v144：App 内技术亮点屏同步 v120-v143 + 默认排序改高→低）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    143,       // 迭代版本数
+    iter:    144,       // 迭代版本数
     updated: '2026-08-30'
   };
 </script>
@@ -333,6 +333,7 @@ update  → <span class="k">controllerchange</span>
         </div>
       </div>
       <div class="tl">
+      <div class="it"><b>v144 · App 内技术亮点屏与独立页对齐（补齐 v120–v143）</b><span>用户反馈 App 内「技术亮点」屏时间线停在 v119，与独立展示页不同步。本次：①把 v120–v143 共 24 条从本独立页同步进 App 内 #tech 屏；②App 内屏默认排序由 低→高 改为 高→低（v144 在顶，与独立页一致）；③本独立页 META 与 sw CACHE 同步 bump 到 144 / eng5-v190。两条时间线版本集合现完全一致（v8–v144）。全 SVG 绘本风。</span></div>
       <div class="it"><b>v143 · 重排技术亮点页时间线 + bump 版本号</b><span>用户反馈「技术亮点没有相应更新」。根因：原页面顶部是 v95-v119 旧日志项（顺序从 v95 走到 v119），让用户以为「最新到 v119」；而真正的最新条目 v130-v142 被埋在下面，以及 v8-v26 最旧条目被推到最底，正常浏览根本看不到。<b>解法</b>：Python 提取全部 127 个 <code>&lt;div class=&quot;it&quot;&gt;</code> 日志项 <span style="font-family:Menlo,monospace;font-size:11px">(re.compile(...) 幂饯 + 非贪茴 .*?「允许嵌套 &lt;b&gt;」)</span> → 按版本号降序排序 → 重新写回 <code>&lt;div class=&quot;tl&quot;&gt;</code> 容器。结果：<b>v143 顶在最上、v8 在最底</b>，一眼能看出最新进展。安全检查：区间多条目重复在 <code>+1</code> 后能仍能被 <code>re.findall</code> 拆出 128 个项（原 127 + 本版新增 1）。本版仅修技术展示页顺序，<b>不改任何代码逻辑</b>，v142 以前的三条条目原层保留。<b>版本</b> 142→143，sw CACHE v188→v189，tech META iter 142→143。</span></div>
       <div class="it"><b>v142 · 吉祥物互动再升级（加油入池 + 连对里程碑庆祝 + 每日打气）</b><span>用户选「吉祥物互动再升级」。三项：①<b>点击动作池加「加油」</b>——<code>HERO_CLICK_ACTIONS</code> 扩为五动作，新增 cheer（切 v141 新画的 encourage 帧 + 「加油！💪」气泡），新帧不再只在开测闪一次；②<b>连对里程碑庆祝</b>——测试答对连对每达 5 的倍数，小喵切 encourage 帧 + 随机庆祝语（连对 n 题 🎉 / 小喵佩服 ✨ / 火力全开 🔥），覆盖常规 cheer 反馈更显隆重；③<b>每日打气</b>——每天第一次回首页，迎宾序列结束后 3.1s 小喵主动说一句鼓励语（五句池随机；localStorage <code>eng5_lastCheerDate</code> 记日期一天一次；定时器纳入 <code>heroWelcomeTimers</code> 随 go() 清理；localStorage 异常静默跳过）。<b>修上游漂移</b>：sw.js 被词境冒险迭代单独 bump 到 eng5-v187（v183-v187 被游戏发版消耗），本版自 187 续 +1 收口不回退（沿用 v130 先例）。<b>版本</b> 141→142，sw CACHE v187→v188，tech META 同步。</span></div>
       <div class="it"><b>v141 · think/encourage 以 default 为模板 img2img 重绘（像素风 + 100% 同族）</b><span>v140 两帧被用户指出"不行，要像素风格的，风格样子要以首页那只猫为原型"——v140 是平滑插画且带贴纸白边，与 v132 像素体系不符。<b>改法</b>：改用 <b>img2img（以 default.png 为输入模板，input_fidelity=high）</b>重绘两帧——只改表情/姿态，风格构图全继承：think=一只爪抬贴脸颊 + 柔和思考眼；encourage=月牙笑眼 + 张嘴吐舌 + 点赞爪 + 头顶红心加橘粉火苗。后处理：裁右下水印 + flood fill 统一背景为 default 精确米色 <code>(234,214,191)</code> + 包围盒 NEAREST 缩放对齐 default 尺度（think 289×325 / encourage 279×329，default 289×329）居中贴回 512 米底。<b>踩坑</b>：纯文字 prompt 即使写 pixel-art 也会漂成插画/贴纸风，吉祥物帧一律 img2img 以 default 为模板。原 v140 版备份 <code>_bak_*_v140px.png</code>。<b>版本</b> 140→141，sw CACHE v181→v182，tech META 同步。</span></div>
