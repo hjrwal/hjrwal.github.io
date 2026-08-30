@@ -2885,7 +2885,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 141;
+const APP_VERSION = 142;
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -4325,6 +4325,18 @@ function playHeroWelcome(){
   // v133 招手换眨眼：迎宾以两次慢眨眼收尾，不再挥手
   const t2=setTimeout(()=>{ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } }, 2050);
   heroWelcomeTimers.push(t2);
+  dailyCheer(); // v142 每日首次打开主动打气
+}
+// v142 每日打气：每天第一次回首页，迎宾结束后小喵说一句鼓励语（localStorage 记日期，一天只说一次；定时器纳入 heroWelcomeTimers 随 go() 清理）
+function dailyCheer(){
+  try{
+    const today=new Date(); const key=today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    if(localStorage.getItem('eng5_lastCheerDate')===key) return;
+    localStorage.setItem('eng5_lastCheerDate', key);
+    const msgs=['新的一天也要闪闪发光 ✨','今天也要加油学英语哦 🌟','小喵陪你一起进步 🐾','今天会有什么新词等着我们呢 🤔','昨天很棒，今天继续哦 💪'];
+    const t3=setTimeout(()=>{ if(typeof foxSay==='function') foxSay(msgs[Math.floor(Math.random()*msgs.length)]); }, 3100);
+    heroWelcomeTimers.push(t3);
+  }catch(e){/* localStorage 不可用则静默跳过 */}
 }
 // v125 顶栏白喵点头（成功反馈）+ 戳一下（点击互动），零新图、叠加在 .mwrap 轻晃之上
 function mascotNod(){
@@ -4360,6 +4372,7 @@ function heroDoAction(name, dur){
   else if(name==='blink'){ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } if(typeof foxSay==='function') foxSay('眨眨眼 👀'); }
   else if(name==='peek'){ if(heroCat){ heroCat.classList.add('peek'); } if(typeof foxSay==='function') foxSay('喵? 🐾'); }
   else if(name==='think'){ if(h) _heroSetSrc(HERO_FRAMES.think); if(typeof foxSay==='function') foxSay('让我想想… 🤔'); }
+  else if(name==='cheer'){ if(h) _heroSetSrc(HERO_FRAMES.encourage); if(typeof foxSay==='function') foxSay('加油！💪'); } // v142 加油帧入池
   heroActionT=setTimeout(()=>{
     document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
     _heroMoodSrc=null;
@@ -4376,7 +4389,8 @@ function heroDoAction(name, dur){
     {name:'smile', dur:3000, txt:'喵~ 🐾'},
     {name:'blink',  dur:900,  txt:'眨眨眼 👀'},
     {name:'peek',   dur:1150, txt:'喵? 🐾'},
-    {name:'think',  dur:3000, txt:'让我想想… 🤔'}
+    {name:'think',  dur:3000, txt:'让我想想… 🤔'},
+    {name:'cheer',  dur:3000, txt:'加油！💪'}
   ];
   let _lastHeroAct=-1;
   m.addEventListener('click', (e)=>{
@@ -4785,6 +4799,11 @@ function commitTest(ok, enForWrong, delay){
     testCorrect++; awardStars(1);
     comboStreak++; floatText('答对 +10', 'ok'); setMascotMood('cheer'); mascotNod(); playDing();
     if(comboStreak>=3) showCombo(comboStreak);
+    if(comboStreak>=5 && comboStreak%5===0){ // v142 连对里程碑：小喵切鼓励帧+庆祝语（覆盖 cheer，更显隆重）
+      setMascotMood('encourage');
+      const _cc=['连对 '+comboStreak+' 题，太棒了 🎉', comboStreak+' 连对！小喵佩服 ✨', '火力全开 '+comboStreak+' 连对 🔥'];
+      foxSay(_cc[Math.floor(Math.random()*_cc.length)]);
+    }
   } else {
     comboStreak=0; hideCombo();
     floatText(enForWrong? '再想想' : '答错啦', 'miss'); setMascotMood('sad');
