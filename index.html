@@ -2911,7 +2911,8 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 146;
+const APP_VERSION = 147;
+const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3019,40 +3020,32 @@ function defaultState(){
     onlineSec:0, onlineDay:0, onlineDate:'', onlineHist:{},
     settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc'} };
 }
+function migrateState(s){
+  if(!s || typeof s!=='object' || Array.isArray(s)) return defaultState();
+  var d = defaultState();
+  // 递归补齐缺失键（数组原样保留），已有数据一律不覆盖——未来新增字段自动下发到所有旧档
+  (function fill(base, cur){
+    for(var k in base){
+      if(!(k in cur)){ cur[k] = base[k]; continue; }
+      var bv = base[k];
+      if(bv && typeof bv==='object' && !Array.isArray(bv)){
+        if(!cur[k] || typeof cur[k]!=='object' || Array.isArray(cur[k])) cur[k] = {};
+        fill(bv, cur[k]);
+      }
+    }
+  })(d, s);
+  // 历史一次性清理（保留旧档兼容）
+  if(s.settings && s.settings.tapSpeak!==undefined) delete s.settings.tapSpeak; // v112：去掉开关字段
+  // v100 迁移：旧档今日时长灌进日历（仅当记录归属今天时）
+  if(s.onlineDay>0 && s.onlineDate===todayStr() && !(s.onlineHist[s.onlineDate]>0)) s.onlineHist[s.onlineDate]=s.onlineDay;
+  s.version = SCHEMA_VERSION;
+  return s;
+}
 function loadState(){
-  try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.version===1){
-    if(!s.settings) s.settings={};
-    if(!s.daily) s.daily={date:'',count:0};
-    if(!s.chBest) s.chBest=0;
-    if(!s.wrongFixed) s.wrongFixed=0;
-    if(!s.wrong) s.wrong=[];
-    if(!s.units) s.units={};
-    if(!s.trend) s.trend=[];
-    if(!s.tests) s.tests={};
-    if(!s.gameWins) s.gameWins=0;
-    if(!s.gramRight) s.gramRight=0;
-    if(!s.weak) s.weak={sel:0,spell:0,sent:0};
-    if(!s.weakByUnit) s.weakByUnit={};
-    if(!s.ab) s.ab={sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}};
-    if(!s.settings.fontScale) s.settings.fontScale=1;
-    if(!s.settings.dailyGoal) s.settings.dailyGoal=20;
-    if(typeof s.settings.autoBackup!=='boolean') s.settings.autoBackup=true;
-    if(!s.settings.timelineOrder) s.settings.timelineOrder='asc';
-    if(s.settings.tapSpeak!==undefined) delete s.settings.tapSpeak; // v112：去掉开关字段（默认开启，不再可选）
-    if(typeof s.rankIdx!=='number') s.rankIdx=0;
-    if(!s.codex) s.codex={};
-    if(!s.bossSeen) s.bossSeen={};
-    if(typeof s.onboarded!=='boolean') s.onboarded=false;
-    if(!s.guided || typeof s.guided!=='object') s.guided={};
-    if(!s.settings.grade) s.settings.grade='5';
-    if(typeof s.onlineSec!=='number') s.onlineSec=0;
-    if(typeof s.onlineDay!=='number') s.onlineDay=0;
-    if(typeof s.onlineDate!=='string') s.onlineDate='';
-    if(!s.onlineHist || typeof s.onlineHist!=='object' || Array.isArray(s.onlineHist)) s.onlineHist={};
-    // v100 迁移：旧档今日时长灌进日历（仅当记录归属今天时）
-    if(s.onlineDay>0 && s.onlineDate===todayStr() && !(s.onlineHist[s.onlineDate]>0)) s.onlineHist[s.onlineDate]=s.onlineDay;
-    return s;
-  } }catch(e){}
+  try{
+    const s=JSON.parse(localStorage.getItem(KEY));
+    if(s && typeof s==='object' && !Array.isArray(s)) return migrateState(s);
+  }catch(e){}
   _localEmpty=true;
   return defaultState();
 }
@@ -3216,7 +3209,7 @@ idbOpen().then(()=>{
   updateBackupStatus();
   if(_localEmpty){
     idbGet().then(stored=>{
-      if(stored && stored.version===1){
+      if(stored && typeof stored==='object' && !Array.isArray(stored)){
         try{ localStorage.setItem(KEY, JSON.stringify(stored)); }catch(e){}
         STATE = loadState();
         saveState();
@@ -3242,19 +3235,12 @@ function importProgress(input){
     const finish=()=>{ try{ input.value=''; }catch(_){} };
     try{
       const obj=JSON.parse(r.result);
-      if(!obj || typeof obj!=='object' || Array.isArray(obj) || obj.version!==1 || !obj.settings){ toast('文件格式不对，无法导入'); finish(); return; }
+      if(!obj || typeof obj!=='object' || Array.isArray(obj) || typeof obj.version!=='number' || !obj.settings){ toast('文件格式不对，无法导入'); finish(); return; }
       const backup=STATE; // v127：容错回滚点
       try{
         STATE=obj;
-        // v127：容错合并——补齐缺失字段，避免后续渲染/统计连锁崩溃
-        STATE.settings = (STATE.settings&&typeof STATE.settings==='object')?STATE.settings:{};
-        STATE.wrong    = Array.isArray(STATE.wrong)?STATE.wrong:[];
-        STATE.weakByUnit = (STATE.weakByUnit&&typeof STATE.weakByUnit==='object')?STATE.weakByUnit:{};
-        STATE.codex    = (STATE.codex&&typeof STATE.codex==='object')?STATE.codex:{};
-        STATE.tests    = (STATE.tests&&typeof STATE.tests==='object')?STATE.tests:{};
-        STATE.bossSeen = (STATE.bossSeen&&typeof STATE.bossSeen==='object')?STATE.bossSeen:{};
-        STATE.trend    = Array.isArray(STATE.trend)?STATE.trend:[];
-        STATE.stars    = Number(STATE.stars)||0;
+        // v147：统一走 migrateState 补齐缺失字段（含嵌套 settings/weak/ab 等），已有数据保留（容错合并 + 失败回滚）
+        STATE = migrateState(STATE);
         applyTheme(STATE.settings.theme||'light');
         applyFont();
         UNITS=pickBook();
@@ -3530,7 +3516,7 @@ function speakByWords(text){
     const fn = window.AUDIO_MAP && (window.AUDIO_MAP[tok] || window.AUDIO_MAP[normWord(tok)]);
     return fn ? 'audio/'+fn : null;
   });
-  if(!urls.some(Boolean)){ webSpeak(text); return; } // 连单词级音频都无：降级浏览器 TTS（无则静默）
+  if(!urls.some(Boolean)){ if(!webSpeak(text)) toast('🔇 暂时听不到声音，连网或换设备试试'); return; } // 连单词级音频都无 + 无浏览器 TTS：轻提示
   speakFxShow();
   let i=0;
   const next=()=>{
@@ -3542,7 +3528,7 @@ function speakByWords(text){
   next();
 }
 function webSpeak(text){
-  if(!('speechSynthesis' in window)){ return; } // 静默兜底：无 TTS 浏览器不再弹窗骚扰
+  if(!('speechSynthesis' in window)){ return false; } // 静默兜底：无 TTS 浏览器不再弹窗骚扰
   if(typeof navigator!=='undefined' && navigator.onLine===false){ toast('📴 离线模式：若没声音，连网后重试'); }
   primeSpeech();
   const r = (STATE.settings&&STATE.settings.rate) || 0.9;
@@ -3554,6 +3540,7 @@ function webSpeak(text){
   u.onerror=()=>speakFxHide();
   try{ speechSynthesis.cancel(); }catch(e){}
   speechSynthesis.speak(u);
+  return true;
 }
 async function highlightSpeak(text){
   // 逐词高亮朗读（说模式·慢速朗读）：优先本地音频，降级 web TTS
