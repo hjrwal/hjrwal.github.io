@@ -11,14 +11,14 @@
 -->
 <script>
   const META = {
-    version: 144,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v190',// 与 sw.js 的 CACHE 保持一致（v143->v144：App 内技术亮点屏同步 v120-v143 + 默认排序改高→低）
+    version: 145,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v191',// 与 sw.js 的 CACHE 保持一致（v143->v144：App 内技术亮点屏同步 v120-v143 + 默认排序改高→低）
     words:   612,       // 核心词数（四册全量）
     audio:   1251,      // 预录音频数
     audioMB: 13.6,      // 音频总体积(MB)
     deps:    0,         // 第三方依赖数
     offline: 100,       // 离线可用比例(%)
-    iter:    144,       // 迭代版本数
+    iter:    145,       // 迭代版本数
     updated: '2026-08-30'
   };
 </script>
@@ -333,135 +333,135 @@ update  → <span class="k">controllerchange</span>
         </div>
       </div>
       <div class="tl">
-      <div class="it"><b>v144 · App 内技术亮点屏与独立页对齐（补齐 v120–v143）</b><span>用户反馈 App 内「技术亮点」屏时间线停在 v119，与独立展示页不同步。本次：①把 v120–v143 共 24 条从本独立页同步进 App 内 #tech 屏；②App 内屏默认排序由 低→高 改为 高→低（v144 在顶，与独立页一致）；③本独立页 META 与 sw CACHE 同步 bump 到 144 / eng5-v190。两条时间线版本集合现完全一致（v8–v144）。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v143 · 重排技术亮点页时间线 + bump 版本号</b><span>用户反馈「技术亮点没有相应更新」。根因：原页面顶部是 v95-v119 旧日志项（顺序从 v95 走到 v119），让用户以为「最新到 v119」；而真正的最新条目 v130-v142 被埋在下面，以及 v8-v26 最旧条目被推到最底，正常浏览根本看不到。<b>解法</b>：Python 提取全部 127 个 <code>&lt;div class=&quot;it&quot;&gt;</code> 日志项 <span style="font-family:Menlo,monospace;font-size:11px">(re.compile(...) 幂饯 + 非贪茴 .*?「允许嵌套 &lt;b&gt;」)</span> → 按版本号降序排序 → 重新写回 <code>&lt;div class=&quot;tl&quot;&gt;</code> 容器。结果：<b>v143 顶在最上、v8 在最底</b>，一眼能看出最新进展。安全检查：区间多条目重复在 <code>+1</code> 后能仍能被 <code>re.findall</code> 拆出 128 个项（原 127 + 本版新增 1）。本版仅修技术展示页顺序，<b>不改任何代码逻辑</b>，v142 以前的三条条目原层保留。<b>版本</b> 142→143，sw CACHE v188→v189，tech META iter 142→143。</span></div>
-      <div class="it"><b>v142 · 吉祥物互动再升级（加油入池 + 连对里程碑庆祝 + 每日打气）</b><span>用户选「吉祥物互动再升级」。三项：①<b>点击动作池加「加油」</b>——<code>HERO_CLICK_ACTIONS</code> 扩为五动作，新增 cheer（切 v141 新画的 encourage 帧 + 「加油！💪」气泡），新帧不再只在开测闪一次；②<b>连对里程碑庆祝</b>——测试答对连对每达 5 的倍数，小喵切 encourage 帧 + 随机庆祝语（连对 n 题 🎉 / 小喵佩服 ✨ / 火力全开 🔥），覆盖常规 cheer 反馈更显隆重；③<b>每日打气</b>——每天第一次回首页，迎宾序列结束后 3.1s 小喵主动说一句鼓励语（五句池随机；localStorage <code>eng5_lastCheerDate</code> 记日期一天一次；定时器纳入 <code>heroWelcomeTimers</code> 随 go() 清理；localStorage 异常静默跳过）。<b>修上游漂移</b>：sw.js 被词境冒险迭代单独 bump 到 eng5-v187（v183-v187 被游戏发版消耗），本版自 187 续 +1 收口不回退（沿用 v130 先例）。<b>版本</b> 141→142，sw CACHE v187→v188，tech META 同步。</span></div>
-      <div class="it"><b>v141 · think/encourage 以 default 为模板 img2img 重绘（像素风 + 100% 同族）</b><span>v140 两帧被用户指出"不行，要像素风格的，风格样子要以首页那只猫为原型"——v140 是平滑插画且带贴纸白边，与 v132 像素体系不符。<b>改法</b>：改用 <b>img2img（以 default.png 为输入模板，input_fidelity=high）</b>重绘两帧——只改表情/姿态，风格构图全继承：think=一只爪抬贴脸颊 + 柔和思考眼；encourage=月牙笑眼 + 张嘴吐舌 + 点赞爪 + 头顶红心加橘粉火苗。后处理：裁右下水印 + flood fill 统一背景为 default 精确米色 <code>(234,214,191)</code> + 包围盒 NEAREST 缩放对齐 default 尺度（think 289×325 / encourage 279×329，default 289×329）居中贴回 512 米底。<b>踩坑</b>：纯文字 prompt 即使写 pixel-art 也会漂成插画/贴纸风，吉祥物帧一律 img2img 以 default 为模板。原 v140 版备份 <code>_bak_*_v140px.png</code>。<b>版本</b> 140→141，sw CACHE v181→v182，tech META 同步。</span></div>
-      <div class="it"><b>v140 · 重画 think/encourage 两帧：异类猫 → 原型白喵同族</b><span>用户反馈点击随机动作里"这个动作不好看，明显和原型不一样"。全帧对比发现 <code>assets/mascot/</code> 8 帧里 <b>think.png（卡其色像素猫）与 encourage.png（灰白点赞猫）是两张风格完全异类的猫</b>——点击随机动作抽中"思考"、开测鼓励时白喵会突然变成另一只猫（default/happy/blink/sleep/wave1/wave2 均为同族白喵，仅这 2 张漂移）。<b>改法</b>：以 default.png 原型为基准 AI 重绘两帧（粉心/粉耳内/粉腮红/粉蝴蝶结全保留）——think=白爪点下巴 + 斜眼向上 + 思考嘴角；encourage=月牙笑眼 + 张嘴加油 + 头顶橘粉火苗与爱心 + 白爪点赞 + 蝴蝶结归位脖子正中（首版蝴蝶结缺失位置贴底且无点赞爪，二版修正）；Pillow 裁"AI生成"水印 + 缩 512×512 替换，原版备份 <code>_bak_*_v139/v140a.png</code>。<b>版本</b> 139→140，sw CACHE v180→v181，tech META 同步。</span></div>
-      <div class="it"><b>v139 · 修：探头动作时方框(200→186)被 heroPeek 的 scale 缩了一下</b><span>v138 验证发现"探头看"动作触发 <code>.hero-cat.peek</code> 时，<code>heroPeek</code> 关键帧含 <code>scale(.93→1.02)</code>，作用在 <code>#heroCat</code> 容器上、连带 <code>#heroMascot</code> 的方框一起缩放（实测 200→186）。这与用户"方框固定不要动"的要求相违（即使探头是用户自己选的动作）。<b>改法</b>：<code>heroPeek</code> 去掉 <code>scale</code>，只保留 <code>translateY(22px→-4px→0)</code> + <code>opacity</code> 淡入，探头时方框宽度恒定 200、只有上下探出 + 淡入。欢迎序列的 peek 同享此修。<b>版本</b> 138→139，sw CACHE v179→v180，tech META 同步。</span></div>
-      <div class="it"><b>v138 · hero 大猫点击互动"随机做不同动作"（笑/眨眼/探头/思考，各配不同气泡）</b><span>用户要求"动作只做一次、做几个不同的动作、每次点击随机做一个"。<b>改法</b>：新增 <code>heroDoAction(name,dur)</code> 统一复位机制（<code>heroActionT</code> 定时器，覆盖 setMascotMood 默认 1.6s），点击时从四动作池随机挑一个、且不连续重复同一动作：①笑一下（切 happy 帧 + 「喵~ 🐾」）②眨眼（慢眨眼层 + 「眨眨眼 👀」）③探头看（#heroCat 加 peek 类 + 「喵? 🐾」）④思考（切 think 帧 + 「让我想想… 🤔」）；每个动作只播放一次、到时统一复位回 default，方框(整张方形 PNG)始终不动、只小猫表情/眨眼层/探头变化。删掉 v137 的 <code>heroPokeT</code> 死代码。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 137→138，sw CACHE v178→v179，tech META 同步。</span></div>
-      <div class="it"><b>v137 · hero 大猫点击互动"动作慢一点"（笑帧维持 1.6s → 3s）</b><span>用户要求点击互动"动作做的慢一点"。<b>根因</b>：v136 点击后小猫切 happy 笑帧由 <code>setMascotMood('cheer')</code> 内部 <code>mascotMoodT</code> 定时器（1600ms）复位回 default，笑一下就收回、节奏偏快。<b>改法</b>：在 <code>bindHeroPoke</code> 点击处理里 <code>clearTimeout(mascotMoodT)</code> 取消默认 1600ms 复位，改用 hero 专属 <code>heroPokeT</code> 在 3000ms 才复位（仅影响 hero 大猫点击互动，不动全局其它 cheer 反馈如答对/BOSS胜利/闯关成功的 1.6s）；笑帧切换、慢眨眼、喵气泡、方框固定不动等全部保留。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 136→137，sw CACHE v177→v178，tech META 同步。</span></div>
-      <div class="it"><b>v136 · 修：hero 大猫点击互动"方框固定不要放大"</b><span>用户反馈 v135 点击时"方框固定不要放大"。<b>根因</b>：v135 把点击抖动改为底部弹性 <code>scale .9→1.07</code>，仍是对整张 512² 方形 PNG 做 transform，米色方框边界随之放大。v134/v135 两次都是"对整张方形图做 transform"导致框动/框放大。<b>改法</b>：彻底不再对 <code>#heroMascot</code> 做任何 transform——点击改为 <code>setMascotMood('cheer')</code> 切到 happy 帧（笑，换图动画、img 盒子尺寸/位置完全不变）+ <code>heroBlinkOnce()</code> 慢眨眼 + <code>foxSay('喵~ 🐾')</code> 气泡；删掉 <code>@keyframes heroPoke</code> 与 <code>#heroMascot.poke</code> 动画、<code>transform-origin</code>。方框(img 盒子)彻底固定不动、只有小猫表情在变（笑/眨眼）。零新图、零风格漂移、不跳页逻辑保留。<b>版本</b> 135→136，sw CACHE v176→v177，tech META 同步。</span></div>
-      <div class="it"><b>v135 · 修：hero 大猫点击互动的"正方形框"跟着转圈</b><span>用户反馈点击大猫时"旁边那个正方形框不要动，只要小猫动"。<b>根因</b>：hero 大猫 <code>#heroMascot</code> 是一张 512×512 方形 PNG（含透明边距、猫居中），v134 的 <code>@keyframes heroPoke</code> 用 <code>rotate</code> 旋转整张方形图，于是方形图片边界跟着转圈，用户感知为"框在动"。<b>改法</b>：<code>heroPoke</code> 去掉 <code>rotate</code>，改为底部弹性缩放（<code>scale .9→1.07→1</code> + 轻微 <code>translateY</code>），并设 <code>#heroMascot{transform-origin:50% 100%}</code>；方形边界不再旋转、只小猫从底部弹一下。点击互动的"慢眨眼 + 喵气泡 + 不跳页"逻辑全部保留（零新图、零风格漂移）。<b>版本</b> 134→135，sw CACHE v175→v176，tech META 同步。</span></div>
-      <div class="it"><b>v134 · hero 大猫点击互动（戳一下 → 抖 + 眨眼 + 喵气泡）</b><span>用户要求"加一个点击互动"。选定<b>首页 hero 大猫</b> + <b>抖一下 + 「喵~ 🐾」气泡 + 眨眼</b>（复用顶栏小喵 poke 逻辑）。<b>实现</b> 新增 <code>bindHeroPoke()</code>：给 <code>#heroMascot</code> 绑 click → <code>e.stopPropagation()</code>（阻止冒泡到 <code>.hero.storybook</code> 的 <code>onclick=go('progress')</code>，点猫只互动不跳页，卡片其它区域仍跳进度页）+ <code>classList.add('poke')</code> 抖动（新增 <code>@keyframes heroPoke</code> .5s）+ <code>heroBlinkOnce()</code> 慢眨眼 + <code>foxSay('喵~ 🐾')</code> 气泡；<code>prefers-reduced-motion</code> 下整体跳过（与顶栏 poke 一致）；<code>cursor:pointer</code> + dataset 守卫只绑一次。零新图、零风格漂移、不破坏现有卡片跳转。<b>版本</b> 133→134，sw CACHE v174→v175，tech META 同步。</span></div>
-      <div class="it"><b>v133 · hero 大猫「招手换眨眼 + 放慢」</b><span>用户要求把首页 hero 大猫的"招手"改成"眨眼"，且眨眼放慢。改法：新增 <code>heroBlinkOnce()</code>（触发既有 <code>.scene-blink</code> 闭眼叠加层 <code>.run</code>，零新图、不换 src）；<code>startHeroAnim</code> 循环与 <code>playHeroWelcome</code> 迎宾序列中原本调用 <code>heroDoWave()</code>（招手）的两处全部替换为慢眨眼——循环约 60% 概率眨、迎宾以两次慢眨眼收尾，hero 大猫从此不再挥手；删除 <code>heroDoWave()</code> 死代码；新增 <code>heroBlinkSlow</code> 关键帧（闭眼层 <code>opacity 0→1</code> 停留 28%–60%→<code>0</code>，读起来是"慢慢眨"而非闪一下），<code>.scene-blink.run</code> 由 <code>silkBlink .22s</code> 改为 <code>heroBlinkSlow .62s</code>；顶栏小喵的 <code>silkBlink .22s</code> 不动（用户仅要求 hero 大猫）。零新图、零一致性风险、不卡。<b>版本</b> 132→133，sw CACHE v173→v174，tech META 同步。</span></div>
-      <div class="it"><b>v132 · 吉祥物小猫全面改像素风（原图模板 AI 重绘 8 帧 + 归一化对齐）</b><span>用户要求「将小猫改成像素风」，选定<b>真·像素风重绘 + 全部位置统一</b>。关键决策：以<b>原 8 张 PNG 为模板</b>做 img2img（<code>input_fidelity=high</code>），保留每帧姿态与构图——对 wave1↔wave2 交替挥爪、眨眼这类帧间动画而言，姿态一致性远比「生成一只新猫」重要。<b>踩坑与解法</b>：①首轮生成（文字生图 / 首版 img2img）右下角带「AI生成 WORKBUDDY&gt;」水印，且底部被擅自加了绿色地面 → 提示词显式加 <code>No text, no watermark, no logo</code> 与 <code>no floor, no ground, no grass, no shadow</code> 后，水印与绿地全部消失；②<code>background:transparent</code> 参数对 img2img 无效（输出仍 100% 不透明），改为<b>保留米底不透明</b>——与原图在 app 内的合成方式完全一致（靠米底与书本场景同色实现无缝），不强行抠图；③后处理用 Pillow：自动检测生成图背景色 C，把<b>接近 C 的像素</b>统一填回原图精确米色 (234,214,191)，顺带抹掉残留的背景漂移；④生成帧存在<b>位置/大小漂移</b>（happy 偏小偏高、think 偏低、sleep 巨大铺满、encourage 偏大偏低），切换时会跳变缩放 → 归一化处理：裁猫包围盒 → 按比例缩到统一 330×345 框 → 居中贴回 512 米底，8 帧中心统一落在 (240~255)、尺寸 329~348，帧间差异 &lt;15px 不跳；⑤CSS 新增 <code>img[src*="assets/mascot/"]{image-rendering:pixelated}</code>，缩放时保持像素锐利不被插值糊掉。SW 预缓存列表不变（文件名未变），仅升缓存号强制刷新。<b>版本</b> 131→132，sw CACHE v172→v173，tech META 同步。</span></div>
-      <div class="it"><b>v131 · 放慢 hero 大猫招手（wave1↔wave2 多摆几下、清晰可见）</b><span>用户选「回到 hero 大猫的招手幅度微调」并指定"招手做的慢一点，太快了看不清楚"。根因：原招手 wave1→wave2→base 在 ~460ms 内一次完成，几乎看不清。<b>改法</b> 新增 `heroDoWave()`——wave1↔wave2 交替摆 3 下、每半拍停留 320ms、回归 base，全程约 2.2s；循环空闲招手与迎宾招手序列均改调 `heroDoWave()`，循环下一拍间隔相应拉长到 7.8s+。<b>防游离定时器</b>：招手 setTimeout 句柄纳入 `heroWelcomeTimers` 数组，在 `playHeroWelcome` 重入与 `go()` 切屏时统一 `clearTimeout` 清理（铁律#6 自检：不引入新的切屏后幽灵渲染）。零新图、零风格漂移。<b>版本</b> 130→131，sw CACHE v171→v172，tech META 同步。</span></div>
-      <div class="it"><b>v130 · 顶栏小喵「可响应眨眼」互动增强</b><span>用户选「顶栏小喵互动增强」并指定"招手换成眨眼"——把互动从歪头/跟随改为<b>可响应眨眼</b>。复用既有 `.mtop-blink` 闭眼层 + `silkBlink` 关键帧（零新图、零风格漂移）：①新增 `mascotBlink()` 一次性明显眨眼（`.mtop-blink.run` 0.22s，260ms 后回归 4.2s 循环眨眼），内置 550ms 节流防连发狂眨 ②`#mascotImg` 加 `mouseenter`→眨眼（hover 即眨）③戳一下时同步眨眼 ④`foxSay` 开口说话时眨眼 ⑤`setMascotMood('cheer')` 答对/胜利额外眨眼（与 foxSay 节流合并不双眨）。保留现有点头(nod)与循环丝滑眨眼。<b>修版本漂移</b>：上游 sw.js 被单独 bump 到 eng5-v170 未同步 index/tech，三处严重不一致；本版统一收口 130 / eng5-v171 / tech 130·v171（sw 自 v170 续 +1，不回退）。<b>版本</b> 129→130，sw CACHE v170→v171，tech META 同步。</span></div>
-      <div class="it"><b>v129 · 单元测试 0 题防御（finishTest NaN 污染存档）</b><span>继续审计"空数据/题型边界"面：发现 `finishTest` 用 `score=Math.round(testCorrect/total*100)`，若 `testQs` 为空（`total=0`）→ `score=NaN` → `STATE.tests[unit]=Math.max(0,NaN)=NaN` 把单元测试成绩写脏进 localStorage（重载后该单元成绩变 null）。当前 22 单元皆有 words+sentences、选择器"只选连词成句"最少也产 1 题，故<b>现网不可触达</b>，属潜在代码异味。按用户"推版前自检"铁律做防御性加固：①`startTest` 在 `testQs` 赋值后若为空直接 `toast('本单元暂无可练习的题目…')+return`，从源头不进弹窗/不写脏数据 ②`finishTest` 在 `total===0` 时 `closeTestModal()+return` 双重保险。<b>版本</b> 128→129，sw CACHE v166→v167，tech META 同步。</span></div>
-      <div class="it"><b>v128 · 推版前强制漏洞自检 + 6 处游离回调/定时器修复</b><span>用户指令"每次推送新版本前先自检有无漏洞"。在 v127 基础上再扫一轮，挖到 6 处同源漏洞（切屏/关弹窗/返回地图后游离定时器与回调仍后台幽灵执行）：①`commitTest` 加 `if(!testModalOpen) return;`（关弹窗后 600/900ms 超时提交仍静默加星/记错/推进 testIdx）②`startVocabQuiz` 加 `if(curScreen!=='vocab') return;` ③`gradeSentence` 的 nextSent、`gradeSentDict`/`startSentDict` 加 `curScreen!=='sentences'` 守卫（原只判 `if(curSent)` 不防切屏）④引入 `levelActive` 标志（`startLevel` 置 true + 60ms 渲染回调守卫 + `makeResolver` 的 done 守卫 + `go()`/`showMap` 置 false），杜绝"返回地图"后 BOSS 后台渲染与题间幽灵推进 ⑤`go()` 清 `_heroAnimT`（首页吉祥物循环动画后台空转）。<b>版本</b> 127→128，sw CACHE v165→v166，tech META 同步。</span></div>
-      <div class="it"><b>v127 · 全量审计续：BOSS 幽灵定时器 / importProgress 容错 / pending 定时器守卫</b><span>用户要求「继续挖漏洞」，在 v126 基础上再扫一轮。<b>结论：安全面干净</b>——无 <code>eval</code>/<code>document.write</code>、两处 <code>JSON.parse</code>（本地存储 + 导入文件）均在 <code>try/catch</code> 内、所有用户输入框只做字符串比对不回显 innerHTML、importProgress 已有基础 try/catch。<b>挖到 1 中高危 + 2 低危</b>：①<b>BOSS 战游离定时器</b>——<code>renderBoss</code> 内 4 个 <code>setTimeout(render,…)</code> 无句柄、不在 <code>go()</code> 清理；打到一半点导航离开，pending 的 <code>render()</code> 仍触发，若赶上末尾 <code>idx>=sents.length</code> 分支会在隐藏的 <code>#lvlArea</code> 里直接 <code>awardStars(2); celebrate(); foxSay('🏆 你击败了…')</code>，等于「中途逃跑白拿 BOSS 星 + 首页弹胜利气泡」。修：加 <code>bossActive</code> 标志，<code>render()</code> 开头 <code>if(!bossActive) return;</code>、<code>go()</code> 与 BOSS 结束置 <code>false</code>。②<b>importProgress 校验浅</b>——只查 <code>version===1 &amp;&amp; settings</code>，导入「version 对但字段残缺」的文件会让后续渲染连锁崩溃；修：容错合并补齐 <code>wrong/weakByUnit/codex/tests/bossSeen/trend</code> 等字段 + 失败时回滚到导入前 STATE。③<b>pending 定时器</b>——挑战 <code>chNext</code>(350ms)/测试 <code>renderTestQ</code>(480ms) 切屏后回调落在隐藏屏；修：<code>chNext</code> 加 <code>if(curScreen!=='challenge') return;</code>、<code>renderTestQ</code> 加 <code>if(!testModalOpen) return;</code>（新增 <code>testModalOpen</code> 标志）。<b>版本</b> 126→127，sw CACHE v164→v165，tech META 同步。</span></div>
-      <div class="it"><b>v126 · 全量审计修复词汇测验「下一题」堆叠 / 题型选择器双显</b><span>用户截图反馈两个 bug：①词汇测验「下一题 →」按钮叠了 3 个；②题型选择器（听音选词/看义选词/拼写/听写填空）和「测验中」面板同时显示。<b>根因</b>：选项用 <code>div.className='opt'</code>，HTML 的 <code>disabled</code> 属性只对表单元素生效，<code>el.disabled=true</code> 无法阻止点击——重复点已禁用的选项会再 <code>appendChild</code> 一个「下一题」；题型按钮是 <code>#vocabQuiz</code> 的<b>兄弟节点</b>，<code>startVocabQuiz</code> 只显示答题区、从不隐藏选择器。<b>全量审计</b> 顺手又扒出 3 处同类隐患：语法测验 <code>showGramQ</code> / 限时挑战 <code>chNext</code> 的 div 选项同样缺守卫会堆叠、双跳；<code>initVocab</code> 进入词汇页只隐藏 quiz 不复位选择器，开测验后全局导航离开再回来题型选择器永久隐藏、开不了测验。<b>修复</b>（均 <5 行、零新图）：①renderOpts/showGramQ/chNext 选项 onclick 开头加 <code>if(el.disabled) return;</code>（照搬单元测试弹窗既有守卫）②题型按钮行加 <code>id="vocabQuizPicker"</code>，<code>startVocabQuiz</code> 开头 <code>picker.style.display='none'</code>、<code>exitQuiz</code> 恢复 <code>''</code>、<code>initVocab</code> 进入词汇页复位显示。<b>版本</b> 125→126，sw CACHE v163→v164，tech META 同步。</span></div>
-      <div class="it"><b>v125 · 首页 Hero 修裁剪 + 三件微交互(迎宾招手/点头/戳/笑赞) + 右侧 sun 装饰</b><span>v124 后用户要求再做轻量稳改。落地时发现 hero 大猫被 <code>object-fit:cover</code> 裁成 1148×120 横条，<b>wave1 爪子和 happy 大笑全在画外</b>——大猫的招手和笑赞看不出区别。<b>修裁剪</b> scene 120→210 高 + 猫改 <code>object-fit:contain</code> 完整显示（底对齐）+ 右侧加 <b>sun SVG + 「今天也闪闪 ✨ / 一起加油吧」</b> 文字装饰平衡布局。<b>微交互串成序列</b>①迎宾探出→1.05s 后眨→1.35s 后招手(wave1↔wave2 220ms 切两帧，零新图)②顶栏白喵点头（mascotNod：CSS keyframe 摇头 .5s）+ 戳一下（bindMascotPoke：抖 + foxSay「喵~ 🐾」，手型光标）③答对/闯关/BOSS/拼词胜利时顶栏切 happy + 点头。零新图、零一致性风险、不卡。<b>版本</b> 124→125，sw CACHE v162→v163，tech META 同步。</span></div>
-      <div class="it"><b>v124 · 首页吉祥物迎宾探出头（纯 CSS 一次性动画）</b><span>用户认为矢量重做风险大、AI 多帧蹦跳又怪又卡，选<b>轻量稳妥路线</b>：切到首页时大猫从草坡「探出头 + 淡入 + 轻微缩放归位」一次性迎宾（替代 v89 仅靠换表情帧）。<b>实现</b> 用现成 default.png/blink.png（零新图、零一致性风险、不卡）：hero 两图包进 <code>&lt;div class="hero-cat"&gt;</code>，CSS <code>@keyframes heroPeek</code>（translateY 28→-4→0 + scale .93→1.02→1 + opacity 0→1，1.05s 弹性曲线，<code>both</code> 填充）；<code>playHeroWelcome()</code> 在 <code>go('home')</code> 内以「移除 class→强制重排→重加 class」重启动画，使每次回首页都重播；同时触发一次 <code>#heroBlink.run</code> 丝滑眨眼，迎宾更生动；<code>prefers-reduced-motion</code> 下自动关闭。<b>版本</b> 123→124，sw CACHE v161→v162，tech META 同步。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v123 · 顶栏吉祥物丝滑眨眼（与 hero 同原理，整体同步晃）</b><span>用户在 v122 首页 hero 丝滑眨眼后，要求<b>顶栏小猫咪也加同款</b>。难点：顶栏 <code>.mascot</code> 带 <code>wob</code> 左右晃动（±6°），若直接叠闭眼层会与底座 transform 错位。解法：把 <code>wob</code> 从 <code>.mascot</code> 移到外层 <code>.mwrap</code>（<code>position:relative;display:inline-flex</code>），让「底座+p 叠加层」整体一起晃；顶栏 HTML 用 <code>.mwrap</code> 包裹 <code>#mascotImg</code> + 新增闭眼叠加 <code>&lt;img class="mtop-blink"&gt;</code>（<code>position:absolute;inset:0;object-fit:cover;object-position:center 48%</code> 与底座完全重叠）。闭眼层 <code>@keyframes silkBlinkLoop</code> 无限循环（每 ~4.2s，<code>opacity 0→1→0</code> 220ms 渐变），<code>prefers-reduced-motion</code> 下自动关闭。<b>版本</b> 122→123，sw CACHE v160→v161，tech META 同步。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v122 · 首页吉祥物眨眼丝滑化（双层交叉淡入，替代硬切换）</b><span>用户觉得原 v121 眨眼是 default→blink→default 硬换 src（150ms）的「啪啪」感太生硬。改为<b>双层交叉淡入</b>：底层常驻睁眼 default.png，上层叠闭眼 blink.png（<code>position:absolute;inset:0</code> 与底层完全重叠），眨眼时上层 <code>opacity</code> 在 220ms 内 <code>0→1→0</code> 渐变——因两图同一只猫、仅眼睛不同，身体完全重叠不重影，眼睛平滑合上再睁开。<b>实现</b> hero 内新增 <code>&lt;img id="heroBlink" class="scene-blink"&gt;</code>，CSS <code>@keyframes silkBlink</code> + <code>.scene-blink.run</code> 触发；<code>startHeroAnim</code> 眨眼分支由「硬换 src」改为对叠加层 <code>classList.add('run')</code>（<code>void offsetWidth</code> 强制重排以重启动画），随机间隔保持 ~3–4.8s；<code>prefers-reduced-motion</code> 下自动关闭。<b>范围</b> 仅首页 hero 大猫（原只此处眨眼）；顶栏小猫咪带 <code>wob</code> 晃动且与眨眼叠加层 transform 会错位，保持原样。<b>版本</b> 121→122，sw CACHE v159→v160，tech META 同步。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v121 · 小尺寸吉祥物全部切 AI PNG（顶栏 40 / 测试页 32 / 反馈气泡 26 / 单元标记 24）</b><span>用户反馈 v120 首页吉祥物换了但左上角顶栏 40px 仍是旧 SVG，整体风格不统一。本版 4 处 <code>&lt;svg&gt;&lt;use href="#i-fox"/&gt;&lt;/svg&gt;</code> → <code>&lt;img src="assets/mascot/default.png"&gt;</code>，加 <code>object-fit:cover; object-position:center 48%</code> 适配非方形盒；<b>v88 答题反馈保留</b>——<code>setMascotMood</code> 改为切所有 <code>.mascot</code> 的 <code>&lt;img src&gt;</code>（顶栏 + 测试页同步反应 welcome/encourage/think/cheer/sad，1.6s 回归 default），hero PNG 同步逻辑保持；<b>清理</b> 删 <code>.ff-*</code> 6 表情 SVG 叠加层 + <code>.mascot.mood-*</code> 6 条 CSS 死代码；<code>#i-fox</code> symbol 留 <code>&lt;defs&gt;</code> 不删（零渲染成本）；<b>取舍</b> 24-26px 极小尺寸 AI 全身场景确实糊（用户已接受），先上线看效果，如不行再为小尺寸裁「白喵脸部特写」版（曾选选项 2）；<b>版本</b> 120→121，sw CACHE v158→v159，tech META 同步。</span></div>
-      <div class="it"><b>v120 · 首页吉祥物 AI 生图重做（方案 A + 完整版动态）</b><span>用户反馈 SVG「白喵」插画过于简陋，改为生图模型出图：<b>姿势</b>「小山坡探出头」（奶油白猫咪+琥珀内耳+粉蝴蝶结+头顶小红心，绘本风暖纸色描边）；<b>方案 A</b> 大尺寸位（≥64px）用 AI PNG，小尺寸位（顶栏 40px / 测试页 32px / 单元标记 24px / 反馈气泡 26px）保留 SVG 矢量避免糊；<b>完整版动态</b> ①首页 hero 用 PNG <code>&lt;img&gt;</code> 替换原 CSS 画的太阳/云/山/小狐狸，object-fit:cover 填满宽屏，CSS 复用 v89 scIdle 探头浮动 ②JS 循环动画 startHeroAnim()：每 ~3.5s 随机眨眼（base→blink→回归，150ms） + 每 ~9s 招手（base→wave1→wave2→回归，440ms） ③setMascotMood 扩展为同步切 hero 的 <code>&lt;img src&gt;</code>，6 心境映射 5 表情 PNG（happy/cheer 共享 happy，sad 复用 sleep）④加载页 fox-spin SVG 换 90×90 PNG 场景，沿用 foxBob 弹跳；<b>资源</b> 8 张 1024² 图裁掉底部 11% 水印 + 中心方形裁切 + LANCZOS 缩到 512²，Pillow optimize 输出 default/happy/think/sleep/encourage + blink/wave1/wave2，~3.5MB 总（原始 12MB 省 71%），sw.js ASSETS 预缓存；<b>清理</b> 删 .sc-sun/.sc-rays/.sc-cloud/.sc-hill-*/.sc-fox-wrap/.sc-fox/.sc-eyes/.sc-lid + @keyframes spinSlow/drift/scBlink 及 dark 主题对应变体；<b>版本号补登</b> v119 阶段一（首页词境冒险入口 .lexi-entry）代码已落但 APP_VERSION 漏升，本版统一 119→120，sw CACHE v157→v158，tech META 同步；<b>SVG 绘本风</b> 顶栏/测试页/单元标记/反馈气泡的 SVG 白喵表情层完整保留，大尺寸位视觉升级。</span></div>
-      <div class="it"><b>v119 · 第四轮穷尽式审计（暗色兜底 / 死链 / emoji 遗漏 / 乱码 / 时间线）</b><span>逐屏死链 + 全文件 emoji 扫描：①暗色主题 `.opt` / `.choice-opt` 补浅字兜底（`#f5e9da !important`，app 自动跟随系统暗色时选项可读）；②`copyLink()` 死链补实现（原 onclick 调用但未定义）；③JS 动态生成的标题/提示里 11 处遗漏的 emoji 清理（统一零 emoji 占位红线）；④修复历史遗留乱码字节；⑤版本演进时间线补录 v117-v119。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v118 · 听音选义选项文字可见性修复</b><span>「听音选义」题型选项文字在部分主题下被未知覆写规则覆盖成不可见——根因某 CSS 层对 `.opt` 设了浅色/透明文字。修复：`.opt` 改为 `color:#2a1f17 !important` 强制深色可读，三处版本号 +1 同步（APP_VERSION/sw CACHE/tech META）。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v117 · 第三轮审计修复（挑战计时器 / 词图补全）</b><span>穷尽式再审计：①`go()` 全局切屏原不调 `clearInterval(chTimer)`，限时挑战切屏后台计时器偷跑 + 静默加星；修复：go() 开头补 `clearInterval(chTimer)`。②`EMOJI_MAP` 原仅覆盖 98 词，约 60 个常见词无图；补全 56 个高频词 emoji（覆盖 154/562 词）。③新增 10 个专属单元 BOSS 配置（此前跨单元重复词缺独立 BOSS）。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v116 · 第二轮审计修复（切屏停麦 / 重复词归属）</b><span>换角度再审计（XSS/存档/跨年级遍历/游戏边界/语音评测资源/音频缺失）：①`go()` 全局切屏原不调 `stopEvalEngine`，「说」屏开跟读后直接点底部导航切屏会致麦克风持续监听 + RAF 波形循环 + AudioContext 泄漏（隐私/耗电）；修复：go() 开头加 `stopEvalEngine()`（空闲时全守卫 no-op，安全）。②`recordWord` 原 `realId=EN2UNIT[en]||id`，对 16 组跨单元重复词（如 house 同现 u5/u6）忽略实际所学单元、把掌握/错题记录归到 EN2UNIT 指向单元；修复：改 `realId=id`（各调用方传入 curUnitId / q.unit 均正确）。确认安全项：存档损坏/配额异常不崩、麦克风拒绝降级自评、BOSS 怒气无溢出、写模式用户输入不进 innerHTML。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v115 · 全面审计修复（zh选择题/挑战范围/缺图占位/防崩溃/学习记录）</b><span>jsdom 运行时 + 静态全量审计 22 单元：①单元测试「看英文选中文」题原用 norm 比较中文（归一化为空串）致点任意中文都判对，改精确中文匹配；②限时挑战原从全部 22 单元抽词（五年级抽到六年级未学词 + 错题可能越界崩溃），改为只考当前年级 UNITS 且 recordWord 用抽词单元；③约 60 个虚词/短语无 emoji 改纯文字占位（不显示 🔤，契合零 emoji 红线，孩子看文字最直观）；④进度页错题列表 UNITS.find 越界防御 if(u) 防崩溃；⑤BOSS 战与闯关连连看补 recordWord（句型/配对词进掌握与错题本，与单元测试一致）。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v114 · 拼词题字母池只留字母（标点按钮不再残留）</b><span>全量审计 22 单元发现 89 个含撇号 / 连字符 / 省略号的词条（hard-working、aren't、have ... class 等）——拼词题字母池会多出标点按钮，拼完字母后残留「-」「'」让人以为还没拼完。修复：字母池只放字母（自动过滤标点与空格），下划线占位同步，判定兼容（norm 双侧删标点）。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v113 · 修复拼词题「点过的字母占布局」（同类漏洞全清）</b><span>趣味闯关拼词题（如「说英语」speak English）孩子以为无解——根因：点过的字母按钮 v108 用 visibility:hidden（仍占布局看不到空隙）+ clearGhosts 在点首字母时清空下划线提示，看不到「还差几个」。修复：所有 token 点过后 display:none 彻底移除（不留空隙）+ 保留 ghost 下划线占位（永远显示 N 个空槽 = 答案长度）。同类漏洞排查：renderPuzzle / renderSentence / renderBoss / buildSentence / 单元测试连词成句 共 5 处全部修齐。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v112 · 点击单词自动发音（默认开启，去掉开关）</b><span>v111 加的开关用户希望默认开启——取消「点击单词发音」开关，改为默认自动开启：题目里点任意单词 / 词块即朗读该词（250ms 防连点叠音，自动去尾标点）。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v111 · 设置新增「点击单词发音」开关</b><span>之前点连词成句等题目的单词「像有语音」实为手机系统朗读——现在 App 自带可控功能：设置里可开「点击单词发音」（默认关），开启后题目里点任意单词 / 词块即朗读该词发音（250ms 防连点叠音），关闭则完全不受打扰。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v110 · 闯关前期互动升级（开场剧场 + 前期事件保底）</b><span>每关开场必触发「开场剧场」：狐狸介绍本关词数 / 句型数并预告守关 BOSS，点「🚀 出发！」正式开战；奇遇事件从随机 1-2 个改为「第 1-4 题位置必有一个 + 后段 50% 再插一个」——前期互动更密，不再前几题纯做题。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v109 · BOSS 挑衅对话（战斗互动）</b><span>BOSS 战穿插「英文挑衅 + 3 选 1 回应」对话轮：BOSS 用英文叫阵（附中文翻译），选出正确英文回应即「反击成功」——下一击伤害翻倍；选错 BOSS 更生气、怒气 +1（怒气满仍放大招回血）。每场最多 2 次、首轮必触发，边打边练句型。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v108 · 修复拼词题空格答案无解</b><span>「功夫；武术」等答案含空格的词条在闯关拼词题里永远拼不对——字母池去空格拆字母、判定却保留空格比较，导致无解。修复为去空格比对，点过的字母按钮也即时隐去，池子不再残留。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v107 · 拼词/连词成句空槽提示</b><span>闯关拼词、连词成句、BOSS 战的摆入区在未操作时按答案长度渲染「下划线占位」——一眼看出要拼几个字母 / 几个词，点第一个字母后占位自动消失，不再是一排让人困惑的空白。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v106 · 趣味闯关大升级（事件插曲 + BOSS 怒气战 + 隐藏星）</b><span>闯关不再纯做题：随机穿插奇遇事件（📮补给站领 ⭐双倍卡 / 🎁宝箱开星 / 🐣帮迷路小鸡回家）；BOSS 战升级为回合制——答错涨怒气、怒满放大招震屏并回 1 血，连对 2 题亮「⚡狐狸必杀」一击削 2 血，双倍卡让攻击翻倍；零失误完美通关解锁第 4 颗「隐藏星」，地图显示金色徽章。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v105 · 视觉：今日复习条不再刺眼</b><span>主页「今日复习」条在有待复习词时用高亮浅橙渐变（#fff1e2 / #ffe9df）+ 脉冲动画，暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色 + 暗色主题专属适配）+ 脉冲动画放慢，柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v104 · 视觉：建议多练提示条不再刺眼</b><span>主页「建议多练」条此前用高亮米黄渐变（#fff4d6 / #ffe9c2），在暗色主题下与深棕背景对比突兀。改为品牌橙透明淡底（浅色）+ 暗色主题专属适配（暖色文字 + 暗棕透明底），柔和融入主题不抢眼。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v103 · 连连看：每对配对即时 +1⭐</b><span>单词游戏「连连看」此前只有整局配完才一次性给 3⭐——现改为每配成一对即时 +1⭐（配错翻回不扣星），整局通关的 +3⭐ 与彩带保留。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v102 · 教材切换成功提示</b><span>在设置里切换 五年级 / 六年级 或 上册 / 下册后，顶部弹出「已切换到六年级教材」「已切换下册」提示，切换结果一目了然。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v101 · 挑战：答对加星 + 错题进本</b><span>限时挑战接入激励闭环：每题答对即时 +1⭐（答错不加星），答错自动记入错题本（含薄弱统计、稍后可复习），并保留结束高分奖励。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v100 · 进度：在线时长小日历</b><span>每日在线时长按天记录（onlineHist），「在线时长」卡下新增月历网格——颜色越深学得越久、今日描边高亮，可翻上月 / 下月，点格子看当天时长。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v99 · 进度：在线时长监控</b><span>新增在线时长统计：页面在前台可见即计时、切后台自动暂停，每 30 秒 / 切走 / 关闭前自动结算并存入本地进度（离线也算）；「我的进度」新增「在线时长」卡，展示累计与今日时长。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v98 · 合并「读」进「说」（说新增慢速朗读）</b><span>听说读写四格简化为 听 / 说 / 写 三格；「读」的逐词高亮跟读能力并入「说」，说模式新增「🐢 慢速朗读」按钮——点按逐词高亮播放，先学怎么读，再点「我来说」三维评分挑战。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v97 · 说：评分防刷（识别接入流利度/完整度）</b><span>修复「咳嗽也能拿满分」漏洞：流利度 / 完整度不再只看音量大小和时长，改为结合免费 Web Speech 云端识别覆盖率（识别出多少词给多少分）；无识别环境退回波形估算并加「爆音防刷」（一两个孤立响段不算读句子，封顶 2 星）；识别没听清时提示重读。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v96 · 说：三维评分 + 可选云端识别 + 下一句</b><span>「说」升级为流利度 / 准确度 / 完整度三维各 1–5 星评分；有网且浏览器支持时自动调用免费 Web Speech 云端识别转录并比对句子（准确度自动评分），不支持则降级为手动自评；流利度 / 完整度由麦克风波形估算。修复无法跳转到下一句的 bug，新增「下一句 →」按钮可随时换句。全 SVG 绘本风。</span></div>
-      <div class="it"><b>v95 · 说：「我来说」触发跟读自评（取消语音识别依赖）</b><span>「说」练习的「我来说」按钮改为直接唤起波形跟读 + 三档自评面板，移除对浏览器语音识别（SpeechRecognition）的依赖，iPhone / 无识别环境也能用；「说」磁贴改为始终显示（文案「跟读自评」）。零 emoji 占位，沿用 SVG 绘本风。</span></div>
-      <div class="it"><b>v94 · 闪卡前后翻动（上一张 / 下一张自由浏览）</b><span>词汇练习闪卡新增「上一张 / 下一张」导航，学生可自由前后翻看单词，不必逐张标记「会了 / 不熟」；翻到首张自动禁用「上一张」、翻到末张自动禁用「下一张」；并支持键盘 ← / → 翻动。沿用 SVG 绘本风线性箭头图标，零 emoji 占位。</span></div>
-      <div class="it"><b>v93 · 语音朗读修复（拆词拼接兜底 + 静默降级 + 补录缺失 mp3）</b><span>根除安卓等无 TTS 浏览器点「听示范」弹「不支持语音合成」的问题：①整句无 mp3 时自动按词拆分、逐个播放本地预录音频（speakByWords 兜底），五年级已录单词的句子立刻出声；②webSpeak 在无 speechSynthesis 时改为静默 return，不再弹错误 toast（同时消除占位 emoji）；③补录六年级新增单元缺失的例句 mp3（edge-tts 预录），AUDIO_MAP 覆盖全部教材句子，所有句子连读自然。SVG 绘本风、零 emoji 占位。</span></div>
-      <div class="it"><b>v92 · 安全加固（CSP 同源策略 + 语音识别结果转义）</b><span>面向「静态单文件 PWA」的真实威胁模型做加固：①同源内容安全策略——head 注入 Content-Security-Policy meta（策略 default-src 'self'；script-src / style-src 因全站 JS·CSS 内联保留 'unsafe-inline'；img/media 允许 'self' data: blob:；connect-src 'self'），锁死外部脚本/图片/媒体加载与跨域数据外泄通道，价值主要在 connect-src 与 default-src 'self'。②语音跟读结果转义——Web Speech 识别文本写入 innerHTML 前先做 HTML 实体转义，杜绝识别串被当标记执行。威胁模型结论：无后端、无数据库、无第三方依赖，攻击面极小；唯一高危点是 GitHub 账号被盗导致 sw.js 被篡改，故账号开启 2FA 是最关键防线。SVG 绘本风、零 emoji 占位。</span></div>
-      <div class="it"><b>v91 · 跨浏览器加固（夸克/UC/微信/360 都能稳跑）</b><span>针对国产浏览器与老 WebView 做兼容兜底：flex gap 用 @supports 自动降级为 margin（老内核不丢间距）；color-mix/aspect-ratio 改静态色与 min-height 兜底；100vh 追加 100dvh 回退（动态地址栏不再裁切弹窗）；viewport-fit=cover + 安全区内距（刘海/挖孔屏不压边）；Service Worker 被禁时用 fetch 探测 sw.js 版本号，仍主动弹「发现新版本」横条。全 SVG 绘本风、零 emoji 占位。</span></div>
-      <div class="it"><b>v90 · 学习闭环（SRS 掌握进度 + 复习卡升级 + 解锁动画）</b><span>把「学→练→测→复习」闭环做得看得见：①错题消灭进度——复习弹窗每词新增 6 段式 SRS 掌握进度条（答对一次点亮一格，6 格满即移出错题本），并提示「还差 N 次彻底记住」；错题本新增「平均巩固度」统计卡，实时显示全部错题 SRS 进度均值。②首页复习卡升级——「今日复习」卡替换廉价 🔁 emoji 为 SVG 绘本风刷新图标，新增迷你进度条显示「待复习占全部错题的比例」。③闯关解锁动画——地图「新解锁」缎带替换 🔓 为 SVG 开锁徽章、未解锁单元替换 🔒 为 SVG 锁图标，刚解锁单元迸发四色星火；前沿标记 🦊 换成主人公白喵 SVG。全 SVG 绘本风、零 emoji 占位。</span></div>
-      <div class="it"><b>v89 · 吉祥物温度（idle 微动画 + 多场景心境 + 弹窗白喵）</b><span>让白喵像「活的小伙伴」：①首页 idle——故事书封面白喵新增探头（上下浮）+ 招手（轻摆）+ 眨眼（眼睑 scaleY 周期闭合）三组合 CSS 关键帧，常驻有生命感；②多场景心境——扩展叠加表情到 think/welcome/encourage，与 v88 的 happy/cheer/sad 共 6 种；③修复 v88 缺陷：单元测试整屏 modal 盖住顶栏白喵致答题表情不可见——弹窗标题处新增 `#testMascot` 白喵（替换廉价 📝 emoji），`setMascotMood` 改为作用于所有 `.mascot`。接线：回家→welcome、开测→encourage、出每题→think、答对→cheer、答错→sad。SVG 绘本风、零 emoji 占位。</span></div>
-      <div class="it"><b>v88 · 做题正反馈特效（飘字·连对火苗·白喵表情）</b><span>为答题过程加入即时正反馈，提升做题爽感：①飘字——答对居中弹绿色「答对 +10」、答错弹橙色「再想想」，上浮淡出；②连对火苗——连续答对 ≥3 次触发顶部火苗横幅显示连击数（答错清零）；③白喵表情——顶部吉祥物新增 happy/cheer/sad 三种叠加线框表情（默认中性），答对变 cheer、答错变 sad，1.6 秒自动回中性。复用既有庆祝系统（confetti/playDing）与设计 token，SVG 绘本风、无 emoji 占位。</span></div>
-      <div class="it"><b>v87 · 修复错题本屏</b><span>还原缺失的 renderWrongbook 函数（v85 起被误删，导致点进错题本整屏报错）。用既有 .wb-row/.wb-en/.wb-zh/.wb-tag/.wb-times/.wb-actions/.wb-empty 样式还原列表渲染：错题总数 / 今日待复习 / 已消灭 三项统计 + 全部错题列表（🔊 发音、单元标签、练习次数、✕ 移出），空态友好提示。与 v86 按板块触发指引的「错题本」入口衔接。</span></div>
-      <div class="it"><b>v86 · 首次指引改为「按板块触发」</b><span>用户反馈原 v42 一次性 6 步向导「全放出来记不清」。改为：首次打开只弹 1 张简短欢迎卡（白喵打招呼 + 一句「点哪个板块我讲哪个」）；之后每次首次点进某板块，才弹该板块自己的 1-2 句小提示（轻量气泡 coachmark，贴近顶部、不挡全屏、点「知道了」即走）。覆盖全部 14 个板块：首页/词汇/句型/语法/听说读写/单元测试/错题本/闯关/单词游戏/限时挑战/成就墙/进度/词鉴/技术亮点。设置页「重新查看」改为按顺序巡览全部板块指引。状态存 STATE.guided（按板块标记已看），欢迎即覆盖首页避免重复弹。</span></div>
-      <div class="it"><b>v85 · 薄弱点面板升级：等级徽章强化 + 🔊加大 + 去复习拆双按钮</b><span>用户确认 v84 三项优化点全部采纳：①等级徽章强化——「⚠ 严重」(≥7 次) 字号加粗到 900、红色更深(#9E2B1B)、加 1.5px 红边 + 红色外发光圈，三种级别一眼区分；②🔊 发音按钮由 28px 加大到 34px、字号 13→16、圆角 10→12，更易点中；③单元卡右侧「去复习 ➡️」单按钮拆为竖排双按钮——「📝 练一练」(沿用上次题型进测试屏直接做) 与「🎯 测一测」(弹题型选择框自定义 10 题)，橙色区分。配色继续全部 var() 跟随主题。</span></div>
-      <div class="it"><b>v84 · 薄弱点面板重做：4仪表+等级徽章+chip单词</b><span>用户反馈 v78 「我的薄弱点」面板太简陋（灰底平铺、chip 只是数字、单词无发音、无等级）。彻底重做：①顶部 4 项仪表卡网格 — 累计错次/薄弱单元/已掌握词/连续学习，配色用 --grape/--forest/--amber 区分类型，全部 var() 跟随主题。②单元卡重做：左侧 big emoji 圆形头像罩、中间等级徽章（🔴⚠严重 ≥7 次 / 🟡●中等 4-6 / 🟢✦轻微 1-3）+ 错次进度条（按级别配色 渐变，h1 暖红、h2 琥珀、h3 森林绿）+ 底部小字统计「选/拼/句」、右侧大紫色立体「去复习 ➡️」按钮（带 3D 阴影+按压反馈）。③常错单词按出现频次合并去重，前 16 渲染为 chip：每个 chip = 🔊 发音按钮（点调用 speak()）+ 英文大字 + 中文 + 错次热度 chip（×1 绿、×2 黄、≥4 红），hover 抬升 2px。配色全部用 var() 跟随主题（暖色绘本风），与 v83 报告/v80 趋势图/v82 数字盖顶同套视觉语言。</span></div>
-      <div class="it"><b>v83 · 报告统一深色卡（不突兀）</b><span>用户反馈报告上半区（紫色头部+暗色 4 统计卡）与下半区「📈 近况」淡米色背景深浅混搭、突兀。根因是 `.rpt` 容器硬编码浅米色与 4 卡的 `var(--card)` 不在同色系。统一方案：`.rpt` 容器改 `var(--card)` 跟随主题（浅主题米色/深主题深暖棕）；`.rpt-trend` 加卡背景+圆角+padding；`.rpt-tbar.zero` 灰柱改为虚线空柱（透明+ var(--muted) 虚线边框，0 掌握=无的语义更准确，两种主题都可见）；零值数字 `var(--muted)` 跟随主题。`saveReportImage()` canvas 长图同步跟随主题：`getComputedStyle` 读 `--card/--ink/--muted/--soft/--line`，背景/文字/卡片全部跟随；浅色主题导出米色调、深色主题导出深色调，屏幕与画布始终一致。</span></div>
-      <div class="it"><b>v82 · 近况数字盖柱顶（直接可读）</b><span>用户反馈 v81 的每日柱数字虽不再悬空、但仍是「柱子上方的独立一行」，不够直接。改为数字作为柱子的子元素、绝对定位骑在柱顶（bottom:100%，紧贴柱顶、随柱高浮动），白字直接压在紫/金柱上、深褐字压在灰柱上，一眼可读、盖住柱顶不悬空；趋势区顶部留白增至 20px 容纳数字溢出，hover 由 scaleY 改为 brightness 防止数字被拉伸。canvas 长图数字本就是柱顶上方标注，效果同类，保持不变，两处表现一致。</span></div>
-      <div class="it"><b>v81 · 近况数字贴柱顶（消除悬空脱节）</b><span>用户反馈 v80 的每日柱数字用 absolute 浮空 15px，短柱（每天只 +1/+2）时数字悬在半空、与柱子脱节，仍显抽象。改为跟随柱子的流式布局：数字在上、柱子中、日期在最底，数字永远紧贴其所属柱子的头顶（无论柱子多短都不悬空）；同步收紧趋势区高度（96→108）与柱最大高度（60→56）避免溢出。0 值灰色数字 +「0」、超均值金色数字，悬停完整数据均保留。canvas 长图本就贴柱顶 4px，保持不变，两处表现一致。</span></div>
-      <div class="it"><b>v80 · 近况趋势详细化：每日柱+数字</b><span>用户反馈 v79 家长报告中「📈 近况（掌握单词趋势）」只画了几根无标签无数字的紫色柱状图，过于抽象看不出含义。重做为「每日柱+数字」详细版：14 天一日一柱，柱顶标「+5」当天掌握数（0 掌握显示灰色 +「0」），超过当周平均的柱高亮金色渐变 + 内描边 + 数字徽章；柱底标日期简写（8/12、8/13…）；悬停 title 显示「8/12 · 掌握 5 词 · 正确率 87%」完整数据。趋势区右上加副标「峰值 +N · 均值 +M」。同步 saveReportImage() 纯 canvas 长图：每柱顶部数字 + 底部日期 + 0 值灰色 + 超均值金色渐变，区域高度从 64 增至 126 容纳新增的标签层。视觉层 CSS（.rpt-trend/.rpt-tcol/.rpt-tbar.zero/.rpt-tbar.hi/.rpt-tnum/.rpt-tdate）与数据层（trendBars 生成函数）同步升级。</span></div>
-      <div class="it"><b>v79 · 家长报告重做：精美版 + 可分享长图</b><span>用户希望「生成家长/老师报告」更精美详细。本次彻底重做：①新增 buildReportData() 统一数据模型，汇总星星/连续天数/掌握度/正确率/近 7 天新增掌握（对比趋势 7 天前）/薄弱单元 Top4（按错次排序）/常错单词/测验最佳分/当前段位；buildAdvice() 据数据动态生成针对性学习建议。②屏幕内报告改为卡片化精美排版（段位徽章 + 统计卡网格 + 摘要条 + 趋势迷你柱 + 薄弱单元进度条「去练习」+ 常错单词 + 建议清单）。③新增 saveReportImage() 纯 canvas 2D 绘制竖版报告长图（零依赖、离线可用、devicePixelRatio 高清），可保存 PNG 或直接调起系统分享（微信等）；导出文字版也升级为含薄弱单元/本周新增/建议的详细 txt。进度屏按钮改为「生成报告 / 保存为图片 / 导出文字版」。</span></div>
-      <div class="it"><b>v78 · 三项体验打磨：退出确认 / 放对反馈 / 薄弱点面板</b><span>①单元测试弹窗答题进行中点「✕」或遮罩会弹「退出确认」，避免误触丢失进度；选型步与结束屏仍直接关闭；新增可复用的通用确认弹窗组件。②连词成句与拼词：空槽时显示「👆 点上面的词 / 字母…」提示文案；批改后按位置给词块加绿色（对位正确）/红色（错位）反馈并锁定，拼词拼对时字母变绿，且延迟切题让反馈被看清。③新增「📉 薄弱点」入口（首页·看一看）：弹窗按单元弱项错次排名 Top5（选/拼/句分维度色标），并列出常错单词，单元可一键「去复习」直达单元测试；首页角标同步错题计数。</span></div>
-      <div class="it"><b>v77 · 单元测试弹窗合并（选题型与题目同一层）</b><span>用户反馈点「开始单元测试」后经历两次弹窗（先选题型、再弹题目），步骤偏多。本次合并为同一层弹窗的两个步骤：删除独立的 #pickTypeModal 与 openPickType/closePickType，把「选题型」渲染进 #testModalBody 作为第 1 步（含 4 类题型 chip、全选/清空、沿用上次选择 lastTestTypes），点「开始 10 题」后原地切换为第 2 步题目（renderTestQ 直接覆盖同一 body），不再开关第二个弹窗；薄弱练习包与「再做一次」沿用 lastTestTypes 跳过选型步；取消 / ✕ 仍整体关闭并回到来源页。</span></div>
-      <div class="it"><b>v76 · 单元测试题目弹窗化（不再整屏切换）</b><span>用户希望选择完题型后，题目以「模态弹窗」形式呈现，而不是整屏切换到测试页。本次把单元测试 / 薄弱练习包的题目从整屏 test 屏改为居中弹窗：新增 #testModal（含固定头部「📝 单元测试」+「✕ 退出」关闭按钮 + 可滚动内容区 #testModalBody）；renderTestQ / finishTest 的渲染目标由 #testArea 改为 #testModalBody；startTest 与 packNext 不再 go(&apos;test&apos;)，改为 openTestModal()（记录来源屏 curScreen，关闭后自动返回该屏）；结束屏「重做错题」先关弹窗再复习、「首页」改为关闭弹窗。选题型中间层（v74）+ 题目弹窗（v76）双层叠加，做题更聚焦、不打断所在页面。</span></div>
-      <div class="it"><b>v75 · PWA 自动更新（解决 SW 缓存不刷新）</b><span>v74 部署后用户反馈「开始单元测试直接跳到题目、没有看到选题型弹窗」。根因：旧 Service Worker 仍对导航请求走 cache-first，把缓存里的旧 index.html（带 onclick="startTest()"）反复返回，前端拿不到带 openPickType() 的新 HTML。需要用户硬刷一次才能让新 SW 接管。本次彻底解决：①sw.js fetch 策略改分轨——HTML/导航走 network-first、其它资源继续 cache-first；②sw.js 在 activate 后向所有 client 广播 SW_UPDATED 消息；③index.html 注册 SW 后监听该消息并自动 location.reload()。从此发版用户不需要硬刷，新版本自动接管实时生效。</span></div>
-      <div class="it"><b>v74 · 单元测试先选题型再出题</b><span>点击「开始单元测试」不再直接进题，而是弹出选题型中间层（看中文·选英文 / 看英文·选中文 / 听发音·拼写 / 连词·成句，可多选，全选/清空快捷）；按选中类型均分 10 题，连词成句固定占 20%。新加 lastTestTypes 记忆上次选择，「🔄 再做一次」沿用上次选中的题型，无需重复设置。</span></div>
-      <div class="it"><b>v73 · 星星只来自做题</b><span>用户要求「只有做题目能加星星」。移除词汇卡片熟悉（cardResult，点「认识/不认识」）的加星，其余加星途径保持不变：单元测试/拼写/连词成句/填空/跟读/语法/重做/挑战赛等做题途径照常加星，趣味闯关小游戏（拼词游戏/听音选词/看图选词/连连看）与单元 BOSS 血条战也保留加星。词汇卡反馈文案改为「太棒了，记住啦！」不再显示 +1⭐。</span></div>
-      <div class="it"><b>v72 · 段位体系重做：终极神话封顶 + 无限星阶</b><span>用户希望高段位更有追求、不轻易封顶。体系改为：命名阶梯 8 阶（🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→🌈终极神话）在 100⭐ 封顶为「终极神话」；终极神话之后进入无限星阶，每满 100⭐ 升 1 星（200⭐=终极神话1星、300⭐=终极神话2星…永无止境）。getRank 纯数据驱动，旧存档按累计⭐ 实时重映射。</span></div>
-      <div class="it"><b>v71 · 段位阶梯重做：12 阶 + 更陡峭门槛</b><span>原 6 段位（满级仅 150⭐）太易达成、缺乏成就感。重做为 12 段位阶梯：🌱小萌新→🥉青铜→🪙白银→⚪黄金→🥇铂金→💎钻石→🌟星耀→👑荣耀→📜传奇→🏆大导师→♛至尊宗师→🌈终极神话。门槛 0→2000⭐ 递增且越往上越陡（间距 15→30→45→70→100→140→180→220→300→400→500）。升级庆祝从 5 次增至 11 次。段位仍按累计⭐ 纯数据驱动计算，旧存档自动按星数重新映射。</span></div>
-      <div class="it"><b>v70 · 词块视觉语言统一（.token = .lt）</b><span>统一闯关/BOSS 的 .token 与单元测试/拼词的 .lt 两套词块视觉：.token 改用 2.5px 深紫边框 + 3D 实心底线(0 3px 0 grape-d)+ 紫色光晕 + hover 抬升/active 按下，风格与 .lt 的「糖果块」一致；.basket 虚线边框 2px→2.5px 与 .build-slot 对齐。全站词块观感统一，且不影响布局（box-shadow 不占排版空间、border 仅 +0.5px）。</span></div>
-      <div class="it"><b>v69 · 词块视觉强化：深紫边框+立体阴影</b><span>用户电脑端复测反馈 v67/v68 词块仍「粘在一起」。诊断：v68 用了浅米色边框(--line)与米色背景对比度极低，方框几乎看不出。改：.lt 边框换 var(--grape) 深紫(2.5px)、底色纯白、立体阴影(0 3px 0 grape-d + 紫色光晕)；letter-pool gap 增至 14×14；build-slot 也改深紫虚线+柔紫底；hover 抬升+active 按下。现在每个词块都是独立、明显、可点的「按钮」。</span></div>
-      <div class="it"><b>v68 · 单元测试词块自适应不溢出</b><span>单元测试「连词成句」用 .lt 固定 42×50 框，长词（如 maths/English/weekend）装不下溢出到邻词视觉粘连。改 .lt 为 min-width:42 + padding:0 10（自适应横向撑开）、font-size 22→18、white-space:nowrap；build-slot 内边距同步加。短词仍是 42px 方块，长词自动变宽不挤压。</span></div>
-      <div class="it"><b>v67 · 连词成句/拼词词块更疏朗</b><span>用户反馈连词成句/拼词词块挤在一起、视觉粘连。优化：词块上下间距从 8px 增至 10-12px（含 flex-wrap 行间距）、左右间距 12px、padding 从 8×12 增至 10×16、加 hover 微弹起；basket/pool 内容居中、单元测试的 lt/build-slot 同步加宽。整体更易点、不粘连，长词（如 weekend）不再被挤压到跟邻词视觉重叠。</span></div>
-      <div class="it"><b>v66 · 逻辑漏洞修复（jsdom 全屏测试）</b><span>用 jsdom 无头测试跑遍全屏与关键交互，修复 4 个逻辑漏洞：①loadState 在 _localEmpty 声明前赋值导致新用户/清缓存白屏(TDZ)；②loadState 缺 wrong/units 合并导致旧存档崩溃；③abilityRadar 雷达图标签误用作用域外的 nm 变量，单元测试结束屏抛错；④导出/导入进度的完整函数被两处空占位声明经函数提升覆盖，导致导出/导入完全失效。修复后三场景(空/旧/完整存档)零未捕获错误。</span></div>
-      <div class="it"><b>v65 · 时间线升降序可一键切换</b><span>「版本演进」时间线新增排序切换（低→高 / 高→低），App 内 #tech 屏与展示页均可一键调换顺序，偏好本地持久化，无需重新发版即可随时切换。</span></div>
-      <div class="it"><b>v64 · 时间线改为从低版本到高版本排列</b><span>用户要求在「技术亮点 / 版本演进」里按版本号从小到大（低→高）展示，即从最早的 v8 一直排到最新的 v64。根因：v62 时为「按顺序」把时间线做成了从新到旧（高→低），但用户实际想要的是从旧到新（低→高）。修法：复用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 &lt;b&gt;vN · 中的 N 从小到大排序后整段回写；App 内 #tech 屏（共 48 条）与 tech-showcase.html（共 49 条）同步重排，从 v8 到 v64 严格升序，新增版本追加到末尾即可保持顺序。</span></div>
-      <div class="it"><b>v63 · 进度防丢失：IndexedDB 双写 + 自动备份</b><span>用户担心 localStorage 单点风险导致学习进度丢失。新增三重保险：①IndexedDB 双写——saveState() 在写 localStorage 的同时把整个 STATE 写入 IndexedDB（库 english5_idb / store state / key state），异步容错（不支持或出错静默降级）；localStorage 被清空时，重载即从 IDB 恢复进度并弹「已从 IndexedDB 恢复进度」提示。②「🔄 自动备份」设置开关（默认开）——节流计数每累计 3 次 save 触发一次下载备份文件（english5-自动备份-YYYY-MM-DD.json），当天已备份则跳过；页面切后台（visibilitychange hidden）时也兜底触发一次当日备份；状态文案显示最近备份日期。③与既有「导出/导入进度」手动备份互补，localStorage + IndexedDB + 文件三道保险，最大程度避免进度丢失</span></div>
-      <div class="it"><b>v62 · 时间线按版本倒序排列</b><span>用户反馈「技术亮点这里都没按顺序来排」。根因：之前每条新版本都追加在时间线末尾，没考虑降序，导致整段顺序错乱（例如最近的部分展示为 v57→v58→v60→v59，而完整顺序实际是 v56→v57→v58→v61→v60→v59）。修法：用 node 脚本提取所有 &lt;div class="it"&gt; 条目，按 `&lt;b&gt;vN ·` 中的 N 从大到小排序后整段回写。范围：App 内 #tech 屏（共 45 条）与 tech-showcase.html（共 46 条）同步重排，从 v62 到 v28 严格降序，新发的版本追加到最前即可保持顺序</span></div>
-      <div class="it"><b>v61 · 阻止开始单元测试按钮自动滚动</b><span>用户反馈：点「开始单元测试」按钮后页面自动滚动到下方 #testArea 题目区。根因：该按钮是 &lt;button&gt; 原生可聚焦元素，点击时 mousedown 让其获得焦点，按钮位于测试面板下方接近视口底部，浏览器为把焦点元素对齐到视口顶部而向下滚动，于是题目区被带进视野（与 v59 chip 同源病灶：可点击元素获焦触发 scroll-into-view，但 v59 只修了 div chip，漏了 button）。修法：按钮加 onmousedown="event.preventDefault()" 阻止获焦，并在 startTest() 末尾对 document.activeElement 调 blur() 双保险，一次消除自动滚动</span></div>
-      <div class="it"><b>v60 · 白喵加头顶爱心</b><span>用户参考简笔猫线稿（白猫+粉耳+黑眼+小嘴+胡须），希望保留 v51 白喵主体造型（奶油白身体+琥珀内耳+暖棕墨描边+蝴蝶结+大眼萌系），仅在头顶加浮动小爱心：主红心（#E94B5B 描黑边，居中）和副淡粉心（#F8B8C2，居主心右上）。viewBox 由 0 0 64 64 升到 0 0 64 72 给爱心让出顶部 8 单位空间，原主体整体下移 8；全站 5 处引用同步：.mascot 40×40→40×45、.fox-spin 76×76→76×86、故事书 .sc-fox use height=63 y=51、onboard SVG width=64 height=72。整体造型不变、爱心像悬浮在头顶，全站一处更新</span></div>
-      <div class="it"><b>v59 · chip 点击不再触发自动滚动</b><span>用户反馈单元测验屏点任意单元 chip 会「自动滚动到下方题目」。根因：buildUnitChips() 用 div+onclick 创建 chip，无 tabindex 也未阻止 mousedown，浏览器在 mousedown 时让 div 获得焦点、随后把焦点元素 scroll into view，于是页面被弹到下方 #testArea 题目区。与 v58 听说读写是同类病灶，但 v58 是结构性下渲染、v59 是 chip 本身的可点击性。修法：chip 创建时加 el.onmousedown=(e)=&gt;e.preventDefault()，阻止 mousedown 获得焦点，从根上消除浏览器的 scroll-into-view。一次修复覆盖 vocab/sent/skill/test 四屏所有 chip</span></div>
-      <div class="it"><b>v58 · 听说读写改为就地渲染</b><span>用户反馈点 听/说/读/写 任意按钮会「自动滚到下方题目」。根因：原把四个技能按钮与 #skillArea 题目面板分成上下两 panel，点按钮后题目在下方渲染、手机浏览器把新内容带入视口造成「被弹下去」观感（代码无 scrollIntoView）。修法：合并为单个 #skillStage，renderSkillHome() 在 #skillStage 内渲染四技能 tile（无语音识别时隐藏「说」），startSkill(mode) 在 #skillStage 内「就地」渲染题目，并在每道题顶部加「← 返回选技能」按钮。题目出现在正看着的位置，不再向下滚动</span></div>
-      <div class="it"><b>v57 · 做题/学词进度条</b><span>用户要求「做题目和学词语时都要有进度条」。①词汇闪卡（学词语）面板顶部新增进度条 + 「第 X/Y 词」文案，showCard() 实时更新（pct = cardIdx/总词数，与单元测试屏一致的 0-based 进度）。②闯关（做题目）每个非 BOSS 题目渲染后，在 #lvlArea 顶部重新插入进度条（pct = levelQi/levelTotalNormal），next() 内新增 updateLvlProgress() 辅助函数；BOSS 关本身有血量条作进度指示，不重复加。单元测试屏原本就有 .test-prog 进度条，继续沿用。三处进度条共用 .test-prog 样式（葡萄→天空渐变），视觉一致</span></div>
-      <div class="it"><b>v56 · 单元词汇熟悉完成表扬弹窗</b><span>闪卡翻完一个单元最后一张卡后，不再静默回到第一张，而是弹出表扬动画（彩带+星爆+叮声，复用 celebrate()）并给两个选择：「🔄 重新学习」（cardIdx=0 重翻本单元）/「➡️ 下一个单元」（curUnitId 切到 UNITS 下一单元并重建 chips+重置 cardIdx）；已是最后一个单元时自动隐藏「下一个」按钮。同时 collectUnit(curUnitId) 把整单元点亮进单词图鉴。判定点：cardResult 里 wasLast = (cardIdx === u.words.length-1)</span></div>
-      <div class="it"><b>v55 · 设置中即时切换年级/册</b><span>用户反馈「在设置中点击年级/册就应立即生效（所见即所得）」。v53 为消除遮罩下重渲染的卡顿感，曾改为「延后到关闭设置再渲染」；v55 改为「点完选项立即关闭设置，关闭走统一重渲染」——既消除遮罩下渲染的卡顿，又让设置内点击即时可见切换效果（不会被设置遮罩挡住）。同时为跨年级 ALL_UNITS.find 加空值兜底，预防极个别单元查不到时的 TypeError</span></div>
-      <div class="it"><b>v54 · 修「切到六年级全屏报错」</b><span>用户切到六年级后首页与词汇屏都报「😵 这一页出了点小问题」。根因：renderGoal 里弱项推荐用 UNITS.find 查找 STATE.weakByUnit 的 topU，但 weakByUnit 是跨年级累计的（旧五年级单元 id 仍存在），UNITS 只有当前年级，导致查找返回 undefined 再访问 u.emoji/u.title 抛 TypeError；又因 go() 末尾每个屏都 safeRender(renderGoal)，所有屏都崩。修法：改为 ALL_UNITS.find 查找（含全部年级单元）+ undefined 兜底空对象。词汇/首页/其他屏立刻恢复</span></div>
-      <div class="it"><b>v53 · 切换年级/册不再卡顿</b><span>修复设置里切换年级/册时的「卡顿感」与「退出设置才切换」问题：设置弹窗为全屏遮罩，原实现每次点击都会重渲染被遮住的背景屏（重屏掉帧），且结果不可见只能退出后才看到。改为「设置打开时只更新状态+高亮按钮（即时反馈），关闭设置时再统一重渲染当前屏一次」——点击不再有卡顿，退出即瞬时切换到所选年级/册</span></div>
-      <div class="it"><b>v52 · 六年级稳定性修复</b><span>用户反馈「点开六年级」时多个潜在 bug 一次性修：家长周报标题从硬编码「五年级」改为随年级动态；移除两个被简化版覆盖的 exportProgress/importProgress 函数声明，恢复完整版（导入后正确刷新主题/字号/年级/所有相关屏）；setGrade/setBook 切换后重置 cardIdx/sentIdx/testIdx/testQs/levelCorrect/curQuizMode 等索引与临时态，避免在不同长度的单元下越界；go(home) 也调用 renderHero 以确保切年级后首页 hero 文案即时刷新；首次使用指引的「小狐狸 / 五年级」硬编码文案改为基于 STATE.settings.grade 动态生成，重新查看指引时显示当前年级与吉祥物名</span></div>
-      <div class="it"><b>v51 · 吉祥物狐狸→白喵</b><span>用户从 4 款方案中选定的「白喵·探头」：奶油白身体 + 琥珀色内耳 + 暖棕墨描边 + 猫咪胡须 + 颈间小蝴蝶结，大眼萌系保留；仍是全站共用的 #i-fox 符号一处更新，顶栏 / 故事书封面 / 加载动画 / 首次指引同步换新</span></div>
-      <div class="it"><b>v50 · 年级维度 + 六年级词库</b><span>新增「年级」维度（五年级/六年级）与「册」维度组成双维切换，全模块自动适配；六年级上下册共 10 单元（上册 6 + 下册 4）核心词汇入册，核心词 341→545、预录音频 671→1151（13.6MB）；新增 3 条六年级重点语法（一般将来时/一般过去时深化/形容词比较级深化），随年级切换显示</span></div>
-      <div class="it"><b>v49 · 狐狸换「大眼萌系」方案</b><span>用户从 5 种方案中选定 B·大眼萌系：眼睛放大更圆（双高光闪点）、脸相对更小、腮红更明显（椭圆柔粉），整体像盲盒公仔。仍是全站共用 #i-fox 符号一处更新</span></div>
-      <div class="it"><b>v48 · 重画狐狸主角 SVG</b><span>重画为圆润脸庞、清晰三角耳带内耳、大眼带高光、腮红与小鼻子 + 微笑的呆萌狐狸，配色收敛到暖橙/奶油/暖棕墨，全站共用符号一处同步更新</span></div>
-      <div class="it"><b>v47 · 暖色绘本主题 + 指引绘本化 + 迎宾语轮换</b><span>暗色主题从冷蓝改为「暖夜绘本」深暖棕，护眼暖纸与夜读封面/黄昏插画全程暖调一致；首次指引改为同款绘本封面（场景插画 + 书名体 + 狐狸对话气泡）；首页狐狸迎宾语按早/中/晚 + 学习进度多句轮换，更有陪伴感；顺手修复 pill 背景缺失（--sun→--amber）</span></div>
-      <div class="it"><b>v46 · 首页 Hero 改故事书封面 + 卡片微动效</b><span>把首页 Hero 从普通卡片重做成「五年级英语冒险绘本」封面：奶油纸面 + 书封内框，顶部 SVG 插画场景（太阳/流云/双层山坡 + 专属小狐狸站在山坡上轻晃），下方狐狸对话气泡迎宾语 + 书名丝带 + 段位徽章与今日目标环；磁贴错峰淡入上滑（带轻微旋转）并加弹性按压态，整体更有「翻开一本绘本」的专属仪式感</span></div>
-      <div class="it"><b>v45 · 视觉改「狐狸绘本风」</b><span>告别千篇一律的 iOS 模板感：暖色纸感设计系统（纸黄背景 + 狐狸橙/森林绿/莓果签名色 + 暖棕墨字 + 有机圆角 + 手绘胶带顶条）；新增可复用内联 SVG 狐狸主角，首页 Hero、加载动画、首次指引的 emoji 全部换成这只专属小狐狸；磁贴/按钮/导航统一暖色线性图标，整体像一本会陪孩子冒险的绘本，独一无二</span></div>
-      <div class="it"><b>v44 · 视觉质感升级（去廉价感）</b><span>按 iOS 原生质感重构：配色降饱和（新增 --brand 主色）、统一 3 级中性阴影与圆角层级、body 背景改系统灰、顶/底导航加毛玻璃；按钮渐变→纯色、Hero/复习条彩虹渐变收敛；引入内联 SVG 线性图标 sprite，底部导航 6 项 + 首页 12 主入口 + 顶部齿轮的 emoji 全换统一线性图标（狐狸吉祥物与装饰 emoji 保留）</span></div>
-      <div class="it"><b>v43 · 指引加「今日目标」卡</b><span>首次使用指引在「玩一玩」与「看成长」之间新增「🎯 我的每日小目标」卡片，讲清首页今日目标=每天答对 20 题达标、点 ✏️ 可改题数、完成有庆祝；指引步骤由 5 步增至 6 步（renderOnboard 按 ONBOARD_STEPS.length 动态适配）</span></div>
-      <div class="it"><b>v42 · 首次使用指引</b><span>新增狐狸向导分步指引：首次打开自动弹出 5 步卡片（欢迎→学一学→练一练→玩一玩→看成长），带进度点 + 上一步/下一步/跳过/开始；STATE.onboarded 标记看过后不再自动弹；设置页新增「📖 新手引导·重新查看」按钮可随时重看</span></div>
-      <div class="it"><b>v41 · 删「点我听英语」</b><span>首页「学一学」组去掉「点我听英语」入口（仅播放一句 "Hello! Let us learn English together!" 的发音 demo，对学习没价值）。该组现为 3 张卡：词汇练习 · 句型练习 · 语法小课堂，布局更紧凑</span></div>
-      <div class="it"><b>v40 · 今日目标可改</b><span>首页「🎯 今日目标」从固定 20 题改为可自定义：点标题旁 ✏️ 弹窗设目标题数（预设 10/15/20/30/50 + 自定义 1–200），存 STATE.settings.dailyGoal 持久化；进度环、Hero 卡、达成庆祝全链路按新目标实时刷新；旧数据自动迁移默认 20 题</span></div>
-      <div class="it"><b>v39 · 性能与健壮性打磨</b><span>骨架屏（进图鉴/进度先显灰态轮廓再渲染）；空闲预热常用音频首听即发；Service Worker 改为「新版本已就绪」显式更新横条（不再自动刷新打断学习）；单屏渲染出错只显示「重试」面板而非白屏的全局错误边界；平板/手机横屏多列适配</span></div>
-      <div class="it"><b>v38 · BOSS 剧情化</b><span>每个单元一个主题反派（糊涂老校长/贪吃怪/拖延小龟…共 12 个），首遇弹剧情卡介绍背景+弱点提示+「⚔️开战」，战斗中 BOSS 用吐槽气泡回应（命中/挡下各一套台词），击败/逃跑都有专属搞笑台词；重复闯关不再重复弹剧情</span></div>
-      <div class="it"><b>v37 · 单词图鉴</b><span>新增「📖 单词图鉴」屏：按 12 单元分组展示全部 341 词，通关单元（测试≥60 或闯关拿星）即点亮整组词卡；点亮词可翻面看词性/音标/例句 + 🔊听发音，未解锁显示 ❓ 剪影；顶部显示收集进度。纯本地</span></div>
-      <div class="it"><b>v36 · 段位称号系统</b><span>按累计 ⭐ 划分 6 阶段位（小萌新→小学霸），首页 Hero 显示当前称号+升级进度条；升级触发庆祝；点称号看全部段位路线图；零后端纯本地</span></div>
-      <div class="it"><b>v35 · 学习闭环与反馈</b><span>跟读评分升级（实时声波可视化+三档星级）；错题遗忘曲线主动推送（首页显示今日+未来3天到期）；单元测试后四维能力雷达（选择/拼写/句子/听力）；薄弱点一键练习包</span></div>
-      <div class="it"><b>v34 · 修复连词成句题同类水题</b><span>审计发现常规关卡「连词成句」也从没加干扰词（短句照搬顺序就过关），与 BOSS 同款逻辑补 2-3 个干扰词；约 13 句短句不再水</span></div>
-      <div class="it"><b>v33 · 加载动画+BOSS 题目</b><span>加载动画延长至 700ms 让用户看清；BOSS 连词成句加干扰词（避免答案摆那）并替换不自然的 "A sandwich, please." 为 "I want a sandwich, please."</span></div>
-      <div class="it"><b>v32 · 视觉动效精修</b><span>统一设计 token（圆角/阴影/缓动曲线）；庆祝动效加高光爆发 + WebAudio「叮」声；进入关卡时狐狸加载动画</span></div>
-      <div class="it"><b>v31 · 技术亮点同步</b><span>每次发版同步更新 App 内「技术亮点」屏与独立展示页的版本演进 + 迭代指标</span></div>
-      <div class="it"><b>v30 · 修复拼词玩法 "undefined" bug</b><span>拼词题 prompt 与 makeResolver 误用 q.zh（实际嵌套在 q.answer.zh），改为 answer.zh 后正常显示中文与中文批改</span></div>
-      <div class="it"><b>v29 · 趣味闯关大改造</b><span>世界地图加狐狸当前位置标记+关卡任务卡；新增听音打地鼠/拼词/连连看/捉迷藏 4 种迷你玩法，每关收尾接单元 BOSS 血条战</span></div>
-      <div class="it"><b>v28 · 选择题改错重做</b><span>闯关+单元测试的 4 选 1 题改为「错了重选直到对」，第一次选错即入错题本+累加弱项</span></div>
-      <div class="it"><b>v27 · 修复返回地图</b><span>关卡屏改用独立 #lvlArea 渲染，不再覆盖整 #adventure section，「返回地图」按钮恢复正常</span></div>
-      <div class="it"><b>v26 · 连词成句防抄</b><span>答题时隐藏上方完整英文，只留中文提示+听原句，杜绝直接抄答案</span></div>
-      <div class="it"><b>v25 · 修复词汇屏</b><span>修正初始化顺序缺陷，闪卡与单元选择恢复正常</span></div>
-      <div class="it"><b>v24 · 技术难点专章</b><span>展示页新增「难点与解决方案」，沉淀真实工程问题</span></div>
-      <div class="it"><b>v23 · 展示页联动</b><span>App 内一键打开独立技术展示页，统一样式无缝跳转</span></div>
-      <div class="it"><b>v22 · 技术亮点</b><span>技术展示页 · 架构与工程实践对外呈现</span></div>
-      <div class="it"><b>v21 · 高级化</b><span>去廉价感 · 柔和阴影 · 精致排版</span></div>
-      <div class="it"><b>v18 · 可视化</b><span>关卡路线 · 弱项热力图 · Hero 进度环</span></div>
-      <div class="it"><b>v14 · 弱项系统</b><span>题型统计 · 弱项推荐 · 通关星爆</span></div>
-      <div class="it"><b>v12 · 学习闭环</b><span>重做错题 · 听写填空 · 打卡里程碑</span></div>
-      <div class="it"><b>v10 · 体验美化</b><span>页面动效 · 首页分组 · 目标 / 成就庆祝</span></div>
-      <div class="it"><b>v8 · 基础框架</b><span>单文件 PWA · SW 离线 · 词库与音频降级</span></div>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       </div>
     </div>
   </section>
@@ -474,6 +474,7 @@ update  → <span class="k">controllerchange</span>
 
 </div>
 
+<script src="tech-timeline.js"></script>
 <script>
   // 通过 data-meta 自动填充版本 / 指标，更新时只需改顶部 META
   document.querySelectorAll('[data-meta]').forEach(function(el){
@@ -483,26 +484,17 @@ update  → <span class="k">controllerchange</span>
   });
 
   // 版本演进时间线：升降序可切换，偏好存 localStorage
-  function tsSortTimeline(order){
-    var tl=document.querySelector('.tl'); if(!tl) return;
-    var items=Array.prototype.slice.call(tl.querySelectorAll('.it'));
-    items.sort(function(a,b){
-      var na=parseInt((a.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
-      var nb=parseInt((b.querySelector('b').textContent.match(/v(\d+)/)||[])[1]||'0',10);
-      return order==='asc'? na-nb : nb-na;
-    });
-    items.forEach(function(it){ tl.appendChild(it); });
-  }
+  
   function tsSetTimelineOrder(order){
     try{ localStorage.setItem('tech_tl_order', order); }catch(e){}
     var seg=document.getElementById('tlOrderSeg');
     if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
-    tsSortTimeline(order);
+    if(window.renderTimeline) renderTimeline(document.querySelector('.tl'), order);
   }
   (function(){
-    var order='desc';  // 本版调成 desc：默认「高 → 低」，最新项顶在最上。原默认 asc 会让 v8 顶在最上、v143 底在最下，让用户「看不到最新项」
+    var order='asc';  // 本版调成 desc：默认「高 → 低」，最新项顶在最上。原默认 asc 会让 v8 顶在最上、v143 底在最下，让用户「看不到最新项」
     try{ order=localStorage.getItem('tech_tl_order')||'desc'; }catch(e){}
-    tsSortTimeline(order);
+    if(window.renderTimeline) renderTimeline(document.querySelector('.tl'), order);
     var seg=document.getElementById('tlOrderSeg');
     if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
   })();
