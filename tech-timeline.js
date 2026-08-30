@@ -131,13 +131,43 @@ window.TECH_ITEMS = [
   {v:143, h:'<b>v143 · 重排技术亮点页时间线 + bump 版本号</b><span>用户反馈「技术亮点没有相应更新」。根因：原页面顶部是 v95-v119 旧日志项（顺序从 v95 走到 v119），让用户以为「最新到 v119」；而真正的最新条目 v130-v142 被埋在下面，以及 v8-v26 最旧条目被推到最底，正常浏览根本看不到。<b>解法</b>：Python 提取全部 127 个 <code>&lt;div class=&quot;it&quot;&gt;</code> 日志项 <span style="font-family:Menlo,monospace;font-size:11px">(re.compile(...) 幂饯 + 非贪茴 .*?「允许嵌套 &lt;b&gt;」)</span> → 按版本号降序排序 → 重新写回 <code>&lt;div class=&quot;tl&quot;&gt;</code> 容器。结果：<b>v143 顶在最上、v8 在最底</b>，一眼能看出最新进展。安全检查：区间多条目重复在 <code>+1</code> 后能仍能被 <code>re.findall</code> 拆出 128 个项（原 127 + 本版新增 1）。本版仅修技术展示页顺序，<b>不改任何代码逻辑</b>，v142 以前的三条条目原层保留。<b>版本</b> 142→143，sw CACHE v188→v189，tech META iter 142→143。</span>'},
   {v:144, h:'<b>v144 · App 内技术亮点屏与独立页对齐（补齐 v120–v143）</b><span>用户反馈 App 内「技术亮点」屏时间线停在 v119，与独立展示页不同步。本次：①把 v120–v143 共 24 条从本独立页同步进 App 内 #tech 屏；②App 内屏默认排序由 低→高 改为 高→低（v144 在顶，与独立页一致）；③本独立页 META 与 sw CACHE 同步 bump 到 144 / eng5-v190。两条时间线版本集合现完全一致（v8–v144）。全 SVG 绘本风。</span>'},
   {v:145, h:'<b>v145 · 技术亮点抽单一数据源 tech-timeline.js + 排序默认改回 asc</b><span>用户选择根治「双端漏同步」：把 index.html 的 #tech 屏与 tech-showcase.html 两份独立静态 .it 抽成单一数据源 <code>tech-timeline.js</code>（导出 <code>window.TECH_ITEMS[]</code> 与 <code>window.renderTimeline()</code>），两端 import 同一数组、统一渲染，一次新增两端自动同步，从根上消灭 v143 漏改 App 内屏的复发风险；sw.js 把该 JS 加入预缓存，离线可用。同时把时间线默认排序由 v143 单方面的 desc（高→低）改回 asc（低→高、旧→新），尊重 v64 偏好，新老用户体验一致。</span>'},
+  {v:146, h:'<b>v146 · 全站体检收口（P0/P1/P2）</b><span>①P0 音频覆盖核验：AUDIO_MAP 1242 键实测覆盖全部教材句子（真覆盖率≈100%），补录唯一缺失 mp3（"Keep your desk clean!"），无 TTS 设备例句/单词全出声；②P1 AUDIO_MAP 外置为 audio-map.js（主 HTML 减负 1070 行超长内联，同目录 + sw 预缓存，离线可用）；③P1 离线对齐：LexiQuest 词境冒险 game.html + game JS 加入 sw 预缓存，首次安装即可离线开游戏；④P2 技术亮点长列表折叠：时间线默认收起、一键「展开全部」，排序切换保留展开态。全 SVG 绘本风。</span>'},
 ];
-window.renderTimeline = function(container, order){
+window.renderTimeline = function(container, order, expanded){
   if(!container) return;
+  // 排序参数缺省时沿用容器上次的排序，保证「排序切换」不丢失「展开/收起」状态
+  if(order===undefined) order = container.dataset.tlOrder || 'asc';
+  if(expanded===undefined) expanded = container.dataset.tlExpanded === '1';
+  container.dataset.tlOrder = order;
+  container.dataset.tlExpanded = expanded ? '1' : '';
   var arr = (window.TECH_ITEMS||[]).slice().sort(function(a,b){
     return order==='desc' ? b.v-a.v : a.v-b.v;
   });
-  container.innerHTML = arr.map(function(it){
+  var LIMIT = 15;
+  var total = arr.length;
+  var showAll = expanded || total <= LIMIT;
+  var view = showAll ? arr : arr.slice(0, LIMIT);
+  var html = view.map(function(it){
     return '<div class="it">' + it.h + '</div>';
   }).join('');
+  if(total > LIMIT){
+    html += showAll
+      ? '<button type="button" class="tl-more" data-exp="0">收起 ▴</button>'
+      : '<button type="button" class="tl-more" data-exp="1">展开全部 '+total+' 条版本演进 ▾</button>';
+  }
+  container.innerHTML = html;
+  // 折叠按钮样式：单次注入，跟随主题 var()；单数据源无需两端各写 CSS
+  if(!document.getElementById('tl-style')){
+    var st = document.createElement('style');
+    st.id = 'tl-style';
+    st.textContent = '.tl-more{display:block;width:100%;margin:12px 0 2px;padding:12px 14px;font:inherit;font-size:14px;font-weight:700;color:var(--ink,#2a1f17);background:var(--card,#fffdf8);border:1.5px solid var(--line,rgba(124,74,43,.28));border-radius:14px;cursor:pointer;letter-spacing:.02em;transition:transform .15s,opacity .15s;opacity:.92}.tl-more:hover{opacity:1;transform:translateY(-1px)}.tl-more:active{transform:translateY(0)}';
+    (document.head||document.documentElement).appendChild(st);
+  }
+  var btns = container.querySelectorAll('.tl-more');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click', function(){
+      var exp = this.getAttribute('data-exp')==='1';
+      window.renderTimeline(container, container.dataset.tlOrder, exp);
+    });
+  }
 };
