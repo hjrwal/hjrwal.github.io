@@ -1,7 +1,7 @@
 // Service Worker for 五年级英语小探险家
 // 缓存策略：HTML/导航 = network-first（保证新版本立即覆盖）| 其它资源 = cache-first（保留离线能力）
 // 发布新版本时，只需把 CACHE 名称的版本号 +1，SW 会自动刷新缓存
-const CACHE = 'eng5-v190';
+const CACHE = 'eng5-v191';
 const ASSETS = [
   './',
   './index.html',
@@ -17,7 +17,8 @@ const ASSETS = [
   './assets/mascot/encourage.png',
   './assets/mascot/blink.png',
   './assets/mascot/wave1.png',
-  './assets/mascot/wave2.png'
+  './assets/mascot/wave2.png',
+  './tech-timeline.js'
 ];
 
 self.addEventListener('install', event => {
