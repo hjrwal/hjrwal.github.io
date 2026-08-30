@@ -2911,7 +2911,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 148;
+const APP_VERSION = 149;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
@@ -4892,7 +4892,7 @@ function genPracticePack(){
 }
 function packNext(){
   if(packIdx>=packQueue.length){ packFinish(); return; }
-  const uid=packQueue[packIdx]; const u=UNITS.find(x=>x.id===uid); if(!u){ packIdx++; return packNext(); }
+  const uid=packQueue[packIdx]; const u=ALL_UNITS.find(x=>x.id===uid); if(!u){ packIdx++; return packNext(); }
   curUnitId=uid;
   const wu=STATE.weakByUnit[uid]||{sel:0,spell:0,sent:0};
   const singles=u.words.filter(w=>!w.en.includes(' '));
@@ -5880,7 +5880,7 @@ function renderProgress(){
   else{
     wl.innerHTML='';
     STATE.wrong.slice(0,30).forEach(w=>{
-      const u=UNITS.find(x=>x.id===w.unit); if(!u) return;
+      const u=ALL_UNITS.find(x=>x.id===w.unit); if(!u) return;
       const el=document.createElement('div'); el.className='row spread'; el.style.padding='6px 0'; el.style.borderBottom='1px solid #f0eefa';
       el.innerHTML=`<span><b>${w.en}</b> <span class="muted">${w.zh}</span></span>
         <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="speak('${w.en.replace(/'/g,"\\'")}')"></button>`;
