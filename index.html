@@ -2911,7 +2911,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 149;
+const APP_VERSION = 150;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
@@ -5860,7 +5860,7 @@ function renderProgress(){
   });
   // 弱项热力图：背景色=错次强弱（弱项维度），进度条/百分比=掌握度（掌握维度），双维度可视化
   const wh=document.getElementById('weakHeat'); wh.innerHTML='';
-  UNITS.forEach(u=>{
+  ALL_UNITS.forEach(u=>{
     const w=STATE.weakByUnit[u.id];
     const tot=(w?((w.sel||0)+(w.spell||0)+(w.sent||0)):0);
     const st=unitStat(u.id); const total=u.words.length;
@@ -5950,8 +5950,8 @@ function buildReportData(){
     for(const e of trend){ if(e.date<=t7) base=e; }
     const cur=trend[trend.length-1]; weekNew=cur.mastered-(base?base.mastered:0);
   }
-  // 薄弱单元：按总错次排序取前 4
-  const weakUnits=UNITS.map(u=>{ const w=STATE.weakByUnit[u.id]||{sel:0,spell:0,sent:0};
+  // 薄弱单元：按总错次排序取前 4（用 ALL_UNITS：weakByUnit 可能含跨年级单元 id，UNITS 会漏掉跨年级薄弱单元，与 v149 同源）
+  const weakUnits=ALL_UNITS.map(u=>{ const w=STATE.weakByUnit[u.id]||{sel:0,spell:0,sent:0};
     const tot=(w.sel||0)+(w.spell||0)+(w.sent||0); const st=unitStat(u.id); const total=u.words.length;
     const pct=total?Math.round(st.mastered.length/total*100):0;
     return {id:u.id, emoji:u.emoji, title:u.title, tot, pct, mastered:st.mastered.length, total};
