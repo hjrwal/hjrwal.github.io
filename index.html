@@ -2911,7 +2911,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 151;
+const APP_VERSION = 152;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
@@ -3280,8 +3280,8 @@ function recordWord(id, en, ok){
   u.attempts+=1; if(ok) u.correct+=1;
   if(ok && !u.mastered.includes(en)) u.mastered.push(en);
   if(ok){
-    // 答对了：从错题本移除（已掌握）
-    const wi=STATE.wrong.findIndex(w=>w.en===en);
+    // 答对了：从错题本移除（已掌握）——v152：按 (en,unit) 双键精确匹配（与入库键一致），防跨年级/跨册重复词移错条目（如五上与六上都有 cat，练六上答对不该移出五上那条）
+    const wi=STATE.wrong.findIndex(w=>w.en===en&&w.unit===realId);
     if(wi>=0) STATE.wrong.splice(wi,1);
     bumpGoal(true);
   } else {
@@ -6557,8 +6557,9 @@ function coachStep(d){
   }
 }
 
-function removeWrong(en){
-  const i=STATE.wrong.findIndex(w=>w.en===en);
+function removeWrong(en, unit){
+  // v152：按 (en,unit) 双键精确移出（与入库键一致）——错题本跨年级渲染后同名词条目可能不止一条，单键会移错另一年级那条；unit 缺省时兼容旧调用按 en
+  const i=STATE.wrong.findIndex(w=>w.en===en&&(!unit||w.unit===unit));
   if(i>=0){ STATE.wrong.splice(i,1); STATE.wrongFixed=(STATE.wrongFixed||0)+1; saveState(); renderWrongbook(); toast('已移出错题本 ✅'); }
 }
 function refreshWrongDot(){
@@ -6587,14 +6588,14 @@ function renderWrongbook(){
     } else {
       list.innerHTML=wrong.map(w=>{
         const en=esc(w.en), zh=esc(w.zh), tag=esc(unitName(w.unit));
-        const enq=(w.en||'').replace(/'/g,"\\'");
+        const enq=(w.en||'').replace(/'/g,"\\'"), unitq=(w.unit||'').replace(/'/g,"\\'");
         return '<div class="wb-row">'
           +'<button class="btn sky" style="padding:5px 9px;font-size:13px" onclick="speak(\''+enq+'\')"></button>'
           +'<span class="wb-en">'+en+'</span>'
           +(zh?'<span class="wb-zh">'+zh+'</span>':'')
           +'<span class="wb-tag">'+tag+'</span>'
           +'<span class="wb-times">练'+(w.reviews||0)+'次</span>'
-          +'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\')">移出</button></div>'
+          +'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
           +'</div>';
       }).join('');
     }
