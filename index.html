@@ -537,6 +537,13 @@
   .heat-cell .hbar i{display:block; height:100%; background:linear-gradient(90deg,#5b9dff,#3b7dd8);}
   .bar{height:14px; background:var(--line); border-radius:999px; overflow:hidden;}
   .bar > i{display:block; height:100%; background:var(--grass); border-radius:999px; transition:width .5s;}
+  /* 薄弱类型分布（v153） */
+  .weak-type .wt-row{margin:10px 0;}
+  .weak-type .wt-head{display:flex; justify-content:space-between; align-items:baseline; font-size:14px; font-weight:700; color:var(--ink);}
+  .weak-type .wt-pct{color:#a06b00; font-size:12px; font-weight:700;}
+  .weak-type .wt-bar{height:14px; background:var(--line); border-radius:999px; overflow:hidden; margin-top:5px;}
+  .weak-type .wt-bar > i{display:block; height:100%; border-radius:999px; transition:width .5s;}
+  .weak-type .wt-tip{font-size:12px; color:var(--muted); margin-top:3px;}
   .stat-card{background:var(--card); border-radius:var(--r); padding:14px; text-align:center; box-shadow:var(--shadow);}
   .stat-card .n{font-size:30px; font-weight:800;}
   .stat-card .l{font-size:12px; color:var(--muted);}
@@ -626,6 +633,11 @@
   .rpt-advice li{position:relative; padding:7px 10px 7px 26px; background:var(--soft); border-radius:10px; margin-bottom:7px; font-size:13.5px; line-height:1.55; color:var(--ink);}
   .rpt-advice li::before{content:''; position:absolute; left:7px; top:7px; font-size:13px;}
   .rpt-empty{color:var(--muted); font-size:13px; margin:2px 0;}
+  /* v153 家长报告·薄弱类型 */
+  .rpt-wtype{display:flex; flex-direction:column; gap:8px;}
+  .rpt-wt-row{display:flex; justify-content:space-between; align-items:center; background:var(--soft); border:1.5px solid var(--line); border-radius:12px; padding:9px 13px; font-size:14px; font-weight:700;}
+  .rpt-wt-row span{color:var(--ink);}
+  .rpt-wt-row b{color:#a06b00;}
 
   /* 主题（明亮 / 护眼暖纸 / 暖夜绘本） */
   body.theme-sepia{ --ink:#5b4a2f; --muted:#9c8a63; --card:#fdf3df; --paper:#f6e9cf; --line:#e7d8b8; --soft:#f3e6c8; --shadow:0 6px 16px rgba(120,90,40,.10); --bg:#f3e7cd; --nav-bg:rgba(253,243,223,.86);
@@ -1654,6 +1666,11 @@ update → controllerchange
       <h2 class="sec">单元弱项热力图</h2>
       <div id="weakHeat" class="heat-grid"></div>
       <p class="muted" style="margin:8px 0 0">颜色越红代表错得越多，点一下直接去练那个单元 💪</p>
+    </div>
+    <div class="panel">
+      <h2 class="sec">薄弱类型分布</h2>
+      <div id="weakType" class="weak-type"></div>
+      <p class="muted" style="margin:8px 0 0">看看错在哪类——<b>意思·听音</b>、<b>拼写</b> 还是 <b>句型</b>，对症下药练得更快 🎯</p>
     </div>
     <div class="panel">
       <h2 class="sec">今日复习 <span class="muted" id="reviewCount" style="font-size:13px"></span></h2>
@@ -2911,7 +2928,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 152;
+const APP_VERSION = 153;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
@@ -5900,6 +5917,8 @@ function renderProgress(){
       <div class="c">${tot===0?'✅ 无错题':'弱项 错 '+tot+' 次'}</div>`;
     wh.appendChild(cell);
   });
+  // 薄弱类型分布（v153）：从 weakByUnit 跨 ALL_UNITS 求和，覆盖测试+闯关+BOSS 三类失误来源
+  renderWeakType();
   // wrong list
   const wl=document.getElementById('wrongList'); document.getElementById('wrongCount').textContent='('+STATE.wrong.length+')';
   if(STATE.wrong.length===0){ wl.innerHTML='<p class="muted">还没有错题，真厉害！🌟</p>'; }
@@ -5942,6 +5961,36 @@ function renderProgress(){
     });
     if(trend.length===0) tb.innerHTML='<p class="muted">开始学习几天后，这里会显示你的进步曲线～</p>';
   }
+}
+/* v153：薄弱类型三维度（sel=意思·听音 / spell=拼写 / sent=句型）聚合——
+   从 weakByUnit 跨 ALL_UNITS 求和，覆盖测试 + 闯关 + BOSS 全部失误来源，
+   与弱项热力图/薄弱单元同源，避免只看测试失误的片面结论。纯展示层。 */
+function weakTypeTotals(){
+  let sel=0,spell=0,sent=0;
+  ALL_UNITS.forEach(u=>{ const w=STATE.weakByUnit[u.id]; if(w){ sel+=(w.sel||0); spell+=(w.spell||0); sent+=(w.sent||0); } });
+  return {sel,spell,sent,total:sel+spell+sent};
+}
+function renderWeakType(){
+  const box=document.getElementById('weakType'); if(!box) return;
+  const t=weakTypeTotals();
+  if(t.total===0){
+    box.innerHTML='<p class="muted" style="margin:2px 0">还没收集到薄弱类型，多做点题就能看出来啦～</p>';
+    return;
+  }
+  const rows=[
+    {label:'📖 意思·听音', val:t.sel,  color:'#4a90e2', tip:'多练中英互译、听音选词'},
+    {label:'✏️ 拼写',     val:t.spell, color:'#f0a020', tip:'多练听写、拼词填空'},
+    {label:'💬 句型',     val:t.sent,  color:'#8a6fd0', tip:'多练连词成句、造句'}
+  ];
+  box.innerHTML=rows.map(r=>{
+    const pct=Math.round(r.val/t.total*100);
+    const empty=r.val===0;
+    return `<div class="wt-row">
+      <div class="wt-head"><span>${r.label}</span><span class="wt-pct">${r.val} 次 · ${pct}%</span></div>
+      <div class="wt-bar"><i style="width:${pct}%;background:${r.color}"></i></div>
+      <div class="wt-tip">${empty?'暂时没在这类出错 👍':r.tip}</div>
+    </div>`;
+  }).join('');
 }
 function reviewWrong(){
   if(STATE.wrong.length===0){ toast('没有错题要复习 🎉'); return; }
@@ -5987,8 +6036,10 @@ function buildReportData(){
   const bestTest=testVals.length?Math.max.apply(null,testVals):null;
   const avgTest=testVals.length?Math.round(testVals.reduce((a,b)=>a+b,0)/testVals.length):null;
   const advice=buildAdvice({masPct,acc,weekNew,weakUnits,wrongWords,streak:STATE.streak});
+  const wt=weakTypeTotals();
+  const weakTypes=[{label:'意思·听音',n:wt.sel},{label:'拼写',n:wt.spell},{label:'句型',n:wt.sent}];
   return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
-    weekNew,weakUnits,wrongWords,bestTest,avgTest,advice,trend:trend.slice(-14),date:todayStr()};
+    weekNew,weakUnits,wrongWords,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),date:todayStr()};
 }
 function buildAdvice(d){
   const a=[];
@@ -6071,6 +6122,10 @@ function showReport(){
     ${trendBars?`<div class="rpt-sec">📈 近况（掌握单词趋势）</div><div class="rpt-trend">${trendBars}</div>`:''}
     <div class="rpt-sec">🔥 薄弱单元</div>
     ${weakHtml}
+    <div class="rpt-sec">🎯 薄弱类型</div>
+    ${d.weakTypes.reduce((a,t)=>a+t.n,0)===0
+      ? '<p class="rpt-empty">暂无薄弱类型数据，多做点题就能看出来啦 📊</p>'
+      : '<div class="rpt-wtype">'+d.weakTypes.map(t=>`<div class="rpt-wt-row"><span>${t.label}</span><b>${t.n} 次</b></div>`).join('')+'</div>'}
     <div class="rpt-sec">📒 常错单词</div>
     <div class="rpt-words">${wordsHtml}</div>
     <div class="rpt-sec">学习建议</div>
@@ -6085,9 +6140,11 @@ function saveReportImage(){
     const headerH=92, cardsH=96, lineH=46;
     const trendH=d.trend.length?126:0;
     const weakH=d.weakUnits.length?d.weakUnits.length*56:40;
+    const wtTotal=(d.weakTypes||[]).reduce((a,t)=>a+t.n,0);
+    const weakTypeH=wtTotal>0?24+3*34:24+24;
     const wordsH=d.wrongWords.length?90:40;
     const adviceH=30+d.advice.length*72;
-    const H=pad*2+headerH+16+cardsH+12+lineH+12+trendH+12+24+weakH+12+24+wordsH+12+24+adviceH+40;
+    const H=pad*2+headerH+16+cardsH+12+lineH+12+trendH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+adviceH+40;
     const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
     const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
     const cs=getComputedStyle(document.body);
@@ -6171,7 +6228,20 @@ function saveReportImage(){
       roundRect(ctx,bx0,by,bw*w.pct/100,bh,6); ctx.fillStyle='#8A6FD0'; ctx.fill();
       ctx.fillStyle='#6E54BD'; ctx.font='700 13px sans-serif'; ctx.textAlign='right'; ctx.fillText(w.pct+'%', W-pad, y+37); ctx.textAlign='left';
       y+=56;
-    }); } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱单元，掌握得很棒 🎉', pad, y+16); y+=36; }
+    });     } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱单元，掌握得很棒 🎉', pad, y+16); y+=36; }
+    y+=8;
+    // 薄弱类型（v153）：sel/spell/sent 三维度占比
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('🎯 薄弱类型', pad, y+16); y+=24;
+    if(wtTotal>0){ d.weakTypes.forEach(t=>{
+      const pct=Math.round(t.n/wtTotal*100);
+      ctx.fillStyle=ink; ctx.font='600 14px sans-serif'; ctx.fillText(t.label, pad, y+16);
+      ctx.textAlign='right'; ctx.fillStyle=muted; ctx.font='700 13px sans-serif'; ctx.fillText(t.n+' 次 · '+pct+'%', W-pad, y+16); ctx.textAlign='left';
+      const bw=W-pad*2, by=y+22, bh=10;
+      roundRect(ctx,pad,by,bw,bh,5); ctx.fillStyle=soft; ctx.fill();
+      const col = t.label.indexOf('拼写')>=0?'#f0a020':(t.label.indexOf('句型')>=0?'#8a6fd0':'#4a90e2');
+      roundRect(ctx,pad,by,bw*pct/100,bh,5); ctx.fillStyle=col; ctx.fill();
+      y+=34;
+    }); } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱类型数据，多做点题就能看出来啦 📊', pad, y+16); y+=36; }
     y+=8;
     // 常错单词
     ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('📒 常错单词', pad, y+16); y+=24;
