@@ -2911,7 +2911,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 150;
+const APP_VERSION = 151;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
@@ -3614,7 +3614,7 @@ function safeRender(fn){
 function go(name){
   stopEvalEngine();
   if(chTimer){ clearInterval(chTimer); chTimer=null; } // v117：切屏清理限时挑战倒计时
-  bossActive=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）
+  bossActive=false; bossLock=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）；v151：重置 BOSS 防连点锁
   levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
   if(_heroAnimT){ clearTimeout(_heroAnimT); _heroAnimT=null; } // v128：切屏停首页吉祥物循环动画（防隐藏屏后台空转）
   heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[]; // v131：切屏清招手游离定时器（防隐藏屏后台空转挥手）
@@ -3725,7 +3725,7 @@ function onVocabUnitPick(){
     showCard();
   }
 }
-function curUnit(){ return UNITS.find(u=>u.id===curUnitId); }
+function curUnit(){ const u=UNITS.find(u=>u.id===curUnitId); if(!u&&UNITS.length){ curUnitId=UNITS[0].id; return UNITS[0]; } return u; } // v151：兜底——curUnitId 失效时自动跳第一个单元，绝不返回 undefined（13 处调用仅 1 处判空，原先靠 setGrade/setBook 重置撑着）
 function showCard(){
   const u=curUnit(); if(cardIdx>=u.words.length) cardIdx=0;
   curWord=u.words[cardIdx]; flipped=false;
@@ -4609,13 +4609,35 @@ function renderMastery(){
   });
   buildUnitChips('testUnits', ()=>{});
 }
+function unitGradeBook(uid){ // v151：从单元 id 首字母推所属教材（u=五上 v=五下 a=六上 b=六下）
+  const c=(uid||'')[0];
+  if(c==='u') return ['5','shang'];
+  if(c==='v') return ['5','xia'];
+  if(c==='a') return ['6','shang'];
+  if(c==='b') return ['6','xia'];
+  return null;
+}
+function jumpToUnitGrade(uid){ // v151：跨年级薄弱单元「去练习」——确认后切换教材并选中该单元，拒绝则不动作
+  const gb=unitGradeBook(uid);
+  if(!gb) return false;
+  const gn=(gb[0]==='6')?'六年级':'五年级', bn=(gb[1]==='xia')?'下册':'上册';
+  if(!confirm('这个薄弱单元在 '+gn+bn+' 教材里，要切换过去练习吗？')){ toast('已取消'); return false; }
+  STATE.settings.grade=gb[0]; STATE.settings.book=gb[1];
+  UNITS=pickBook(); curUnitId=uid;
+  cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode=''; // 切教材清单元内索引/临时态（与 setBook/setGrade 同款）
+  updateBookUI(); saveState(); syncSeg('gradeSeg','g',gb[0]); syncSeg('bookSeg','b',gb[1]);
+  toast('已切换到 '+gn+bn+'，开始练薄弱项');
+  return true;
+}
 function goTestUnit(uid, mode){ // 弱项推荐：mode='modal' 弹题型选择 / 其它 进测试屏
   if(UNITS.some(x=>x.id===uid)) curUnitId=uid;
+  else if(!jumpToUnitGrade(uid)) return; // v151：跨年级薄弱单元，确认切换或放弃（原实现落空弹「请先选一个单元」）
   if(mode==='modal'){ openUnitTest(); }
   else { go('test'); }
 }
 function goVocabUnit(uid){ // 闯关失败引导：选中单元并进入词汇练习
   if(UNITS.some(x=>x.id===uid)) curUnitId=uid;
+  else if(!jumpToUnitGrade(uid)) return; // v151：同上
   go('vocab');
 }
 // v74 起：单元测试先选题型再出题。types 不传则用上次的选择（"再做一次"沿用）
@@ -5171,7 +5193,7 @@ function openLevelCard(id){
 }
 // 「🗺️ 返回地图」：从关卡结算/题目面板回到关卡地图。清理 #lvlArea、显示 #mapPanel、重新渲染地图
 function showMap(){
-  bossActive=false; levelActive=false; // v128：返回地图即彻底停 BOSS 与关卡推进（防 #lvlArea 清空后游离定时器仍往隐藏面板渲染）
+  bossActive=false; levelActive=false; bossLock=false; // v128：返回地图即彻底停 BOSS 与关卡推进（防 #lvlArea 清空后游离定时器仍往隐藏面板渲染）；v151：重置 BOSS 防连点锁
   const la=document.getElementById('lvlArea');
   if(la){ la.innerHTML=''; la.style.display='none'; }
   const mp=document.getElementById('mapPanel');
@@ -5184,6 +5206,7 @@ let levelItems={x2:0}; // v106 闯关道具：⭐双倍卡（补给站事件获�
 let bossRage=0, bossSkill=0, bossHits=0, bossTotal=0; // v106 BOSS 怒气/必杀/命中统计（模块级便于测试）
 let bossMomentum=false, bossChatterLeft=0; // v109 BOSS 对话互动：反击气势（下次攻击翻倍）/ 剩余挑衅次数
 let bossActive=false; // v127：BOSS 战进行中标志，render() 据此丢弃切屏后的游离定时器渲染
+let bossLock=false; // v151：BOSS 防连点锁——__bossCheck/__chatPick 是内联 onclick（v126 治理范围外），重绘延迟 700~900ms 内连点会重复 recordWord/bumpGoal/hp/idx（BOSS 被点死、目标与星星虚高）；锁在 render 后与 go()/返回地图/进 BOSS 时重置
 let levelActive=false; // v128：闯关进行中标志，done/next 据此丢弃切屏/返回地图后的游离推进
 let bossChatterCur=null; // v109：当前挑衅对话题（模块级便于测试/一致）
 // 迷你玩法类型 → 弱项维度：句子/BOSS 归 'sent'，拼词/归类归 'spell'，其余（选择/听音/连连看/捉迷藏）归 'sel'
@@ -5642,7 +5665,7 @@ function renderBoss(u, done){
   bossMomentum=false; bossChatterLeft=2; // v109：BOSS 对话互动（反击气势 / 剩余挑衅次数）
   let hp=sents.length, idx=0;
   let dblOn=false; // ⭐双倍卡是否启用（v106）
-  bossActive=true; // v127：进入 BOSS 战置真，render() 才允许渲染
+  bossActive=true; bossLock=false; // v127：进入 BOSS 战置真，render() 才允许渲染；v151：重置防连点锁
   function intro(){
     // 首遇弹剧情卡；重遇直接开战，不重复唠叨
     if(STATE.bossSeen[u.id]){ fight(); return; }
@@ -5660,6 +5683,7 @@ function renderBoss(u, done){
   function fight(){ render(); }
   function render(){
     if(!bossActive) return; // v127：BOSS 已退出/切屏，丢弃游离定时器的后续渲染
+    bossLock=false; // v151：BOSS 界面已重绘，解锁允许下一次作答
     if(idx>=sents.length){
       const win=hp<=0; // v106：血条打空即击败（答错回血会让战斗更胶着）
       if(win){
@@ -5719,6 +5743,7 @@ function renderBoss(u, done){
       setTimeout(render, 650);
     };
     window.__bossCheck=(ans)=>{
+      if(bossLock) return; bossLock=true; // v151：防连点——重绘(700~750ms)前按钮仍在，连点会重复 recordWord/bumpGoal/hp/idx
       const got=[...document.querySelectorAll('#bb .in')].map(e=>e.textContent).join(' ');
       const ok=norm(got)===norm(ans);
       const b=document.getElementById('bbub');
@@ -5759,6 +5784,7 @@ function renderBoss(u, done){
         <div class="row" style="justify-content:center;flex-wrap:wrap;gap:8px">${opts.map(o=>`<button class="btn sky" onclick="__chatPick('${o.replace(/'/g,"\\'")}')">${o}</button>`).join('')}</div>
       </div>`;
       window.__chatPick=(pick)=>{
+        if(bossLock) return; bossLock=true; // v151：防连点——重绘(900ms)前连点会重复 bossChatterLeft--/bossRage++（怒气瞬间涨满、BOSS 立刻回血）
         const b=document.getElementById('cbub');
         const ok=norm(pick)===norm(c.ok);
         if(ok){
