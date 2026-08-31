@@ -1,7 +1,7 @@
 // Service Worker for 五年级英语小探险家
 // 缓存策略：HTML/导航 = network-first（保证新版本立即覆盖）| 其它资源 = cache-first（保留离线能力）
 // 发布新版本时，只需把 CACHE 名称的版本号 +1，SW 会自动刷新缓存
-const CACHE = 'eng5-v200';
+const CACHE = 'eng5-v201';
 const ASSETS = [
   './',
   './index.html',
@@ -22,7 +22,7 @@ const ASSETS = [
   './audio-map.js',
   // v146 LexiQuest 词境冒险：离线预缓存（首次安装即可离线开游戏）
   './game.html',
-  './assets/game/game-Tyl5UUtb.js'
+  './assets/game/game-7xtBCCZx.js'
 ];
 
 self.addEventListener('install', event => {
