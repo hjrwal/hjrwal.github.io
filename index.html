@@ -724,6 +724,18 @@
   .wb-empty-emoji{font-size:46px; animation:wob 3s ease-in-out infinite;}
   .wb-empty-title{font-size:17px; font-weight:900; margin-top:8px;}
   .wb-empty-sub{font-size:13px; margin-top:4px; opacity:.85; line-height:1.5;}
+  /* v156 错题本筛选 */
+  .wb-filters{display:flex; flex-direction:column; gap:8px; margin:12px 0 6px;}
+  .wb-frow{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .wb-flbl{flex:0 0 auto; font-size:12px; font-weight:800; color:var(--muted); width:34px;}
+  .wb-chip{flex:0 0 auto; font-size:12px; font-weight:700; color:var(--ink); background:var(--soft);
+    border:1px solid var(--line); border-radius:999px; padding:4px 10px; cursor:pointer; transition:all .15s;}
+  .wb-chip:active{transform:scale(.96);}
+  .wb-chip.on{background:var(--brand); color:#fff; border-color:var(--brand);}
+  /* v156 薄弱类型「去练」 */
+  .wt-go{flex:0 0 auto; margin-left:auto; font-size:12px; font-weight:800; color:#fff; background:var(--grape);
+    border:none; border-radius:999px; padding:5px 12px; cursor:pointer;}
+  .wt-go:active{transform:scale(.96);}
   .redo-card{text-align:center; padding:10px 4px;}
   .redo-card .word{font-size:38px; font-weight:800; margin:8px 0;}
   .redo-prog{height:8px; background:var(--line); border-radius:999px; overflow:hidden; margin-bottom:12px;}
@@ -1737,7 +1749,13 @@ update → controllerchange
       <button class="btn grass lg" style="margin-top:8px" id="wbReviewBtn" onclick="reviewWrong()">开始错词复习</button>
     </div>
     <div class="panel">
-      <h2 class="sec">全部错题 <span class="muted" id="wbAllCount" style="font-size:13px"></span></h2>
+      <div class="row spread" style="align-items:flex-start">
+        <h2 class="sec">全部错题 <span class="muted" id="wbAllCount" style="font-size:13px"></span></h2>
+        <div class="row" style="gap:8px">
+          <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="exportDictationPaper()">🖨️ 导出默写纸</button>
+        </div>
+      </div>
+      <div class="wb-filters" id="wbFilters"></div>
       <div id="wbList"></div>
     </div>
   </section>
@@ -2928,7 +2946,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 155;
+const APP_VERSION = 156;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3489,11 +3507,16 @@ function speakFxShow(){ const f=document.getElementById('speakFx'); if(f) f.clas
 function speakFxHide(){ const f=document.getElementById('speakFx'); if(f) f.classList.remove('show'); }
 function playAudioP(url){
   // 播放本地音频，返回 Promise(true=成功, false=失败)
+  // v156：加超时兜底——离线/文件缺失且浏览器 stalled 时，onended/onerror 可能永不触发，
+  // 导致 #speakFx 常驻卡死；超时一律 res(false) 让调用方走 speakByWords 兜底并隐藏发音条。
   return new Promise((res)=>{
+    let done=false;
+    const finish=(v)=>{ if(done) return; done=true; clearTimeout(t); res(v); };
     const a=new Audio(url);
-    a.onended=()=>res(true);
-    a.onerror=()=>res(false);
-    a.play().catch(()=>res(false));
+    a.onended=()=>finish(true);
+    a.onerror=()=>finish(false);
+    const t=setTimeout(()=>finish(false), 6000); // 6s 兜底，绝不卡死发音条
+    try{ a.play().catch(()=>finish(false)); }catch(e){ finish(false); }
   });
 }
 // 空闲时安静预载常用音频（D1）：仅拉前 40 个，在线且非省流量时才跑，无声、可中止
@@ -3531,7 +3554,7 @@ function speak(text){
   const fn = (window.AUDIO_MAP && (window.AUDIO_MAP[text] || window.AUDIO_MAP[normWord(text)]));
   if(fn){
     speakFxShow();
-    playAudioP('audio/'+fn).then(ok=>{ speakFxHide(); if(!ok) speakByWords(text); });
+    playAudioP('audio/'+fn).then(ok=>{ speakFxHide(); if(!ok) speakByWords(text); }).catch(()=>{ speakFxHide(); });
     return;
   }
   speakByWords(text);
@@ -3645,6 +3668,8 @@ function go(name){
   levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
   if(_heroAnimT){ clearTimeout(_heroAnimT); _heroAnimT=null; } // v128：切屏停首页吉祥物循环动画（防隐藏屏后台空转）
   heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[]; // v131：切屏清招手游离定时器（防隐藏屏后台空转挥手）
+  if(_levelCardMask){ _levelCardMask.remove(); _levelCardMask=null; } // v156：切屏清关卡卡片遮罩（防常驻挡屏）
+  hideLoading(); // v156：切屏兜底清加载遮罩，杜绝任何路径下 #loading 常驻卡死
   curScreen=name;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
@@ -5201,10 +5226,13 @@ function renderMap(){
     if(justUnlocked){ const sp=document.createElement('span'); sp.className='unlock-spark'; sp.innerHTML='<svg class="s1" viewBox="0 0 24 24"><use href="#i-spark"/></svg><svg class="s2" viewBox="0 0 24 24"><use href="#i-spark"/></svg><svg class="s3" viewBox="0 0 24 24"><use href="#i-spark"/></svg><svg class="s4" viewBox="0 0 24 24"><use href="#i-spark"/></svg>'; el.appendChild(sp); }
   });
 }
+let _levelCardMask=null; // v156：关卡卡片遮罩引用，供 go() 切屏时清理（避免切走后遮罩常驻挡屏）
 function openLevelCard(id){
   const u=UNITS.find(x=>x.id===id); if(!u) return;
   const st=unitStat(id);
+  if(_levelCardMask){ _levelCardMask.remove(); _levelCardMask=null; } // 关掉上一张未关闭的卡片
   const mask=document.createElement('div'); mask.className='level-card-mask';
+  _levelCardMask=mask;
   mask.innerHTML=`<div class="level-card">
     <div class="lc-em">${u.emoji}</div>
     <h2>${u.title}</h2>
@@ -5218,8 +5246,8 @@ function openLevelCard(id){
     </div></div>`;
   document.body.appendChild(mask);
   requestAnimationFrame(()=>mask.classList.add('show'));
-  mask.onclick=(e)=>{ if(e.target===mask) mask.remove(); };
-  window.closeLevelCard=()=>mask.remove();
+  mask.onclick=(e)=>{ if(e.target===mask){ mask.remove(); if(_levelCardMask===mask) _levelCardMask=null; } };
+  window.closeLevelCard=()=>{ mask.remove(); if(_levelCardMask===mask) _levelCardMask=null; };
 }
 // 「🗺️ 返回地图」：从关卡结算/题目面板回到关卡地图。清理 #lvlArea、显示 #mapPanel、重新渲染地图
 function showMap(){
@@ -5345,7 +5373,7 @@ function startLevel(id){
   // 延后让“加载中”狐狸动画先绘出，且保证至少可见 700ms（避免一帧闪过）
   const startedAt = Date.now();
   setTimeout(()=>{
-    if(!levelActive) return; // v128：进入关卡后若已切屏/返回地图，丢弃本次渲染
+    if(!levelActive){ hideLoading(); return; } // v128+v156：进入关卡后若已切屏/返回地图，丢弃本次渲染，但必须隐藏加载遮罩（否则 #loading 常驻卡死）
     const u=UNITS.find(x=>x.id===id);
     const questions=buildLevelQuestions(u);
     levelTotal=questions.length;
@@ -5984,6 +6012,22 @@ function weakTypeTotals(){
   ALL_UNITS.forEach(u=>{ const w=STATE.weakByUnit[u.id]; if(w){ sel+=(w.sel||0); spell+=(w.spell||0); sent+=(w.sent||0); } });
   return {sel,spell,sent,total:sel+spell+sent};
 }
+/* v156：薄弱类型「去练」——选中该维度最薄弱的单元，进入对应练习模式
+   dim 与 STATE.weakByUnit[uid] 三维度一致：sel=意思·听音 / spell=拼写 / sent=句型 */
+function practiceWeakType(type){
+  if(!once('pwt_'+type, 600)) return; // v156：防连点（按钮是重绘后仍存在的内联 onclick）
+  const dim = type==='spell'?'spell':(type==='sent'?'sent':'sel');
+  let best=null, bestN=-1;
+  ALL_UNITS.forEach(u=>{ const w=STATE.weakByUnit[u.id]; const n=w?(w[dim]||0):0; if(n>bestN){ bestN=n; best=u.id; } });
+  if(!best || bestN<=0){ toast('这个类型暂时没有薄弱记录，先做点题吧 📚'); return; }
+  if(type==='sent'){
+    if(UNITS.some(x=>x.id===best)) curUnitId=best; else if(!jumpToUnitGrade(best)) return;
+    go('sentences');
+  } else {
+    goVocabUnit(best); // 处理跨年级 + 进入 vocab
+    setTimeout(()=>startVocabQuiz(type==='spell'?'spell':'listen'), 280);
+  }
+}
 function renderWeakType(){
   const box=document.getElementById('weakType'); if(!box) return;
   const t=weakTypeTotals();
@@ -5992,17 +6036,19 @@ function renderWeakType(){
     return;
   }
   const rows=[
-    {label:'📖 意思·听音', val:t.sel,  color:'#4a90e2', tip:'多练中英互译、听音选词'},
-    {label:'✏️ 拼写',     val:t.spell, color:'#f0a020', tip:'多练听写、拼词填空'},
-    {label:'💬 句型',     val:t.sent,  color:'#8a6fd0', tip:'多练连词成句、造句'}
+    {type:'sel',   label:'📖 意思·听音', val:t.sel,  color:'#4a90e2', tip:'多练中英互译、听音选词'},
+    {type:'spell', label:'✏️ 拼写',     val:t.spell, color:'#f0a020', tip:'多练听写、拼词填空'},
+    {type:'sent',  label:'💬 句型',     val:t.sent,  color:'#8a6fd0', tip:'多练连词成句、造句'}
   ];
   box.innerHTML=rows.map(r=>{
     const pct=Math.round(r.val/t.total*100);
     const empty=r.val===0;
+    const goBtn = empty?'':`<button class="wt-go" onclick="practiceWeakType('${r.type}')">去练 →</button>`;
     return `<div class="wt-row">
       <div class="wt-head"><span>${r.label}</span><span class="wt-pct">${r.val} 次 · ${pct}%</span></div>
       <div class="wt-bar"><i style="width:${pct}%;background:${r.color}"></i></div>
       <div class="wt-tip">${empty?'暂时没在这类出错 👍':r.tip}</div>
+      ${goBtn}
     </div>`;
   }).join('');
 }
@@ -6052,8 +6098,12 @@ function buildReportData(){
   const advice=buildAdvice({masPct,acc,weekNew,weakUnits,wrongWords,streak:STATE.streak});
   const wt=weakTypeTotals();
   const weakTypes=[{label:'意思·听音',n:wt.sel},{label:'拼写',n:wt.spell},{label:'句型',n:wt.sent}];
+  // v156：连续打卡日历——近 35 天，按 trend 里“当天有学习记录”的日期点亮格子
+  const activeMap={}; (trend||[]).forEach(e=>{ if(e&&e.date) activeMap[e.date]=true; });
+  const calDays=35, cal=[], t0=new Date(todayStr());
+  for(let i=calDays-1;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); const ds=d.toISOString().slice(0,10); cal.push({date:ds, active:!!activeMap[ds]}); }
   return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
-    weekNew,weakUnits,wrongWords,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),date:todayStr()};
+    weekNew,weakUnits,wrongWords,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),cal,date:todayStr()};
 }
 function buildAdvice(d){
   const a=[];
@@ -6153,12 +6203,13 @@ function saveReportImage(){
     const W=720, pad=28, scale=Math.min(3,(window.devicePixelRatio||1)*2);
     const headerH=92, cardsH=96, lineH=46;
     const trendH=d.trend.length?126:0;
+    const calH=160; // v156：连续打卡日历（近 35 天 7x5 网格）
     const weakH=d.weakUnits.length?d.weakUnits.length*56:40;
     const wtTotal=(d.weakTypes||[]).reduce((a,t)=>a+t.n,0);
-    const weakTypeH=wtTotal>0?24+3*34:24+24;
+    const weakTypeH=wtTotal>0?150:24+24; // v156：薄弱类型改为甜甜圈图，预留更大高度
     const wordsH=d.wrongWords.length?90:40;
     const adviceH=30+d.advice.length*72;
-    const H=pad*2+headerH+16+cardsH+12+lineH+12+trendH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+adviceH+40;
+    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+adviceH+40;
     const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
     const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
     const cs=getComputedStyle(document.body);
@@ -6193,6 +6244,20 @@ function saveReportImage(){
     ctx.fillStyle='#fff'; ctx.font='600 15px sans-serif';
     ctx.fillText('本周 +'+d.weekNew+' 词 · 待巩固 '+d.wrongWords.length+' 个'+(d.bestTest!=null?(' · 测验 '+d.bestTest+'分'):''), pad+16, y+28);
     y+=lineH+12;
+    // 连续打卡日历（v156）：近 35 天，点亮的格子=当天有学习记录
+    {
+      ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.textAlign='left';
+      ctx.fillText('📅 连续打卡（近 35 天）', pad, y+16);
+      const cols=7, rows=5, cw=20, ch=20, gap=6, gx=pad, gy=y+26;
+      d.cal.forEach((c,i)=>{ const r=Math.floor(i/cols), col=i%cols; const cx=gx+col*(cw+gap), cyy=gy+r*(ch+gap);
+        roundRect(ctx,cx,cyy,cw,ch,5);
+        if(c.active){ ctx.fillStyle='#8A6FD0'; ctx.fill(); } else { ctx.fillStyle='#E5D9C4'; ctx.fill(); }
+      });
+      // 图例
+      ctx.fillStyle=muted; ctx.font='500 12px sans-serif';
+      ctx.fillText('连续 '+d.streak+' 天 · 紫色格=当天学过', pad+(cols*(cw+gap))+14, gy+rows*(ch+gap)/2);
+      y=gy+rows*(ch+gap)+8;
+    }
     // 趋势（v80：每日柱+数字+日期，0值灰、超均值金、含峰均副标）
     if(d.trend.length){
       ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.textAlign='left';
@@ -6206,10 +6271,12 @@ function saveReportImage(){
       const bw=(W-pad*2)/d.trend.length;
       const topReserve=20, botReserve=24, barAreaH=58;
       const baseline=y+topReserve+barAreaH;
+      const pts=[];
       d.trend.forEach((e,i)=>{
         const cx=pad+i*bw+bw/2, bx=cx-bw*0.32, bbw=bw*0.64;
         const isZero=e.mastered===0, isHi=!isZero && e.mastered>avg;
         const h=isZero?3:Math.max(6,Math.round(e.mastered/maxM*barAreaH));
+        pts.push({x:cx, y:baseline-h});
         // 数字（柱顶上方）
         ctx.fillStyle=isZero?muted:(isHi?'#B07000':'#6E54BD');
         ctx.font='800 11px sans-serif'; ctx.textAlign='center';
@@ -6230,6 +6297,10 @@ function saveReportImage(){
         ctx.fillStyle=muted; ctx.font='600 11px sans-serif';
         ctx.fillText(day||'', cx, baseline+16);
       });
+      // v156：进步曲线——连接各柱顶，直观看掌握量增长趋势
+      if(pts.length>1){ ctx.beginPath(); ctx.strokeStyle='rgba(110,84,189,.55)'; ctx.lineWidth=2;
+        pts.forEach((p,i)=>{ if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); });
+        ctx.stroke(); }
       ctx.textAlign='left';
       y+=topReserve+barAreaH+botReserve;
     }
@@ -6244,18 +6315,23 @@ function saveReportImage(){
       y+=56;
     });     } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱单元，掌握得很棒 🎉', pad, y+16); y+=36; }
     y+=8;
-    // 薄弱类型（v153）：sel/spell/sent 三维度占比
-    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('🎯 薄弱类型', pad, y+16); y+=24;
-    if(wtTotal>0){ d.weakTypes.forEach(t=>{
-      const pct=Math.round(t.n/wtTotal*100);
-      ctx.fillStyle=ink; ctx.font='600 14px sans-serif'; ctx.fillText(t.label, pad, y+16);
-      ctx.textAlign='right'; ctx.fillStyle=muted; ctx.font='700 13px sans-serif'; ctx.fillText(t.n+' 次 · '+pct+'%', W-pad, y+16); ctx.textAlign='left';
-      const bw=W-pad*2, by=y+22, bh=10;
-      roundRect(ctx,pad,by,bw,bh,5); ctx.fillStyle=soft; ctx.fill();
-      const col = t.label.indexOf('拼写')>=0?'#f0a020':(t.label.indexOf('句型')>=0?'#8a6fd0':'#4a90e2');
-      roundRect(ctx,pad,by,bw*pct/100,bh,5); ctx.fillStyle=col; ctx.fill();
-      y+=34;
-    }); } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱类型数据，多做点题就能看出来啦 📊', pad, y+16); y+=36; }
+    // 薄弱类型（v156）：甜甜圈图 + 图例，直观看 sel/spell/sent 三维占比
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.textAlign='left'; ctx.fillText('🎯 薄弱类型', pad, y+16);
+    if(wtTotal>0){
+      const cx=pad+46, cy=y+24+44, R=42, r=24;
+      const cols=[['意思·听音','#4a90e2'],['拼写','#f0a020'],['句型','#8a6fd0']];
+      let ang=-Math.PI/2;
+      d.weakTypes.forEach((t,i)=>{ const frac=t.n/wtTotal; const a2=ang+frac*Math.PI*2;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,ang,a2); ctx.closePath(); ctx.fillStyle=cols[i][1]; ctx.fill(); ang=a2; });
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=cardBg; ctx.fill();
+      ctx.fillStyle=ink; ctx.font='800 16px sans-serif'; ctx.textAlign='center'; ctx.fillText(wtTotal+'次', cx, cy+5); ctx.textAlign='left';
+      let ly=y+34;
+      d.weakTypes.forEach((t,i)=>{ const pct=Math.round(t.n/wtTotal*100);
+        ctx.fillStyle=cols[i][1]; ctx.fillRect(pad+108, ly-10, 12,12);
+        ctx.fillStyle=ink; ctx.font='600 14px sans-serif'; ctx.fillText(t.label+'  '+t.n+' 次 · '+pct+'%', pad+126, ly);
+        ly+=24; });
+      y=y+24+92;
+    } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无薄弱类型数据，多做点题就能看出来啦 📊', pad, y+16); y+=36; }
     y+=8;
     // 常错单词
     ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('📒 常错单词', pad, y+16); y+=24;
@@ -6322,6 +6398,7 @@ function renderReview(){
     <div class="big-word" style="font-size:40px">${w.en}</div>
     <div class="muted" style="margin-bottom:4px">${w.zh}</div>
     <button class="btn sky lg" style="margin:6px 0 10px" onclick="speak('${w.en.replace(/'/g,"\\'")}')">听发音</button>
+    <button class="btn grape lg" style="margin:6px 0 10px" onclick="startFollowRead('${w.en.replace(/'/g,"\\'")}')">🎤 跟读评测</button>
     ${srsDots(w.stage)}
     <p class="muted srs-cap">掌握进度 <b>${stage}/6</b>${leftStage>0?' · 还差 '+leftStage+' 次彻底记住':''}</p>
     <div class="row" style="justify-content:center">
@@ -6347,8 +6424,44 @@ function reviewResult(known){
   }
   reviewIdx++; renderReview();
 }
-function closeReview(){ document.getElementById('reviewModal').classList.remove('show'); renderProgress(); }
+function closeReview(){ document.getElementById('reviewModal').classList.remove('show'); renderProgress(); renderGoal(); }
 function reviewWrong(){ startReview(true); }
+/* v156：发音跟读评测——调用浏览器 Web Speech API 识别读音，与目标词比对给细反馈。
+   受手机硬件/系统限制（部分国产浏览器无 SpeechRecognition、需联网、需授权麦克风），
+   全部走特性检测 + try/catch 优雅降级：不支持时提示「点听发音跟读即可」，绝不卡死。 */
+function simRatio(a,b){
+  a=(a||'').toLowerCase(); b=(b||'').toLowerCase();
+  if(!a||!b) return 0; if(a===b) return 1;
+  const m=a.length, n=b.length; const dp=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) dp[i][0]=i; for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  const dist=dp[m][n]; return Math.max(0, 1-dist/Math.max(m,n));
+}
+function startFollowRead(word){
+  if(!once('follow_'+word, 1500)) return; // v156：防连点重复启动录音识别
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast('本设备不支持语音评测，点「听发音」跟着读也很好 🎤'); return; }
+  try{
+    const rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=3;
+    toast('🎤 请跟读：'+word+'（说完自动评分）');
+    let done=false;
+    const finish=(trans)=>{
+      if(done) return; done=true;
+      const got=normWord(trans||'').toLowerCase(), tgt=normWord(word).toLowerCase();
+      const sim=simRatio(got,tgt);
+      if(sim>=0.99) toast('🎉 发音很棒，完全正确！');
+      else if(sim>=0.66){ const p=firstDiff(got,tgt); toast('👍 接近啦！注意'+(p?('「'+p+'」这个音'):'多听几遍')); }
+      else if(got) toast('💪 再试试，重点听「'+word+'」的发音');
+      else toast('🎤 没听清，靠近麦克风再试一次');
+    };
+    rec.onresult=(e)=>{ const arr=[]; for(let i=0;i<e.results[0].length;i++) arr.push(e.results[0][i].transcript); finish(arr[0]); };
+    rec.onerror=()=>{ if(!done) toast('🎤 没听清或没授权，点听发音跟读即可'); };
+    rec.onend=()=>{ if(!done) toast('🎤 没捕捉到声音，靠近麦克风再试'); };
+    rec.start();
+    setTimeout(()=>{ try{ rec.stop(); }catch(_){} if(!done) toast('🎤 评测超时，可点听发音跟读'); }, 6000);
+  }catch(err){ toast('语音评测不可用，点听发音跟读即可'); }
+}
+function firstDiff(a,b){ for(let i=0;i<Math.max(a.length,b.length);i++){ if(a[i]!==b[i]) return (b[i]||'').toUpperCase(); } return ''; }
 function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 function sample(pool, exclude, n){ const f=pool.filter(x=>x!==exclude); return shuffle(f).slice(0,n); }
 function addDays(d,n){ const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); }
@@ -6393,7 +6506,7 @@ function renderGoal(){
     const up=STATE.wrong.filter(w=>w.due && w.due>todayStr() && w.due<=addDays(todayStr(),3)).length;
     const txt=rc2.querySelector('.rc-txt');
     if(txt) txt.innerHTML = due>0
-      ? `今日复习 <b>${due}</b> 个易错词`+(up?` · 未来3天还有 <b>${up}</b> 个将到期`:'')
+      ? `今天该复习 <b>${due}</b> 个易错词`+(up?` · 未来3天还有 <b>${up}</b> 个将到期`:'')+`（没复习完会自动顺延到明天）`
       : `暂无须复习 ✅`+(up?` · 未来3天有 <b>${up}</b> 个将到期`:'');
     rc2.classList.toggle('due', due>0);
     const rm=document.getElementById('reviewMini');
@@ -6655,6 +6768,48 @@ function refreshWrongDot(){
   if(wd){ wd.classList.toggle('hidden', n===0); wd.textContent=n>99?'99+':n; }
 }
 /* 错题本列表渲染（v87 还原：原 renderWrongbook 缺失导致整屏报错） */
+let wbFUnit='all', wbFType='all'; // v156：错题本筛选（单元 / 薄弱类型）
+function setWbFilter(kind, val){
+  if(!once('wbF_'+kind, 200)) return; // v156：防连点连切筛选
+  if(kind==='unit') wbFUnit=val; else wbFType=val;
+  renderWrongbook();
+}
+function renderWbFilters(){
+  const box=document.getElementById('wbFilters'); if(!box) return;
+  const units=ALL_UNITS.filter(u=>(STATE.wrong||[]).some(w=>w.unit===u.id));
+  let h='<div class="wb-frow"><span class="wb-flbl">单元</span>';
+  h+='<button class="wb-chip'+(wbFUnit==='all'?' on':'')+'" onclick="setWbFilter(\'unit\',\'all\')">全部</button>';
+  units.forEach(u=>{ h+='<button class="wb-chip'+(wbFUnit===u.id?' on':'')+'" onclick="setWbFilter(\'unit\',\''+u.id+'\')">'+(u.emoji||'')+u.title.slice(0,4)+'</button>'; });
+  h+='</div><div class="wb-frow"><span class="wb-flbl">薄弱</span>';
+  const types=[['all','全部'],['sel','意思·听音'],['spell','拼写'],['sent','句型']];
+  types.forEach(t=>{ h+='<button class="wb-chip'+(wbFType===t[0]?' on':'')+'" onclick="setWbFilter(\'type\',\''+t[0]+'\')">'+t[1]+'</button>'; });
+  h+='</div>';
+  box.innerHTML=h;
+}
+function exportDictationPaper(){
+  if(!once('wbExport', 800)) return; // v156：防连点重复下载
+  const wrong=STATE.wrong||[];
+  if(wrong.length===0){ toast('错题本空空，没什么可导出的 🎉'); return; }
+  let list=wrong;
+  if(wbFUnit!=='all') list=list.filter(w=>w.unit===wbFUnit);
+  if(wbFType!=='all') list=list.filter(w=>{ const wt=STATE.weakByUnit[w.unit]; return wt && (wt[wbFType]||0)>0; });
+  if(list.length===0){ toast('当前筛选下没有可导出的词'); return; }
+  const escH=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let rows='';
+  list.forEach(w=>{ rows+='<div class="d-row"><div class="d-zh">'+escH(w.zh||'')+'</div><div class="d-line"></div><div class="d-en">'+escH(w.en||'')+'</div></div>'; });
+  const html='<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>英语默写纸_'+todayStr()+'</title>'
+    +'<style>body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;max-width:680px;margin:24px auto;padding:0 16px;color:#333}'
+    +'h1{font-size:20px;text-align:center}.meta{text-align:center;color:#888;font-size:13px;margin-bottom:18px}'
+    +'.d-row{display:flex;align-items:center;gap:12px;margin:16px 0}.d-zh{width:42%;font-size:16px}'
+    +'.d-line{flex:1;border-bottom:1.5px solid #bbb;height:1px}.d-en{width:42%;text-align:right;color:#bcd;font-size:14px}'
+    +'@media print{body{margin:0}}button{display:block;margin:20px auto;padding:10px 22px;font-size:15px;border:none;border-radius:10px;background:#6E54BD;color:#fff;cursor:pointer}'
+    +'.tip{margin-top:8px;color:#999;font-size:12px;text-align:center}</style></head>'
+    +'<body><h1>📝 英语默写纸</h1><div class="meta">'+todayStr()+' · 共 '+list.length+' 词 · 左列看中文写英文，右列是答案</div>'
+    +rows+'<button onclick="window.print()">🖨️ 打印 / 存为 PDF</button><div class="tip">打印时选「另存为 PDF」即可长期保存</div></body></html>';
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='英语默写纸_'+todayStr()+'.html'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),4000); toast('已导出默写纸 ⬇️（打开后可打印）');
+}
 function renderWrongbook(){
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const wrong=STATE.wrong||[];
@@ -6666,16 +6821,24 @@ function renderWrongbook(){
   const srsPct = total ? Math.round(wrong.reduce((a,w)=>a+Math.min(w.stage||0,6),0)/total/6*100) : 0;
   set('wbSrs', srsPct+'%');
   set('wbAllCount', '('+total+' 个)'); set('wbReviewCount', '('+due+' 个待复习)');
+  renderWbFilters();
+  // v156：应用筛选
+  let list2=wrong;
+  if(wbFUnit!=='all') list2=list2.filter(w=>w.unit===wbFUnit);
+  if(wbFType!=='all') list2=list2.filter(w=>{ const wt=STATE.weakByUnit[w.unit]; return wt && (wt[wbFType]||0)>0; });
   const list=document.getElementById('wbList');
   if(list){
     if(total===0){
       list.innerHTML='<div class="wb-empty"><div class="wb-empty-emoji">🌟</div><div class="wb-empty-title">还没有错题</div><div class="wb-empty-sub">做错的题会悄悄收集到这里，陪你重练到会为止～</div></div>';
+    } else if(list2.length===0){
+      list.innerHTML='<p class="muted" style="padding:10px 2px">这个筛选条件下没有错题～</p>';
     } else {
-      list.innerHTML=wrong.map(w=>{
+      list.innerHTML=list2.map(w=>{
         const en=esc(w.en), zh=esc(w.zh), tag=esc(unitName(w.unit));
         const enq=(w.en||'').replace(/'/g,"\\'"), unitq=(w.unit||'').replace(/'/g,"\\'");
         return '<div class="wb-row">'
           +'<button class="btn sky" style="padding:5px 9px;font-size:13px" onclick="speak(\''+enq+'\')"></button>'
+          +'<button class="btn grape" style="padding:5px 9px;font-size:13px" onclick="startFollowRead(\''+enq+'\')">跟读</button>'
           +'<span class="wb-en">'+en+'</span>'
           +(zh?'<span class="wb-zh">'+zh+'</span>':'')
           +'<span class="wb-tag">'+tag+'</span>'
