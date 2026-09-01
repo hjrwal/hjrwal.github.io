@@ -2928,8 +2928,18 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 154;
+const APP_VERSION = 155;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
+/* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
+   awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
+   声明位置：与 APP_VERSION 同级（顶层最早执行处），避免中部函数在启动阶段踩 TDZ。 */
+const _onceSet=new Set();
+function once(key, ms){
+  if(_onceSet.has(key)) return false;
+  _onceSet.add(key);
+  setTimeout(()=>_onceSet.delete(key), ms||600);
+  return true;
+}
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
@@ -3796,6 +3806,7 @@ document.addEventListener('keydown', (e)=>{
   else if(e.key==='ArrowRight'){ e.preventDefault(); cardNext(); }
 });
 function cardResult(ok){
+  if(!once('card',300)) return; // v155：防连点——翻卡期间按钮仍在，连点会重复 recordWord 并跳过卡片
   recordWord(curUnitId, curWord.en, ok);
   const u=curUnit();
   const wasLast = (cardIdx === u.words.length - 1); // 当前卡是单元最后一张
@@ -4172,6 +4183,7 @@ function fillSkillOpts(opts, answer, enForRecord){
   });
 }
 function checkWrite(ans){
+  if(!once('write',700)) return; // v155：防连点——本函数不重绘，按钮常在，连点会重复 recordWord 并重复 +2⭐
   const v=document.getElementById('writeIn').value;
   const ok=norm(v)===norm(ans);
   recordWord(curUnitId, ans, ok);
@@ -4597,6 +4609,7 @@ function stopWaveEval(){
   try{ if(_rec && _rec.state!=='inactive' && _rec.stop) _rec.stop(); }catch(e){}
 }
 function selfEvalDone(){
+  if(!once('eval',800)) return; // v155：防连点——连点会重复 awardStars + bumpGoal（星星与每日目标虚高）
   const flu=_eval3d.flu||3, acc=_eval3d.acc||3, com=_eval3d.com||3;
   const overall=Math.round((flu+acc+com)/3);
   const res=document.getElementById('speakResult');
@@ -5310,6 +5323,7 @@ function renderEvent(q, done){
   }
   area.innerHTML=`<div class="panel center event-card">${inner}</div>`;
   window.__evGo=()=>{
+    if(!once('evGo',700)) return; // v155：防连点——连点会重复 awardStars / 领多张双倍卡 / done() 推进两题
     if(q.kind==='intro'){ foxSay('🍀 出发！去闯 '+(q.u?q.u.title:'本关')+' 吧！'); }
     else if(q.kind==='bonus'){ levelItems.x2++; toast('获得 ⭐双倍卡 ×1！'); }
     else if(q.kind==='lucky'){ const n=1+Math.floor(Math.random()*3); awardStars(n); foxSay('🎉 宝箱里是 '+n+' 颗星！'); toast('🎁 开箱 +'+n+'⭐'); }
@@ -6316,6 +6330,7 @@ function renderReview(){
     </div>`;
 }
 function reviewResult(known){
+  if(!once('review',400)) return; // v155：防连点——连点会让复习等级连跳两级、复习次数虚高
   const w=reviewList[reviewIdx];
   if(!w){ return; }
   const idx=STATE.wrong.findIndex(x=>x.en===w.en && x.unit===w.unit);
