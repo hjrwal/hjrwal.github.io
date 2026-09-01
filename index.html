@@ -1179,7 +1179,7 @@
     <div class="hero storybook" onclick="go('progress')">
 <div class="book-scene" aria-hidden="true">
           <div class="hero-cat peek" id="heroCat">
-            <img class="scene-png" id="heroMascot" src="assets/mascot/default.png" alt="" loading="eager" decoding="async">
+            <img class="scene-png" id="heroMascot" src="assets/mascot/hero_default.png" alt="" loading="eager" decoding="async">
             <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
           </div>
           <div class="scene-deco" aria-hidden="true">
@@ -2946,7 +2946,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 156;
+const APP_VERSION = 157;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4298,8 +4298,10 @@ function floatText(text, type){
 function setMascotMood(mood){
   // v121：SVG 表情层已替换为 <img>，改切 src（v88 答题反馈：顶栏 + 测试页白喵同步反应）
   const moodMap={happy:'happy',cheer:'cheer',sad:'sad',think:'think',welcome:'welcome',encourage:'encourage'};
-  const src = (mood && HERO_FRAMES[moodMap[mood]]) ? HERO_FRAMES[moodMap[mood]] : HERO_FRAMES.base;
-  _heroMoodSrc = (mood && src!==HERO_FRAMES.base) ? src : null;
+  // v157：首页大猫走 HERO_BIG_FRAMES（base/welcome=hero_default.png 招手），顶栏+测试页仍走 HERO_FRAMES
+  const bigSrc = (mood && HERO_BIG_FRAMES[moodMap[mood]]) ? HERO_BIG_FRAMES[moodMap[mood]] : HERO_BIG_FRAMES.base;
+  const src    = (mood && HERO_FRAMES[moodMap[mood]])    ? HERO_FRAMES[moodMap[mood]]    : HERO_FRAMES.base;
+  _heroMoodSrc = (mood && bigSrc!==HERO_BIG_FRAMES.base) ? bigSrc : null;
   const heroImg=document.getElementById('heroMascot');
   if(heroImg) _heroSetSrc(_heroBase());
   document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=src; });
@@ -4307,7 +4309,7 @@ function setMascotMood(mood){
   clearTimeout(mascotMoodT);
   if(mood){ mascotMoodT=setTimeout(()=>{
     _heroMoodSrc=null;
-    if(heroImg) _heroSetSrc(HERO_FRAMES.base);
+    if(heroImg) _heroSetSrc(HERO_BIG_FRAMES.base);
     document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
   }, 1600); }
 }
@@ -4325,6 +4327,8 @@ const HERO_FRAMES = {
   wave1:     'assets/mascot/wave1.png',
   wave2:     'assets/mascot/wave2.png'
 };
+// v157：大猫专属帧表（base/welcome 改为招手 hero_default.png；其余复用 HERO_FRAMES）——首页大猫替换姿势
+const HERO_BIG_FRAMES = Object.assign({}, HERO_FRAMES, { base: 'assets/mascot/hero_default.png', welcome: 'assets/mascot/hero_default.png' });
 let _heroMoodSrc = null;     // 当前 hero "回归" 基础（被心境覆盖时）
 let _heroAnimT = null;       // 循环定时器句柄
 let heroWelcomeTimers = [];  // v131：招手游离定时器句柄，go()/重入时统一清理
@@ -4334,7 +4338,7 @@ function _heroSetSrc(s){
   if(img) img.src=s;
 }
 function _heroBase(){
-  return _heroMoodSrc || HERO_FRAMES.base;
+  return _heroMoodSrc || HERO_BIG_FRAMES.base;
 }
 // v133 招手换眨眼：触发 hero 大猫慢眨眼（复用 .scene-blink 闭眼层 + 慢关键帧，零新图、不换 src）
 function heroBlinkOnce(){
@@ -4423,7 +4427,7 @@ function heroDoAction(name, dur){
   const heroCat=document.getElementById('heroCat');
   document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
   _heroMoodSrc=null;
-  if(h) _heroSetSrc(HERO_FRAMES.base);
+  if(h) _heroSetSrc(HERO_BIG_FRAMES.base);
   if(bl) bl.classList.remove('run');
   if(heroCat){ heroCat.classList.remove('peek'); void heroCat.offsetWidth; }
   if(name==='smile'){ if(h) _heroSetSrc(HERO_FRAMES.happy); if(typeof foxSay==='function') foxSay('喵~ 🐾'); }
@@ -4434,7 +4438,7 @@ function heroDoAction(name, dur){
   heroActionT=setTimeout(()=>{
     document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
     _heroMoodSrc=null;
-    if(h) _heroSetSrc(HERO_FRAMES.base);
+    if(h) _heroSetSrc(HERO_BIG_FRAMES.base);
     if(bl) bl.classList.remove('run');
     if(heroCat) heroCat.classList.remove('peek');
   }, dur);
