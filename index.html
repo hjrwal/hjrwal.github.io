@@ -2906,7 +2906,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 159;
+const APP_VERSION = 160;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4093,31 +4093,52 @@ function renderSkillHome(){
     <div class="tile c-sun" onclick="startSkill('write')"><span class="ic"></span><h3>写</h3><p>听写拼写</p></div>
   </div>`;
 }
+let skillQuiz=null; // v160：听说读写——听音选义/听写拼写 多题连续测验状态（含进度+计分+结果）
 function startSkill(mode){
   stopEvalEngine();
   touchDay();
   const u=curUnit(); const area=document.getElementById('skillStage');
   const back='<button class="back" style="margin-bottom:10px" onclick="renderSkillHome()">返回选技能</button>';
-  if(mode==='listen'){
-    const q=u.words[Math.floor(Math.random()*u.words.length)];
-    const distract=sample(u.words,q,3);
-    const opts=shuffle([q,...distract]).map(w=>w.zh);
-    area.innerHTML=back+`<h2 class="sec">听音选义</h2>
-      <button class="btn sky lg" onclick="speak('${q.en.replace(/'/g,"\\'")}')">点击听单词</button>
-      <div class="qprompt" style="margin-top:12px">选出它的中文意思：</div>
-      <div class="opts" id="skOpts"></div>`;
-    fillSkillOpts(opts, q.zh, q.en);
-  } else if(mode==='speak'){
+  if(mode==='speak'){
     const q=pickSpeakSentence();
     if(!q){ area.innerHTML=back+`<h2 class="sec">跟读练习</h2><p class="muted">这个单元还没有句子哦，先学完词汇再来吧！</p>`; }
     else renderSpeak(area, back, q);
-  } else if(mode==='write'){
-    const q=u.words[Math.floor(Math.random()*u.words.length)];
-    area.innerHTML=back+`<h2 class="sec">听写拼写</h2>
-      <div class="big-word">“${q.zh}”</div>
-      <button class="btn sky lg" onclick="speak('${q.en.replace(/'/g,"\\'")}')">听发音</button>
+    return;
+  }
+  // 听音选义 / 听写拼写：生成 N 题连续测验（v160 升级，带进度+计分+结果，复用现有发音与计分管线）
+  const dn=Math.min(3, u.words.length-1);
+  const N=Math.min(8, u.words.length);
+  const pool=shuffle(u.words.slice());
+  const questions=[];
+  for(let i=0;i<N;i++){
+    const q=pool[i];
+    const distract=sample(u.words,q,dn);
+    questions.push({ en:q.en, zh:q.zh, opts:shuffle([q,...distract]).map(w=>w.zh) });
+  }
+  skillQuiz={ mode, questions, idx:0, score:0, total:N, answered:false };
+  renderSkillQuestion();
+}
+function renderSkillQuestion(){
+  if(!skillQuiz) return;
+  const area=document.getElementById('skillStage');
+  const back='<button class="back" style="margin-bottom:10px" onclick="renderSkillHome()">返回选技能</button>';
+  const q=skillQuiz.questions[skillQuiz.idx];
+  skillQuiz.answered=false;
+  const prog=`<div class="row spread" style="margin:6px 0 10px"><span class="muted">第 ${skillQuiz.idx+1} / ${skillQuiz.total} 题</span><span class="muted">⭐ ${skillQuiz.score}</span></div>`;
+  if(skillQuiz.mode==='listen'){
+    area.innerHTML=back+`<h2 class="sec">听音选义</h2>`+prog+
+      `<button class="btn sky lg" onclick="speak('${q.en.replace(/'/g,"\\'")}')">▶ 点击听单词</button>
+      <div class="qprompt" style="margin-top:12px">选出它的中文意思：</div>
+      <div class="opts" id="skOpts"></div>
+      <div id="skNext" style="margin-top:12px"></div>`;
+    fillSkillOpts(q.opts, q.zh, q.en);
+  } else {
+    area.innerHTML=back+`<h2 class="sec">听写拼写</h2>`+prog+
+      `<div class="big-word">“${q.zh}”</div>
+      <button class="btn sky lg" onclick="speak('${q.en.replace(/'/g,"\\'")}')">🔊 听发音</button>
       <input class="type" id="writeIn" placeholder="写出英文" style="margin-top:10px">
-      <button class="btn grass lg" style="margin-top:10px" onclick="checkWrite('${q.en.replace(/'/g,"\\'")}')">提交</button>`;
+      <button class="btn grass lg" style="margin-top:10px" id="skSub" onclick="skillWriteSubmit('${q.en.replace(/'/g,"\\'")}', ${skillQuiz.idx})">提交</button>
+      <div id="skNext" style="margin-top:12px"></div>`;
   }
 }
 /* v96：说模式——渲染单句 + 下一句跳转 */
@@ -4157,23 +4178,57 @@ function fillSkillOpts(opts, answer, enForRecord){
   opts.forEach(o=>{
     const el=document.createElement('div'); el.className='opt'; el.textContent=o;
     el.onclick=()=>{
+      if(el.disabled) return; // v126/155：div 选项显式守卫，连点不重复计分
+      if(!skillQuiz || skillQuiz.answered) return;
+      skillQuiz.answered=true;
       const ok=o===answer;
+      if(ok){ skillQuiz.score++; awardStars(2); }
       recordWord(curUnitId, enForRecord, ok);
       [...box.children].forEach(c=>{ c.disabled=true; if(c.textContent===answer) c.classList.add('correct'); });
       if(!ok) el.classList.add('wrong');
-      toast(ok?'🎉 +2⭐':'😅 正确答案：'+answer);
-      if(ok) awardStars(2);
+      toast(ok?'🎉 对啦！+2⭐':'😅 正确答案：'+answer);
+      skillShowNext();
     };
     box.appendChild(el);
   });
 }
-function checkWrite(ans){
-  if(!once('write',700)) return; // v155：防连点——本函数不重绘，按钮常在，连点会重复 recordWord 并重复 +2⭐
-  const v=document.getElementById('writeIn').value;
+function skillWriteSubmit(ans, qidx){
+  if(!once('skillWrite_'+qidx, 700)) return; // v155/160：防连点——提交后本题按钮常在，连点会重复 recordWord+加星
+  if(!skillQuiz || skillQuiz.answered) return;
+  skillQuiz.answered=true;
+  const v=(document.getElementById('writeIn')||{}).value||'';
   const ok=norm(v)===norm(ans);
+  if(ok){ skillQuiz.score++; awardStars(2); }
   recordWord(curUnitId, ans, ok);
   toast(ok?'🎉 写对啦！+2⭐':'😅 正确拼写：'+ans);
-  if(ok) awardStars(2);
+  skillShowNext();
+}
+function skillShowNext(){
+  const box=document.getElementById('skNext'); if(!box || !skillQuiz) return;
+  const last=skillQuiz.idx>=skillQuiz.total-1;
+  box.innerHTML='<button class="btn '+(last?'sun':'grape')+' lg" onclick="skillNext()">'+(last?'查看结果 🏁':'下一题 →')+'</button>';
+}
+function skillNext(){
+  if(!once('skillNext',500)) return; // v155/160：防连点——连点会跳两题
+  if(!skillQuiz) return;
+  skillQuiz.idx++;
+  if(skillQuiz.idx>=skillQuiz.total) renderSkillResult();
+  else renderSkillQuestion();
+}
+function renderSkillResult(){
+  const area=document.getElementById('skillStage');
+  if(!area||!skillQuiz) return;
+  const back='<button class="back" style="margin-bottom:10px" onclick="renderSkillHome()">返回选技能</button>';
+  const pct=Math.round(skillQuiz.score/skillQuiz.total*100);
+  const title=skillQuiz.mode==='listen'?'听音选义':'听写拼写';
+  const grade= pct===100?'🏆 全对，太棒了！' : pct>=60?'👍 不错，继续加油！' : '💪 多练几次就会了！';
+  area.innerHTML=back+`<h2 class="sec">${title} · 本次结果</h2>
+    <div class="big-word">${skillQuiz.score} / ${skillQuiz.total}</div>
+    <p class="muted" style="font-size:15px">正确率 ${pct}% — ${grade}</p>
+    <div class="row" style="margin-top:14px; gap:10px; flex-wrap:wrap">
+      <button class="btn sky lg" onclick="startSkill('${skillQuiz.mode}')">🔁 再来一组</button>
+      <button class="btn ghost lg" onclick="renderSkillHome()">返回选技能</button>
+    </div>`;
 }
 /* =========================================================
    通用：狐狸鼓励 + 彩带
