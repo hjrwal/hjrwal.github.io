@@ -19,6 +19,13 @@
     --berry:#E26D5C; --berry-d:#C9503E;
     --sky:#4A9DB5; --sky-d:#2F7C92;
     --grape:#8A6FD0; --grape-d:#6E54BD;
+    /* v162 补齐：v158 换 2024 新教材主题色（sun/grass/coral）后一直没在 :root 定义，
+       导致 43 处（单元卡配色/徽章/正确与错误选项底色）取不到颜色值而失效。
+       色值按各自的实际用途选：sun 配深棕字需够亮；grass/coral 配白字需够深才看得清。 */
+    --sun:#F5C242;   --sun-d:#D19A18;    /* 徽章/语法提示底 + 深棕字（对比约 4.6:1） */
+    --grass:#4F9A3E; --grass-d:#3C7A2E;  /* 答对选项/进度条底 + 白字（约 3.4:1） */
+    --coral:#DC6A50; --coral-d:#B84E36;  /* 答错选项底 + 白字（约 3.3:1）；-d 作文字色（约 4.8:1） */
+    --rose:#D9738F;  --rose-d:#B85A73;
     --brand:#E8743B; --brand-d:#C9551F;
     --ink:#3A2B22; --paper:#FFFCF5; --muted:#9A8B78;
     --bg:#FCF3E2; --card:#FFFCF5;
@@ -644,7 +651,7 @@
     background:radial-gradient(circle at 12% 8%, #f7eccb 0 12%, transparent 12.5%), radial-gradient(circle at 88% 12%, #fbeecb 0 14%, transparent 14.5%), radial-gradient(circle at 78% 92%, #f6dcc0 0 13%, transparent 13.5%), linear-gradient(160deg,#f7ecd2 0%, #f3e3c2 55%, #f7e7c8 100%);
   }
   /* 暖夜绘本：深暖棕而非冷蓝，全程暖调一致 */
-  body.theme-dark{ --ink:#f5e9da; --muted:#bda78f; --card:#2c231c; --paper:#342a21; --line:#4a3a2c; --soft:#3a2e24; --shadow:0 8px 22px rgba(0,0,0,.5); --bg:#1f1812; --nav-bg:rgba(44,35,28,.82);
+  body.theme-dark{ --ink:#f5e9da; --muted:#bda78f; --card:#2c231c; --paper:#342a21; --line:#4a3a2c; --soft:#3a2e24; --shadow:0 8px 22px rgba(0,0,0,.5); --bg:#1f1812; --nav-bg:rgba(44,35,28,.82); /* v162：深底上 -d 变体作文字色需提亮才可读 */ --sun-d:#F0B429; --grass-d:#6FBF52; --coral-d:#F08A6E; --rose-d:#EE8FA8;
     background:radial-gradient(circle at 12% 8%, #2a211a 0 12%, transparent 12.5%), radial-gradient(circle at 88% 12%, #2c231b 0 14%, transparent 14.5%), radial-gradient(circle at 78% 92%, #271f18 0 13%, transparent 13.5%), linear-gradient(160deg,#221a14 0%, #261e17 55%, #1c150f 100%);
   }
   body.theme-dark .topbar{background:rgba(44,35,28,.82); border-color:rgba(232,116,59,.22);}
@@ -1818,6 +1825,13 @@ update → controllerchange
         <button data-t="auto" onclick="setTheme('auto')">跟随系统</button>
       </div>
     </div>
+    <div class="set-row"><b>单元测试题量</b>
+      <div class="seg" id="testCountSeg">
+        <button data-c="5" onclick="setTestCount(5)">5 题</button>
+        <button data-c="10" onclick="setTestCount(10)">10 题</button>
+        <button data-c="20" onclick="setTestCount(20)">20 题</button>
+      </div>
+    </div>
     <div class="set-row"><b>朗读语速</b>
       <div class="seg" id="rateSeg">
         <button data-r="0.75" onclick="setRate(0.75)">慢</button>
@@ -2880,6 +2894,10 @@ function once(key, ms){
 }
 let STATE = loadState();
 let curQuizMode='';   // 当前词汇测验模式（听音/看义/拼写）
+// v162：词汇测验「本轮统计」——做满一组给小结，让练习有始有终（原先每题做完只有一句 toast，没有正确率/得星汇总）
+// 声明位置必须在 APP_VERSION 旁：TDZ 铁律——启动期 loadState() 早于下方函数改写块执行。
+const VOCAB_ROUND_SIZE=8;   // 一组 8 题（与 v160 听说读写一致）
+let vocabRound=null;        // {mode, done, correct, wrong:[{en,zh}]}；星星固定每题 +2，故不单独存
 let levelCorrect=0;  // 闯关当前答对题数（全局，供关卡内子函数共享）
 let curScreen='home'; // 当前屏幕，用于切换教材后重新渲染
 let pendingScreenRefresh=false; // 设置中切换年/册时，延后到关闭设置再统一重渲染当前屏（避免逐次点击都重渲染隐藏背景造成卡顿）
@@ -2949,10 +2967,12 @@ function setGrade(g){
 }
 function setTheme(t){ STATE.settings.theme=t; applyTheme(t); saveState(); syncSeg('themeSeg','t',t); }
 function setRate(r){ r=parseFloat(r); STATE.settings.rate=r; saveState(); syncSeg('rateSeg','r',STATE.settings.rate); toast('语速已设置 🔊'); }
+function setTestCount(c){ c=parseInt(c,10)||10; STATE.settings.testCount=c; saveState(); syncSeg('testCountSeg','c',c); toast('单元测试题量：'+c+' 题 ✏️'); }
 function openSettings(){
   syncSeg('gradeSeg','g',STATE.settings.grade);
   syncSeg('bookSeg','b',STATE.settings.book);
   syncSeg('themeSeg','t',STATE.settings.theme);
+  syncSeg('testCountSeg','c',STATE.settings.testCount||10);
   syncSeg('rateSeg','r',STATE.settings.rate);
   syncSeg('fontSeg','f',STATE.settings.fontScale);
   syncSeg('abSeg','ab', STATE.settings.autoBackup?'1':'0');
@@ -2983,7 +3003,7 @@ function defaultState(){
     onboarded:false,
     guided:{},
     onlineSec:0, onlineDay:0, onlineDate:'', onlineHist:{},
-    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc'} };
+    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10} };
 }
 function migrateState(s){
   if(!s || typeof s!=='object' || Array.isArray(s)) return defaultState();
@@ -3583,6 +3603,7 @@ function safeRender(fn){
 }
 function go(name){
   stopEvalEngine();
+  vocabRound=null; // v162：切屏即结束本轮词汇测验统计（防跨屏累计出幽灵小结）
   if(chTimer){ clearInterval(chTimer); chTimer=null; } // v117：切屏清理限时挑战倒计时
   bossActive=false; bossLock=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）；v151：重置 BOSS 防连点锁
   levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
@@ -3805,11 +3826,14 @@ function vocabDoneClose(){
 function startVocabQuiz(mode){
   if(curScreen!=='vocab') return; // v128：切屏后丢弃游离的 setTimeout(startVocabQuiz)（防往隐藏的 vocabQuiz 区注入内容并误 unhidden）
   curQuizMode=mode;
+  // v162：本轮统计——换题型或首次进入时开新轮；已做满一组则直接弹小结，不再继续出题
+  if(!vocabRound || vocabRound.mode!==mode) vocabRound={mode, done:0, correct:0, wrong:[]};
+  if(vocabRound.done>=VOCAB_ROUND_SIZE){ showVocabRoundResult(); return; }
   const picker=document.getElementById('vocabQuizPicker'); if(picker) picker.style.display='none'; // v126：开始后隐藏题型选择器
   touchDay();
   const flash=document.getElementById('flashcardPanel'); if(flash) flash.style.display='none';
   const u=curUnit(); const box=document.getElementById('vocabQuiz'); box.classList.remove('hidden');
-  const toolbar=`<div class="row spread" style="margin-bottom:10px;"><button class="back" onclick="exitQuiz()">返回闪卡</button><span class="muted" style="font-size:12px;">测验中</span></div>`;
+  const toolbar=`<div class="row spread" style="margin-bottom:10px;"><button class="back" onclick="exitQuiz()">返回闪卡</button><span class="muted" style="font-size:12px;">第 ${vocabRound.done+1} / ${VOCAB_ROUND_SIZE} 题 · ⭐ ${vocabRound.correct*2}</span></div>`;
   const pool=u.words;
   const pick=()=>pool[Math.floor(Math.random()*pool.length)];
   let q, opts, answer;
@@ -3850,10 +3874,36 @@ function startVocabQuiz(mode){
   }
 }
 function exitQuiz(){
+  if(!once('exitQuiz',400)) return; // v162：防连点（gate R3 要求：内联改数据处理器必须有幂等守卫；本函数会清 curQuizMode 与 vocabRound）
   const flash=document.getElementById('flashcardPanel'); if(flash) flash.style.display='';
   document.getElementById('vocabQuiz').classList.add('hidden');
-  curQuizMode='';
+  curQuizMode=''; vocabRound=null; // v162：退出即结束本轮统计
   const picker=document.getElementById('vocabQuizPicker'); if(picker) picker.style.display='';
+}
+// v162：词汇测验本轮小结——做满一组后给正确率/得星/错词回顾，让练习有始有终
+// 注：错词在答题时已由 recordWord 自动收进错题本（按 (en,unit) 双键），这里只做展示与复习引导，不重复入库。
+function showVocabRoundResult(){
+  const r=vocabRound||{mode:'',done:0,correct:0,wrong:[]};
+  const box=document.getElementById('vocabQuiz'); if(!box) return;
+  const rate=r.done?Math.round(r.correct/r.done*100):0;
+  const MODE_NAME={listen:'听音选词',meaning:'看义选词',spell:'听音拼写',dict:'听写填空'};
+  const head = rate>=90?'🏆 太棒了！':rate>=70?'👍 做得不错':rate>=50?'🙂 继续加油':'💪 再来一组试试';
+  const wrongHtml = r.wrong.length
+    ? `<div style="margin-top:12px;text-align:left;">
+         <div class="muted" style="font-size:13px;margin-bottom:6px;">本轮错词（已自动收进错题本，明天会安排复习）：</div>`+
+       r.wrong.map(w=>`<div class="opt" style="cursor:default;">${w.en}<span class="muted" style="margin-left:8px;">${w.zh}</span></div>`).join('')+
+       `</div>`
+    : `<div class="muted" style="margin-top:12px;">本轮全对，一个错词都没有 🎉</div>`;
+  box.innerHTML=`
+    <div class="row spread" style="margin-bottom:10px;"><button class="back" onclick="exitQuiz()">返回闪卡</button></div>
+    <div style="text-align:center;padding:8px 0 4px;">
+      <div style="font-size:22px;font-weight:800;">${head}</div>
+      <div class="muted" style="font-size:13px;margin-top:4px;">${MODE_NAME[r.mode]||'词汇测验'} · 本轮 ${r.done} 题</div>
+      <div style="font-size:34px;font-weight:800;margin:12px 0 2px;">${rate}%</div>
+      <div class="muted">答对 ${r.correct} / ${r.done} 题 · 获得 ⭐ ${r.correct*2}</div>
+    </div>
+    ${wrongHtml}
+    <button class="btn sky lg" style="margin-top:14px;width:100%;" onclick="if(!once('vocabAgain',800))return; vocabRound=null; startVocabQuiz(curQuizMode);">再来一组 →</button>`;
 }
 function renderOpts(opts, answer, getVal){
   const box=document.getElementById('qopts'); box.innerHTML='';
@@ -3867,8 +3917,20 @@ function renderOpts(opts, answer, getVal){
       if(!ok) el.classList.add('wrong');
       toast(ok?'🎉 答对啦！+2⭐':'😅 正确答案：'+answer);
       if(ok) awardStars(2);
+      // v162：累计本轮统计（答错入库已由 recordWord 负责，此处只记本轮汇总，切勿重复 push 错题本）
+      if(vocabRound){
+        vocabRound.done++;
+        if(ok) vocabRound.correct++;
+        else { const _w=curUnit().words.find(w=>w.en===answer); vocabRound.wrong.push({en:answer, zh:(_w&&_w.zh)||''}); }
+      }
       const again=document.createElement('button'); again.className='btn sky lg'; again.style.marginTop='12px';
-      again.style.gridColumn='1 / -1'; again.textContent='下一题 →'; again.onclick=()=>startVocabQuiz(curQuizMode);
+      again.style.gridColumn='1 / -1';
+      if(vocabRound && vocabRound.done>=VOCAB_ROUND_SIZE){
+        again.textContent='查看本轮结果 →';
+        again.onclick=()=>{ if(!once('vocabRoundRes',600)) return; showVocabRoundResult(); };
+      } else {
+        again.textContent='下一题 →'; again.onclick=()=>startVocabQuiz(curQuizMode);
+      }
       box.appendChild(again);
     };
     box.appendChild(el);
@@ -3881,17 +3943,31 @@ function gradeVocabSpell(ans){
   const v=input?input.value:'';
   const ok=norm(v)===norm(ans);
   recordWord(curUnitId, ans, ok);
+  // v162：累计本轮统计（答错入库由 recordWord 负责，此处不重复处理错题本）
+  if(vocabRound){
+    vocabRound.done++;
+    if(ok) vocabRound.correct++;
+    else { const _w=curUnit().words.find(w=>w.en===ans); vocabRound.wrong.push({en:ans, zh:(_w&&_w.zh)||''}); }
+  }
   if(ok){
     awardStars(2); toast('🎉 拼对啦！+2⭐');
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
     if(input){ input.disabled=true; input.style.borderColor='var(--grass)'; }
-    setTimeout(()=>startVocabQuiz('spell'), 800);
+    setTimeout(()=>{ // v162：做满一组给小结，否则继续下一题
+      if(vocabRound && vocabRound.done>=VOCAB_ROUND_SIZE) showVocabRoundResult();
+      else startVocabQuiz('spell');
+    }, 800);
   } else {
     toast('😅 正确拼写：'+ans);
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
     if(input){ input.style.borderColor='#d33'; input.style.background='#fff0f0'; }
     const again=document.createElement('button'); again.className='btn sky lg'; again.style.marginTop='12px'; again.style.width='100%';
-    again.textContent='换一题 →'; again.onclick=()=>startVocabQuiz('spell');
+    if(vocabRound && vocabRound.done>=VOCAB_ROUND_SIZE){
+      again.textContent='查看本轮结果 →';
+      again.onclick=()=>{ if(!once('vocabRoundRes',600)) return; showVocabRoundResult(); };
+    } else {
+      again.textContent='换一题 →'; again.onclick=()=>startVocabQuiz('spell');
+    }
     const box=document.getElementById('vocabQuiz'); if(box) box.appendChild(again);
   }
 }
@@ -3902,17 +3978,31 @@ function gradeVocabDict(ans){
   const v=input?input.value:'';
   const ok=norm(v)===norm(ans);
   recordWord(curUnitId, ans, ok);
+  // v162：累计本轮统计（答错入库由 recordWord 负责，此处不重复处理错题本）
+  if(vocabRound){
+    vocabRound.done++;
+    if(ok) vocabRound.correct++;
+    else { const _w=curUnit().words.find(w=>w.en===ans); vocabRound.wrong.push({en:ans, zh:(_w&&_w.zh)||''}); }
+  }
   if(ok){
     awardStars(2); toast('🎉 填对啦！+2⭐');
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
     if(input){ input.disabled=true; input.style.borderColor='var(--grass)'; }
-    setTimeout(()=>startVocabQuiz('dict'), 800);
+    setTimeout(()=>{ // v162：做满一组给小结，否则继续下一题
+      if(vocabRound && vocabRound.done>=VOCAB_ROUND_SIZE) showVocabRoundResult();
+      else startVocabQuiz('dict');
+    }, 800);
   } else {
     toast('😅 正确答案：'+ans);
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
     if(input){ input.style.borderColor='#d33'; input.style.background='#fff0f0'; }
     const again=document.createElement('button'); again.className='btn sky lg'; again.style.marginTop='12px'; again.style.width='100%';
-    again.textContent='换一题 →'; again.onclick=()=>startVocabQuiz('dict');
+    if(vocabRound && vocabRound.done>=VOCAB_ROUND_SIZE){
+      again.textContent='查看本轮结果 →';
+      again.onclick=()=>{ if(!once('vocabRoundRes',600)) return; showVocabRoundResult(); };
+    } else {
+      again.textContent='换一题 →'; again.onclick=()=>startVocabQuiz('dict');
+    }
     const box=document.getElementById('vocabQuiz'); if(box) box.appendChild(again);
   }
 }
@@ -4687,7 +4777,7 @@ function startTest(types){
   const singles=u.words.filter(w=>!w.en.includes(' '));
   const sents=shuffle(u.sentences.slice());
   const qw=shuffle(singles.slice());
-  const T=10; // 目标总题数
+  const T=(STATE&&STATE.settings&&STATE.settings.testCount)||10; // 目标总题数（v162：设置里可选 5/10/20，默认 10；旧档缺字段时自动回落 10）
   const wordTypes = types.filter(t=>t!=='sent');      // 单词类（en/zh/spell）
   const wantSent  = types.includes('sent');
   // 连词成句占约 20%（含 1 类时约 2 题；多类时按比例缩）
