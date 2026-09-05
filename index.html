@@ -3883,7 +3883,9 @@ function exitQuiz(){
 // v162：词汇测验本轮小结——做满一组后给正确率/得星/错词回顾，让练习有始有终
 // 注：错词在答题时已由 recordWord 自动收进错题本（按 (en,unit) 双键），这里只做展示与复习引导，不重复入库。
 function showVocabRoundResult(){
-  const r=vocabRound||{mode:'',done:0,correct:0,wrong:[]};
+  const _r=vocabRound||{mode:'',done:0,correct:0,wrong:[]};
+  // v162 补充：同一词本轮答错多次只列一条（否则小结里会重复出现，孩子以为错词变多了）
+  const r={mode:_r.mode,done:_r.done,correct:_r.correct,wrong:[...new Map(_r.wrong.map(w=>[w.en,w])).values()]};
   const box=document.getElementById('vocabQuiz'); if(!box) return;
   const rate=r.done?Math.round(r.correct/r.done*100):0;
   const MODE_NAME={listen:'听音选词',meaning:'看义选词',spell:'听音拼写',dict:'听写填空'};
