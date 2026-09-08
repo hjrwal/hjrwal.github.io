@@ -430,17 +430,21 @@
   .token.in{background:var(--grape); color:#fff; box-shadow:0 3px 0 var(--grape-d), 0 4px 8px rgba(120,80,180,.15);}
   /* adventure map */
   .map{display:flex; flex-direction:column; gap:10px;}
+  /* v164 分区像素化（第一版）：闯关地图走像素风。
+     只改图形——方角 + 硬边框 + 实心偏移阴影 + 去渐变；字体与文字排版一律不动，
+     保证单词、音标、例句仍然清晰可读（这是学习区不能像素化的原因）。 */
   .isle{
-    position:relative; display:flex; align-items:center; gap:14px; background:var(--card); border-radius:var(--r);
-    padding:14px 16px; box-shadow:var(--shadow); border:2px solid var(--line);
+    position:relative; display:flex; align-items:center; gap:14px; background:var(--card); border-radius:0;
+    padding:14px 16px; box-shadow:4px 4px 0 rgba(58,43,34,.20); border:3px solid var(--ink);
   }
   .isle.locked{filter:grayscale(.7); opacity:.7;}
-  /* 路线连线：卡片下方竖线连到下一关 */
-  .isle:not(:last-child)::after{content:''; position:absolute; left:37px; bottom:-11px; width:3px; height:13px; background:#d7d2e8; border-radius:3px; z-index:0;}
-  .isle.passed::after{background:linear-gradient(180deg,#36c46b,#9be08a);}
-  /* 关卡进度条：本关得星 / 3 */
-  .isle .lvl-bar{height:5px; border-radius:999px; background:#ece8f7; margin-top:6px; overflow:hidden;}
-  .isle .lvl-bar i{display:block; height:100%; width:0; background:linear-gradient(90deg,#7ed957,#36c46b); transition:width .6s ease;}
+  /* 路线连线：卡片下方竖线连到下一关（像素风：方角实心、去掉渐变） */
+  .isle:not(:last-child)::after{content:''; position:absolute; left:37px; bottom:-12px; width:4px; height:14px; background:var(--line); border-radius:0; z-index:0;}
+  .isle.passed::after{background:#36c46b;}
+  /* 关卡进度条：本关得星 / 3（像素风：方角 + 方块格子填充） */
+  .isle .lvl-bar{height:8px; border-radius:0; background:#ece8f7; margin-top:6px; overflow:hidden; border:2px solid rgba(58,43,34,.25);}
+  .isle .lvl-bar i{display:block; height:100%; width:0; background:var(--grass); transition:width .6s ease;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
   .isle.isle-unlock{animation:unlockPop .9s cubic-bezier(.34,1.56,.64,1);}
   .unlock-ribbon{position:absolute; top:-12px; right:-6px; background:linear-gradient(135deg,#ffd86b,#ffb347); color:#7a4f00; font-weight:800; font-size:12px; padding:3px 9px; border-radius:999px; box-shadow:0 4px 12px rgba(255,179,71,.6); animation:ribbonIn .6s both; z-index:2;}
   @keyframes unlockPop{0%{transform:scale(.95); box-shadow:0 0 0 rgba(255,200,80,0)}35%{transform:scale(1.03); box-shadow:0 0 26px rgba(255,200,80,.85)}100%{transform:scale(1); box-shadow:var(--shadow)}}
@@ -764,9 +768,11 @@
   .ch-banner .big{font-size:34px; display:block;}
   /* 每日目标 */
   .goal-wrap{margin-top:10px;}
-  .goal-bar{height:16px; background:var(--line); border-radius:999px; overflow:hidden; position:relative;}
-  .goal-bar i{display:block; height:100%; background:linear-gradient(90deg,var(--grass),#8de897); border-radius:999px; transition:width .4s;}
-  .goal-bar.done i{background:linear-gradient(90deg,var(--sun),#ff9d3f); animation:pulse 1s ease infinite;}
+  /* v164 分区像素化：每日目标进度条（首页激励元素）方块化——方角 + 实心色 + 像素格子，保留 pulse 动画 */
+  .goal-bar{height:16px; background:var(--line); border-radius:0; overflow:hidden; position:relative; border:2px solid rgba(58,43,34,.22);}
+  .goal-bar i{display:block; height:100%; background:var(--grass); border-radius:0; transition:width .4s;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 4px, transparent 4px 8px);}
+  .goal-bar.done i{background:var(--sun); background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 4px, transparent 4px 8px); animation:pulse 1s ease infinite;}
   .goal-text{font-size:13px; font-weight:700; color:var(--muted); margin-top:6px; display:flex; justify-content:space-between;}
   .weak-tip{margin-top:10px; padding:8px 12px; border-radius:12px; background:rgba(232,116,59,.10); color:#9a6b00; font-size:13px; font-weight:700; border:1px solid rgba(232,116,59,.22);}
   body.theme-dark .weak-tip{background:rgba(232,116,59,.14); color:#f3c98a; border-color:rgba(232,116,59,.32);}
@@ -2880,7 +2886,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 163;
+const APP_VERSION = 164;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
