@@ -182,8 +182,9 @@
   .rank-chip:active{transform:scale(.97);}
   .rk-ico{font-size:15px; line-height:1;}
   .rk-t{white-space:nowrap;}
-  .rk-bar{width:42px; height:6px; border-radius:99px; background:rgba(0,0,0,.12); overflow:hidden; flex:0 0 auto;}
-  .rk-bar i{display:block; height:100%; border-radius:99px; background:var(--rc,#b87333); transition:width .5s ease;}
+  .rk-bar{width:42px; height:6px; border-radius:0; background:rgba(0,0,0,.12); overflow:hidden; flex:0 0 auto; border:1px solid rgba(58,43,34,.22);}
+  .rk-bar i{display:block; height:100%; border-radius:0; background:var(--rc,#b87333); transition:width .5s ease;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 2px, transparent 2px 4px);}
   .rk-nx{font-size:10.5px; font-weight:700; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .rank-list{display:flex; flex-direction:column; gap:8px; margin:4px 0;}
   .rank-row{display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:12px; background:#f4f6fb; border:1px solid #e7eaf2; position:relative;}
@@ -198,8 +199,9 @@
   .rank-row.cur .rb{background:#fff0f5; color:#e0457f;}
   .codex-top{display:flex; align-items:center; gap:10px; margin:4px 2px 12px;}
   .codex-prog{font-weight:800; font-size:14px; white-space:nowrap;}
-  .codex-bar{flex:1; height:8px; border-radius:99px; background:rgba(0,0,0,.1); overflow:hidden;}
-  .codex-bar i{display:block; height:100%; background:linear-gradient(90deg,#8b5cf6,#ff5d8f); border-radius:99px; transition:width .6s ease;}
+  .codex-bar{flex:1; height:8px; border-radius:0; background:rgba(0,0,0,.1); overflow:hidden; border:2px solid rgba(58,43,34,.2);}
+  .codex-bar i{display:block; height:100%; background:var(--grape); border-radius:0; transition:width .6s ease;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
   .codex-unit{margin-bottom:18px;}
   .cu-h{font-weight:800; font-size:14px; margin:0 2px 8px; display:flex; align-items:center; gap:6px;}
   .codex-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:8px;}
@@ -446,10 +448,10 @@
   .isle .lvl-bar i{display:block; height:100%; width:0; background:var(--grass); transition:width .6s ease;
     background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
   .isle.isle-unlock{animation:unlockPop .9s cubic-bezier(.34,1.56,.64,1);}
-  .unlock-ribbon{position:absolute; top:-12px; right:-6px; background:linear-gradient(135deg,#ffd86b,#ffb347); color:#7a4f00; font-weight:800; font-size:12px; padding:3px 9px; border-radius:999px; box-shadow:0 4px 12px rgba(255,179,71,.6); animation:ribbonIn .6s both; z-index:2;}
+  .unlock-ribbon{position:absolute; top:-12px; right:-6px; background:#ffd86b; color:#7a4f00; font-weight:800; font-size:12px; padding:3px 9px; border-radius:0; border:2px solid rgba(58,43,34,.35); box-shadow:3px 3px 0 rgba(58,43,34,.22); animation:ribbonIn .6s both; z-index:2;}
   @keyframes unlockPop{0%{transform:scale(.95); box-shadow:0 0 0 rgba(255,200,80,0)}35%{transform:scale(1.03); box-shadow:0 0 26px rgba(255,200,80,.85)}100%{transform:scale(1); box-shadow:var(--shadow)}}
   @keyframes ribbonIn{from{opacity:0; transform:translateY(-6px) scale(.8)}to{opacity:1; transform:none}}
-  .isle .em{font-size:40px; width:48px; height:48px; flex:0 0 48px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#f1eefa; border:3px solid #e6e0f3; box-sizing:border-box;}
+  .isle .em{font-size:40px; width:48px; height:48px; flex:0 0 48px; display:flex; align-items:center; justify-content:center; border-radius:0; background:#f1eefa; border:3px solid rgba(58,43,34,.22); box-sizing:border-box;}
   .isle.passed .em{background:#e6f7ec; border-color:#36c46b;}
   .isle.locked .em{background:#f0f0f0; border-color:#dcdcdc;}
   /* 可玩关卡节点呼吸光圈：暗示“可点击/可挑战” */
@@ -505,19 +507,20 @@
   @keyframes bossDead{to{transform:scale(.6) rotate(20deg); opacity:0;}}
   .hp{flex:1;}
   .hp-label{font-size:12px; color:var(--muted); font-weight:700; margin-bottom:3px;}
-  .hp-bar{height:14px; border-radius:999px; background:#ffe1e1; overflow:hidden; border:2px solid #ffb3b3;}
-  .hp-bar i{display:block; height:100%; background:linear-gradient(90deg,#ff6b6b,#ff3b3b); transition:width .4s;}
+  .hp-bar{height:14px; border-radius:0; background:#ffe1e1; overflow:hidden; border:2px solid var(--ink);}
+  .hp-bar i{display:block; height:100%; background:#ff5252; transition:width .4s;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 7px);}
   .boss-win{box-shadow:0 0 0 3px rgba(255,179,71,.5), var(--shadow);}
   /* BOSS 剧情化 v38 */
   .boss-intro{text-align:center; padding:20px 14px; animation:bossCardIn .35s cubic-bezier(.2,.8,.2,1);}
-  .boss-avatar{width:98px; height:98px; border-radius:50%; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:56px; background:#fff; border:4px solid var(--bc); box-shadow:0 8px 20px rgba(0,0,0,.14); animation:bossIdle 1.6s ease-in-out infinite;}
+  .boss-avatar{width:98px; height:98px; border-radius:0; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:56px; background:#fff; border:4px solid var(--bc); box-shadow:5px 5px 0 rgba(58,43,34,.22); animation:bossIdle 1.6s ease-in-out infinite;}
   .boss-name{font-size:22px; font-weight:900; color:#333; letter-spacing:.5px;}
-  .boss-title{display:inline-block; font-size:12px; font-weight:800; color:#fff; padding:2px 12px; border-radius:999px; margin-top:5px;}
+  .boss-title{display:inline-block; font-size:12px; font-weight:800; color:#fff; padding:2px 12px; border-radius:0; margin-top:5px;}
   .boss-story{font-size:14px; line-height:1.75; margin:14px auto 0; max-width:340px; color:#444; font-weight:600;}
-  .boss-weak{font-size:13px; font-weight:800; color:#c0392b; background:#fff3f3; border:2px dashed #ffb3b3; border-radius:12px; padding:8px 10px; margin:12px auto 0; max-width:300px;}
+  .boss-weak{font-size:13px; font-weight:800; color:#c0392b; background:#fff3f3; border:2px dashed #ffb3b3; border-radius:0; padding:8px 10px; margin:12px auto 0; max-width:300px;}
   .boss-av{text-align:center;}
   .boss-av .boss-nm{font-size:12px; font-weight:800; margin-top:2px; color:#444;}
-  .boss-bubble{position:relative; background:#fff; border:2px solid var(--bc); border-radius:14px; padding:8px 12px; font-size:13px; font-weight:800; margin-bottom:12px; color:#333; animation:bossBubbleIn .3s;}
+  .boss-bubble{position:relative; background:#fff; border:2px solid var(--bc); border-radius:0; padding:8px 12px; font-size:13px; font-weight:800; margin-bottom:12px; color:#333; box-shadow:3px 3px 0 rgba(58,43,34,.18); animation:bossBubbleIn .3s;}
   .boss-bubble::after{content:''; position:absolute; left:26px; bottom:-9px; border:8px solid transparent; border-top-color:var(--bc);}
   .boss-bubble.pop{animation:bossPop .45s;}
   .boss-bubble.shake{animation:bossShake .4s;}
@@ -525,8 +528,8 @@
   .boss-rage{margin-top:6px; padding:4px 2px;}
   .boss-rage .rg-label{font-size:11px; color:var(--muted); font-weight:700; margin-bottom:3px;}
   .boss-rage .rg-bar{display:flex; gap:3px;}
-  .boss-rage .rg-bar i{flex:1; height:8px; border-radius:999px; background:var(--soft); box-shadow:inset 0 0 0 1px var(--line); transition:.2s;}
-  .boss-rage .rg-bar i.on{background:linear-gradient(90deg,#ffb020,#ff7b6b);}
+  .boss-rage .rg-bar i{flex:1; height:8px; border-radius:0; background:var(--soft); border:2px solid rgba(58,43,34,.22); transition:.2s;}
+  .boss-rage .rg-bar i.on{background:#ff8a3d; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 2px, transparent 2px 4px);}
   .boss-skill.ready{animation:rcPulse 1.2s ease-in-out infinite; box-shadow:0 0 0 3px rgba(255,179,32,.35);}
   .boss-quake{animation:bossQuake .55s ease-in-out;}
   @keyframes bossQuake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(3px);}}
@@ -544,10 +547,12 @@
   .heat-cell .t{font-size:12px; font-weight:700; margin-top:2px; color:#555;}
   .heat-cell .c{font-size:11px; margin-top:2px; color:#8a5a00; font-weight:700;}
   .heat-cell .hm{font-size:11px; color:#666; margin-top:3px;}
-  .heat-cell .hbar{height:5px; border-radius:999px; background:rgba(0,0,0,.12); margin:4px 2px 0; overflow:hidden;}
-  .heat-cell .hbar i{display:block; height:100%; background:linear-gradient(90deg,#5b9dff,#3b7dd8);}
-  .bar{height:14px; background:var(--line); border-radius:999px; overflow:hidden;}
-  .bar > i{display:block; height:100%; background:var(--grass); border-radius:999px; transition:width .5s;}
+  .heat-cell .hbar{height:5px; border-radius:0; background:rgba(0,0,0,.12); margin:4px 2px 0; overflow:hidden;}
+  .heat-cell .hbar i{display:block; height:100%; background:#3b7dd8;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 2px, transparent 2px 4px);}
+  .bar{height:14px; background:var(--line); border-radius:0; overflow:hidden; border:2px solid rgba(58,43,34,.22);}
+  .bar > i{display:block; height:100%; background:var(--grass); border-radius:0; transition:width .5s;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 7px);}
   /* 薄弱类型分布（v153） */
   .weak-type .wt-row{margin:10px 0;}
   .weak-type .wt-head{display:flex; justify-content:space-between; align-items:baseline; font-size:14px; font-weight:700; color:var(--ink);}
@@ -599,7 +604,7 @@
   .muted{color:var(--muted); font-size:13px;}
   .center{text-align:center;}
   .hidden{display:none !important;}
-  .badge{display:inline-block; background:var(--sun); color:#6b4e00; border-radius:12px; padding:4px 10px; font-weight:800; font-size:12px; margin:3px;}
+  .badge{display:inline-block; background:var(--sun); color:#6b4e00; border-radius:0; border:2px solid rgba(58,43,34,.35); padding:4px 10px; font-weight:800; font-size:12px; margin:3px;}
   .word-read{font-size:30px; font-weight:800; text-align:center; margin:10px 0;}
   .word-read .hl{color:var(--coral-d); background:#fff2c9; border-radius:8px; padding:0 4px;}
   /* 连词成句答题时：上方英文隐藏为"听原句"占位，防抄答案 */
@@ -938,10 +943,12 @@
   .wk-u-lv.h1{background:rgba(226,109,92,.24); color:#9E2B1B; font-weight:900; box-shadow:inset 0 0 0 1.5px rgba(226,109,92,.55), 0 0 0 3px rgba(226,109,92,.14);}
   .wk-u-lv.h2{background:rgba(244,169,60,.16); color:#B07000; box-shadow:inset 0 0 0 1px rgba(244,169,60,.32);}
   .wk-u-lv.h3{background:rgba(79,157,108,.18); color:#2F6E47; box-shadow:inset 0 0 0 1px rgba(79,157,108,.34);}
-  .wk-u-bar{flex:1; min-width:60px; height:8px; background:var(--soft); border-radius:999px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--line);}
-  .wk-u-bar i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--grape),var(--amber));}
-  .wk-u-bar.h1 i{background:linear-gradient(90deg,#E26D5C,#C9503E);}
-  .wk-u-bar.h2 i{background:linear-gradient(90deg,var(--amber),var(--amber-d));}
+  .wk-u-bar{flex:1; min-width:60px; height:8px; background:var(--soft); border-radius:0; overflow:hidden; border:2px solid rgba(58,43,34,.2);}
+  .wk-u-bar i{display:block; height:100%; border-radius:0; background:var(--grape);
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
+  .wk-u-bar.h1 i{background:#E26D5C; background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
+  .wk-u-bar.h2 i{background:var(--amber); background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
+  .wk-u-bar.h3 i{background:var(--grass); background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 3px, transparent 3px 6px);}
   .wk-u-bar.h3 i{background:linear-gradient(90deg,var(--forest),var(--forest-d));}
   .wk-u-sum{font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
   /* v85 去复习拆双按钮：竖排两键（练一练/测一测） */
@@ -984,7 +991,7 @@
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   /* 成就墙 */
   .ach-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px; margin-top:10px;}
-  .ach{background:var(--card); border:2px solid var(--line); border-radius:16px; padding:12px 6px; text-align:center; box-shadow:var(--shadow);}
+  .ach{background:var(--card); border:2px solid var(--ink); border-radius:0; padding:12px 6px; text-align:center; box-shadow:3px 3px 0 rgba(58,43,34,.18);}
   .ach .ico{font-size:32px; display:block;}
   .ach.locked{filter:grayscale(1); opacity:.45;}
   .ach .nm{font-size:12px; font-weight:800; margin-top:4px;}
@@ -2886,7 +2893,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 164;
+const APP_VERSION = 165;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
