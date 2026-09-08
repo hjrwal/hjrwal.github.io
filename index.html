@@ -228,7 +228,7 @@
   }
   @media (hover:hover){
     .tile{transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;}
-    .tile:hover{transform:translateY(-3px); box-shadow:var(--sh-2);}
+    .tile:hover{transform:translateY(-3px); box-shadow:6px 6px 0 rgba(58,43,34,.22);}
   }
   /* 首页复习入口 */
   .review-callout{display:flex; align-items:center; gap:10px; margin-top:14px; padding:12px 14px; border-radius:var(--r);
@@ -324,11 +324,11 @@
     .ex{font-size:14px;}
   }
   .tile{
-    background:var(--card); border-radius:20px 22px 18px 24px/22px 18px 24px 20px; padding:20px 14px; text-align:center;
-    box-shadow:var(--sh-2); cursor:pointer; border:2px solid var(--line);
+    background:var(--card); border-radius:0; padding:20px 14px; text-align:center;
+    box-shadow:4px 4px 0 rgba(58,43,34,.18); cursor:pointer; border:2px solid var(--ink);
     transition:transform .2s var(--ease-spring), box-shadow .2s var(--ease-out), border-color .14s;
   }
-  .tile:active{transform:scale(.93) translateY(1px); box-shadow:var(--sh-1);}
+  .tile:active{transform:scale(.93) translateY(1px); box-shadow:1px 1px 0 rgba(58,43,34,.16);}
   .tile .ic{font-size:46px; display:block; margin-bottom:8px; color:var(--tile-accent,var(--fox));}
   .tile h3{margin:0 0 4px; font-size:18px; font-weight:800;}
   .tile p{margin:0; font-size:12px; color:var(--muted);}
@@ -702,21 +702,21 @@
 
   /* ============ 界面美化升级（v3） ============ */
   .tile{position:relative; overflow:hidden; padding:20px 14px;}
-  .tile::before{content:""; position:absolute; left:0; top:0; right:0; height:7px; background:var(--tile-accent,var(--fox)); opacity:.95; border-radius:0 0 10px 8px/0 0 12px 10px;}
-  .c-sky::before{background:linear-gradient(90deg,#5ed2ff,#1f9fe0);}
-  .c-sun::before{background:linear-gradient(90deg,#ffe07a,#f5b400);}
-  .c-grass::before{background:linear-gradient(90deg,#8de897,#36b24a);}
-  .c-coral::before{background:linear-gradient(90deg,#ff9d8f,#ef5648);}
-  .c-grape::before{background:linear-gradient(90deg,#c3a2ff,#8554e8);}
+  .tile::before{content:""; position:absolute; left:0; top:0; right:0; height:7px; background:var(--tile-accent,var(--fox)); border-radius:0;}
+  .c-sky::before{background:var(--sky);}
+  .c-sun::before{background:var(--amber);}
+  .c-grass::before{background:var(--forest);}
+  .c-coral::before{background:var(--berry);}
+  .c-grape::before{background:var(--grape);}
   .tile .ic{transition:transform .18s ease;}
   .tile:hover .ic, .tile:active .ic{transform:scale(1.18) rotate(-8deg);}
   .tile h3{transition:color .15s;}
   .tile:hover h3{color:var(--fox-d);}
   .tile .count-dot{
-    position:absolute; top:10px; right:10px; background:var(--coral); color:#fff;
-    min-width:22px; height:22px; border-radius:999px; font-size:12px; font-weight:800;
+    position:absolute; top:9px; right:9px; background:var(--coral); color:#fff;
+    min-width:22px; height:22px; border-radius:0; font-size:12px; font-weight:800;
     display:flex; align-items:center; justify-content:center; padding:0 6px;
-    box-shadow:0 3px 8px rgba(239,86,72,.4); animation:pop .3s ease;
+    box-shadow:2px 2px 0 rgba(239,86,72,.45); animation:pop .3s ease;
   }
   .btn.sky{background:var(--sky);} .btn.sun{background:var(--amber); color:#6b4500;}
   .btn.grass{background:var(--forest);} .btn.coral{background:var(--berry);}
@@ -2893,7 +2893,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 165;
+const APP_VERSION = 166;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
