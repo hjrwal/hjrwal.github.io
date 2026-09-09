@@ -101,6 +101,18 @@
     border-radius:16px; box-shadow:0 6px 18px rgba(124,92,255,.28); color:#fff; text-decoration:none;
     transition:transform .16s ease, box-shadow .16s ease;}
   .lexi-entry:active{transform:scale(.985);}
+  /* v173 首页「继续上次学习」：重开 App 后一键回到上次单元，免去每次重新翻找 */
+  .resume-card{display:flex; align-items:center; gap:12px; margin:14px 2px 2px; padding:13px 16px;
+    background:var(--card); border:2px solid var(--line); border-radius:var(--r-md); box-shadow:var(--sh-1); cursor:pointer;
+    transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease;}
+  .resume-card:active{transform:scale(.985);}
+  .resume-card .rs-ic{flex:0 0 auto; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--soft); color:var(--brand);}
+  .resume-card .rs-ic .svg-ic{width:20px; height:20px;}
+  .resume-card .rs-body{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .resume-card .rs-t{font-size:15px; font-weight:900; color:var(--ink);}
+  .resume-card .rs-u{font-size:12.5px; color:var(--muted); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .resume-card .rs-go{margin-left:auto; flex:0 0 auto; font-size:13px; font-weight:800; color:var(--brand-d);}
+  @media (prefers-reduced-motion: reduce){ .resume-card{transition:none !important;} }
   .lexi-entry .svg-ic{width:30px; height:30px; flex:none;}
   .lexi-entry .le-t{font-size:17px; font-weight:900; letter-spacing:.5px;}
   .lexi-entry .le-s{margin-left:auto; font-size:13px; opacity:.92; font-weight:600;}
@@ -1297,6 +1309,11 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="resume-card" id="resumeCard" onclick="resumeLastUnit()">
+      <span class="rs-ic"><svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-book"/></svg></span>
+      <span class="rs-body"><span class="rs-t">继续上次学习</span><span class="rs-u" id="resumeUnit">…</span></span>
+      <span class="rs-go">去学习 →</span>
     </div>
     <a class="lexi-entry" href="game.html" target="_blank" rel="noopener">
       <svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-gamepad"/></svg>
@@ -2957,7 +2974,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 172;
+const APP_VERSION = 173;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3080,7 +3097,7 @@ function defaultState(){
     onboarded:false,
     guided:{},
     onlineSec:0, onlineDay:0, onlineDate:'', onlineHist:{},
-    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10} };
+    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10, lastUnit:''} };
 }
 function migrateState(s){
   if(!s || typeof s!=='object' || Array.isArray(s)) return defaultState();
@@ -3701,11 +3718,13 @@ function go(name){
   if(_levelCardMask){ _levelCardMask.remove(); _levelCardMask=null; } // v156：切屏清关卡卡片遮罩（防常驻挡屏）
   hideLoading(); // v156：切屏兜底清加载遮罩，杜绝任何路径下 #loading 常驻卡死
   curScreen=name;
+  // v173：记住当前学习单元，下次打开自动定位（切教材后会存成新教材的有效单元）
+  try{ if(STATE.settings && STATE.settings.lastUnit!==curUnitId){ STATE.settings.lastUnit=curUnitId; saveState(); } }catch(_){}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
-  if(name==='home'){ safeRender(renderHero); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); startHeroAnim(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头 + v128 重启首页循环动画
+  if(name==='home'){ safeRender(renderHero); safeRender(renderResume); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); startHeroAnim(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头 + v128 重启首页循环动画
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -6669,7 +6688,7 @@ function renderGoal(){
   const label=document.getElementById('goalLabel');
   if(fill) fill.style.width=(n/G*100)+'%';
   if(bar) bar.classList.toggle('done', n>=G);
-  if(done) done.textContent = n>=G ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题';
+  if(done) done.textContent = n>=G ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题 · 还差 '+(G-n)+' 题';
   if(label) label.textContent=n+' / '+G+' 题';
   const rc=document.getElementById('reviewCount'); if(rc) rc.textContent=dueReviews().length;
   // B2：错题主动复习推送——首页 callout 升级显示「今日 + 未来3天到期」，有待复习时高亮跳动
@@ -6725,6 +6744,15 @@ function heroGreeting(){
   /* 按小时 + 已得星数轮换：同一小时内稳定，跨小时或进度变化会换句，更有陪伴感 */
   return arr[(Math.floor(Date.now()/36e5)+STATE.stars)%arr.length];
 }
+/* v173 首页「继续上次学习」：显示上次所学单元并一键直达——免除每次重开 App 重新翻找单元 */
+function renderResume(){
+  const box=document.getElementById('resumeCard'); const lb=document.getElementById('resumeUnit');
+  if(!box||!lb) return;
+  const u=curUnit(); if(!u){ box.style.display='none'; return; }
+  box.style.display='';
+  lb.textContent=(u.emoji||'')+' '+u.title;
+}
+function resumeLastUnit(){ go('vocab'); }
 function renderHero(){
   const hi=document.getElementById('heroHi'); if(hi) hi.textContent=heroGreeting();
   const sub=document.getElementById('heroSub');
@@ -7364,6 +7392,8 @@ try{
 }catch(_){}
 UNITS=pickBook(); updateBookUI();
 curUnitId=UNITS[0].id;
+// v173：恢复上次学习的单元（校验在当前教材中存在；切教材/年级后 id 对不上会自动不恢复，安全）
+try{ const _lu=(STATE.settings||{}).lastUnit; if(_lu && UNITS.some(x=>x.id===_lu)) curUnitId=_lu; }catch(_){}
 updateBookUI();
 refreshTop();
 renderHero();
