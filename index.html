@@ -135,7 +135,7 @@
   #heroMascot{cursor:pointer;}
   /* v124 迎宾探出头：切到首页时大猫从草坡探出 + 淡入（一次性，纯 CSS 不卡、零新图） */
   .hero-cat{position:relative; flex:0 0 auto; height:100%; display:flex; align-items:flex-end;
-    transform-origin:50% 100%;}
+    transform-origin:50% 100%; z-index:2;}
   .hero-cat.peek{animation:heroPeek 1.05s cubic-bezier(.18,.9,.32,1.18) both;}
   @keyframes heroPeek{
     0%{transform:translateY(22px); opacity:0;}
@@ -144,14 +144,21 @@
   }
   /* v125 右侧装饰：太阳 + 一句加油，平衡猫在左布局 */
   .scene-deco{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:6px;
-    padding-bottom:14px; max-width:60%;}
-  .scene-deco .deco-sun{width:44px; height:44px; filter:drop-shadow(0 2px 4px rgba(255,180,80,.45));}
+    padding-bottom:14px; max-width:60%; position:relative; z-index:2;}
+  .scene-deco .deco-sun{width:44px; height:44px; filter:drop-shadow(0 2px 4px rgba(255,180,80,.45)); animation:floaty 3.6s ease-in-out infinite;}
   .scene-deco .deco-text{font-size:13px; font-weight:800; color:#7a5a3a; line-height:1.4;
     background:rgba(255,255,255,.62); border:1.5px solid rgba(122,90,58,.18); border-radius:12px;
     padding:5px 9px; text-align:right; white-space:nowrap;}
+  /* v168 首页天空加云朵插画：纯内联 SVG、零新资源，悬于大猫与太阳之下 */
+  .scene-clouds{position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;}
+  .scene-cloud{position:absolute; opacity:.92; filter:drop-shadow(0 2px 3px rgba(120,150,170,.25)); animation:floaty 5s ease-in-out infinite;}
+  .scene-cloud.c1{top:16px; left:14px; width:62px;}
+  .scene-cloud.c2{top:54px; right:104px; width:44px; animation-duration:6.5s; animation-delay:-2s;}
   @media (prefers-reduced-motion: reduce){
     .scene-blink.run{animation:none !important;}
     .hero-cat.peek{animation:none !important;}
+    .scene-cloud{animation:none !important;}
+    .scene-deco .deco-sun{animation:none !important;}
   }
   /* v125 顶栏白喵点头 + 被戳抖动：叠加在 .mwrap 的 wob 轻晃之上（不同元素，transform 不冲突），零新图 */
   .mascot.nod{animation:nod .5s ease;}
@@ -297,7 +304,7 @@
   .home-group .grid .tile:nth-child(6){animation-delay:.25s}
   /* 窄屏（手机）适配 */
   @media(max-width:480px){
-    .app{padding:10px 10px 84px;}
+    .app{padding:10px calc(10px + env(safe-area-inset-right,0px)) calc(84px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px));}
     .topbar{padding:8px 12px; gap:8px;}
     .brand{font-size:16px;}
     .pill{font-size:12px; padding:5px 10px;}
@@ -322,6 +329,21 @@
     .toast{font-size:19px; padding:14px 20px;}
     .token{font-size:15px; padding:9px 14px;}
     .ex{font-size:14px;}
+  }
+  @media(max-width:360px){
+    .topbar{padding:7px 10px; gap:6px;}
+    .brand{font-size:15px;}
+    .pill{font-size:11px; padding:4px 8px;}
+    .tile .ic{font-size:32px;}
+    .tile h3{font-size:14px;}
+    .nav button{font-size:9px;}
+    .nav button .e{font-size:18px;}
+    .btn{padding:10px 12px; font-size:13px;}
+    .btn.lg{font-size:16px; padding:12px 16px;}
+    .flash .word{font-size:26px;}
+    .big-word{font-size:24px;}
+    .opt{font-size:15px; padding:12px;}
+    .toast{font-size:17px; padding:12px 18px;}
   }
   .tile{
     background:var(--card); border-radius:0; padding:20px 14px; text-align:center;
@@ -570,7 +592,8 @@
     box-shadow:0 12px 30px rgba(0,0,0,.2); z-index:60; opacity:0; pointer-events:none;
     transition:opacity .2s, transform .2s; text-align:center; left:50%; top:30%; transform:translate(-50%,-50%) scale(.6);
   }
-  .toast.show{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  @keyframes toastIn{0%{opacity:0; transform:translate(-50%,-50%) scale(.6)}60%{opacity:1; transform:translate(-50%,-50%) scale(1.06)}100%{opacity:1; transform:translate(-50%,-50%) scale(1)}}
+  .toast.show{opacity:1; animation:toastIn .28s cubic-bezier(.18,.9,.32,1.18) both;}
   /* bottom nav */
   .nav{
     position:fixed; left:0; right:0; bottom:0; z-index:40;
@@ -1197,7 +1220,11 @@
       <button class="btn" onclick="copyLink()">复制链接</button>
     </div>
     <div class="hero storybook" onclick="go('progress')">
-<div class="book-scene" aria-hidden="true">
+    <div class="book-scene" aria-hidden="true">
+          <div class="scene-clouds" aria-hidden="true">
+            <svg class="scene-cloud c1" viewBox="0 0 70 36" fill="#FFFFFF" aria-hidden="true"><circle cx="22" cy="22" r="11"/><circle cx="36" cy="16" r="14"/><circle cx="50" cy="22" r="10"/><rect x="14" y="22" width="42" height="12" rx="6"/></svg>
+            <svg class="scene-cloud c2" viewBox="0 0 70 36" fill="#FFFFFF" aria-hidden="true"><circle cx="22" cy="22" r="11"/><circle cx="36" cy="16" r="14"/><circle cx="50" cy="22" r="10"/><rect x="14" y="22" width="42" height="12" rx="6"/></svg>
+          </div>
           <div class="hero-cat peek" id="heroCat">
             <img class="scene-png" id="heroMascot" src="assets/mascot/hero_default.png" alt="" loading="eager" decoding="async">
             <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
@@ -2893,7 +2920,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 167;
+const APP_VERSION = 168;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
