@@ -345,6 +345,22 @@
     .opt{font-size:15px; padding:12px;}
     .toast{font-size:17px; padding:12px 18px;}
   }
+  @media(max-width:320px){
+    .topbar{padding:6px 8px; gap:5px;}
+    .brand{font-size:14px;}
+    .pill{font-size:10px; padding:3px 7px;}
+    .tile .ic{font-size:28px;}
+    .tile h3{font-size:13px;}
+    .nav button{font-size:8px;}
+    .nav button .e{font-size:16px;}
+    .btn{padding:9px 10px; font-size:12px;}
+    .btn.lg{font-size:15px; padding:11px 14px;}
+    .flash .word{font-size:22px;}
+    .big-word{font-size:20px;}
+    .opt{font-size:14px; padding:11px;}
+    .toast{font-size:15px; padding:10px 14px;}
+    .tile{min-height:64px;}
+  }
   .tile{
     background:var(--card); border-radius:0; padding:20px 14px; text-align:center;
     box-shadow:4px 4px 0 rgba(58,43,34,.18); cursor:pointer; border:2px solid var(--ink);
@@ -613,6 +629,10 @@
     box-shadow:0 6px 16px rgba(232,116,59,.34); transform:translateY(-3px);
     border:1px solid rgba(255,255,255,.4);}
   .nav button.on .e{transform:scale(1.2); transition:transform .12s;}
+  /* v169 移动端体验：加大可点区域 + 优化滚动手势手感 */
+  .btn{min-height:44px;}
+  .nav button{min-height:54px;}
+  html,body{overscroll-behavior-y:contain;}
   /* 线性图标（内联 SVG sprite，替代廉价感 emoji 入口图标） */
   .svg-ic{stroke:currentColor; fill:none; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto;}
   .tile .ic.svg-ic{width:42px; height:42px;}
@@ -698,6 +718,11 @@
   /* 护眼暖纸下插画稍柔 */
   body.theme-sepia .book-scene{ background:linear-gradient(180deg,#dcebd8 0%, #f0ead0 100%);}
   body.theme-sepia .pill{color:#6b4e00;}
+  /* v169 暖夜插画对比度打磨：空状态卡片改暖夜底色、云朵降透明度、加油气泡改暖夜描边 */
+  body.theme-dark .wb-empty{background:linear-gradient(135deg,#2c2335,#1f2a22); border-color:#5a4a7a; color:#cbb8e6;}
+  body.theme-dark .wb-empty .wb-empty-sub{opacity:.82;}
+  body.theme-dark .scene-cloud{opacity:.62;}
+  body.theme-dark .deco-text{color:#e7cfa6; background:rgba(40,32,24,.6); border-color:rgba(232,116,59,.3);}
   .gear{margin-left:8px; border:none; background:var(--soft); border-radius:50%; width:42px; height:42px; font-size:20px; cursor:pointer; box-shadow:var(--shadow);}
   .gear:active{transform:scale(.92);}
   /* 弹窗（设置 / 复习） */
@@ -735,6 +760,11 @@
   .tile:hover .ic, .tile:active .ic{transform:scale(1.18) rotate(-8deg);}
   .tile h3{transition:color .15s;}
   .tile:hover h3{color:var(--fox-d);}
+  /* v169 首页磁贴悬停微动：像素投影加深 + 主题色描边光环（不动学习正文） */
+  .tile:hover{box-shadow:6px 6px 0 rgba(58,43,34,.26);}
+  .tile::after{content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 0 0 transparent; transition:box-shadow .16s ease;}
+  .tile:hover::after, .tile:focus-visible::after{box-shadow:inset 0 0 0 3px var(--tile-accent,var(--fox));}
+  .tile:focus-visible{outline:none;}
   .tile .count-dot{
     position:absolute; top:9px; right:9px; background:var(--coral); color:#fff;
     min-width:22px; height:22px; border-radius:0; font-size:12px; font-weight:800;
@@ -857,6 +887,8 @@
     background:radial-gradient(circle at 50% 42%, rgba(255,224,138,.55), rgba(255,224,138,0) 60%);
     animation:glowPulse .9s var(--ease-out) forwards;}
   @keyframes glowPulse{0%{opacity:0; transform:scale(.7)}25%{opacity:1}100%{opacity:0; transform:scale(1.18)}}
+  /* v169 大胜利高光：范围更大更亮，配合更多星爆 */
+  .celebrate-glow-big{background:radial-gradient(circle at 50% 42%, rgba(255,224,138,.72), rgba(255,224,138,0) 66%);}
   /* ===== v88 正反馈特效：飘字 / 连对火苗 / 白喵表情层 ===== */
   #fxLayer{position:fixed; inset:0; z-index:95; pointer-events:none; overflow:hidden;}
   .float-score{
@@ -2920,7 +2952,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 168;
+const APP_VERSION = 169;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4346,8 +4378,9 @@ function foxSay(msg){
   clearTimeout(foxT); foxT=setTimeout(()=>b.classList.remove('show'), 2800);
 }
 function confetti(){
-  const colors=['#3ec6ff','#ffd23f','#5fd068','#ff7b6b','#a97bff'];
-  for(let i=0;i<32;i++){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors=['#EF824A','#F4A93C','#4E9D6C','#E26D5C','#4A9DB5','#8A6FD0','#F5C242'];
+  for(let i=0;i<36;i++){
     const d=document.createElement('div'); d.className='confetti';
     d.style.left=(Math.random()*100)+'vw';
     d.style.background=colors[i%colors.length];
@@ -4357,10 +4390,12 @@ function confetti(){
   }
 }
 function starBurst(n){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const glyphs=['⭐','🌟','✨'];
   const layer=document.createElement('div'); layer.className='star-layer';
-  const cnt=Math.min(42, 14+n*12);
+  const cnt=Math.min(48, 16+n*12);
   for(let i=0;i<cnt;i++){
-    const s=document.createElement('div'); s.className='star-burst'; s.textContent='⭐';
+    const s=document.createElement('div'); s.className='star-burst'; s.textContent=glyphs[i%glyphs.length];
     const ang=Math.random()*Math.PI*2, dist=70+Math.random()*200;
     s.style.setProperty('--dx', (Math.cos(ang)*dist).toFixed(1)+'px');
     s.style.setProperty('--dy', (Math.sin(ang)*dist).toFixed(1)+'px');
@@ -4389,10 +4424,11 @@ function playDing(){
   }catch(e){}
 }
 /* 统一庆祝：高光 + 彩带 + 星爆 + 音效（用于“大胜利”瞬间） */
-function celebrate(){
-  confetti(); starBurst(2);
-  const glow=document.createElement('div'); glow.className='celebrate-glow';
-  document.body.appendChild(glow); setTimeout(()=>glow.remove(), 900);
+function celebrate(big){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){ playDing(); return; }
+  confetti(); starBurst(big?5:2);
+  const glow=document.createElement('div'); glow.className='celebrate-glow'+(big?' celebrate-glow-big':'');
+  document.body.appendChild(glow); setTimeout(()=>glow.remove(), big?1100:900);
   playDing();
 }
 /* ===== v88 正反馈特效：飘字 / 连对火苗 / 白喵表情 ===== */
@@ -5868,7 +5904,7 @@ function renderBoss(u, done){
     if(idx>=sents.length){
       const win=hp<=0; // v106：血条打空即击败（答错回血会让战斗更胶着）
       if(win){
-        awardStars(2); celebrate(); setMascotMood('cheer'); mascotNod(); foxSay('🏆 你击败了 '+boss.name+'！获得 ⭐ 战利品！');
+        awardStars(2); celebrate(true); setMascotMood('cheer'); mascotNod(); foxSay('🏆 你击败了 '+boss.name+'！获得 ⭐ 战利品！');
         area.innerHTML=`<div class="panel center boss-win"><div class="boss-emoji defeated">${boss.emoji}</div><h2>${boss.name} 被击败！</h2><p class="muted">${boss.win}</p><p class="muted">额外获得 2 ⭐ 战利品！</p><button class="btn grape lg" onclick="__bossDone()">继续 ▶</button></div>`;
       } else {
         foxSay('💪 '+boss.name+'逃走了，多练练句型再来！');
@@ -6017,7 +6053,7 @@ function finish(){
   awardStars(stars);
   saveState();
   if(unlockedName) setTimeout(()=>toast('解锁新关卡：'+unlockedName), 900);
-  if(stars>0){ celebrate(); collectUnit(curUnitId); setMascotMood('cheer'); mascotNod(); foxSay('🎉 闯关成功！你拿到了 '+showStars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
+  if(stars>0){ celebrate(true); collectUnit(curUnitId); setMascotMood('cheer'); mascotNod(); foxSay('🎉 闯关成功！你拿到了 '+showStars+' 颗星！'+(unlockedName?' 并解锁了新关卡！':'')); }
   const wrongTot=levelWrong.sel+levelWrong.spell+levelWrong.sent;
   const breakdown=wrongTot>0?`<p class="muted">本关错题：选择题 ${levelWrong.sel} · 拼写 ${levelWrong.spell} · 句子题 ${levelWrong.sent}</p>`:'';
   const guide=stars===0?`<p class="muted">这关有点难，先去练练本关单词和句型，再来挑战吧～</p>`:'';
@@ -6951,7 +6987,7 @@ function renderWrongbook(){
   const list=document.getElementById('wbList');
   if(list){
     if(total===0){
-      list.innerHTML='<div class="wb-empty"><div class="wb-empty-emoji">🌟</div><div class="wb-empty-title">还没有错题</div><div class="wb-empty-sub">做错的题会悄悄收集到这里，陪你重练到会为止～</div></div>';
+      list.innerHTML='<div class="wb-empty"><div class="wb-empty-emoji"><svg viewBox="0 0 64 64" width="54" height="54" aria-hidden="true"><path d="M32 6l6.5 16.2 17.3 1.3-13.2 11 4.2 16.9L32 44.2 17.2 51.4l4.2-16.9L8.2 23.5l17.3-1.3z" fill="#F5C242" stroke="#D19A18" stroke-width="2.5" stroke-linejoin="round"/><circle cx="27" cy="28" r="2.6" fill="#fff"/><circle cx="38" cy="30" r="2.6" fill="#fff"/></svg></div><div class="wb-empty-title">还没有错题</div><div class="wb-empty-sub">做错的题会悄悄收集到这里，陪你重练到会为止～</div></div>';
     } else if(list2.length===0){
       list.innerHTML='<p class="muted" style="padding:10px 2px">这个筛选条件下没有错题～</p>';
     } else {
@@ -7004,7 +7040,7 @@ function renderWeakPanel(){
 
   // 空数据兜底
   if(!weakUids.length && !wrongArr.length){
-    html+=`<div class="wk-empty"><span class="big">🌟</span>
+    html+=`<div class="wk-empty"><span class="big"><svg viewBox="0 0 64 64" width="46" height="46" aria-hidden="true"><path d="M32 8c2 12 12 14 22 14-10 2-14 12-14 22-2-10-12-12-22-12 10-2 14-12 14-22z" fill="#8A6FD0" stroke="#6E54BD" stroke-width="2.5" stroke-linejoin="round"/></svg></span>
       <div class="ttl">还没有薄弱点记录</div>
       <p>去学习/测试，错的词会自动归到这里</p></div>`;
     body.innerHTML=html; return;
