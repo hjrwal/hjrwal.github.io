@@ -2893,7 +2893,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 166;
+const APP_VERSION = 167;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3037,6 +3037,12 @@ function migrateState(s){
   // v100 迁移：旧档今日时长灌进日历（仅当记录归属今天时）
   if(s.onlineDay>0 && s.onlineDate===todayStr() && !(s.onlineHist[s.onlineDate]>0)) s.onlineHist[s.onlineDate]=s.onlineDay;
   s.version = SCHEMA_VERSION;
+  // v167：导入容错——把关键数组/对象字段强制规整为正确类型并剔除非法条目，
+  // 杜绝损坏或被篡改的备份导致后续渲染异常/崩溃（配合 importProgress 的 try+catch 回滚，导入更稳健）
+  if(!Array.isArray(s.wrong)) s.wrong=[]; else s.wrong=s.wrong.filter(x=>x&&typeof x==='object'&&typeof x.en==='string');
+  if(!Array.isArray(s.trend)) s.trend=[];
+  if(!Array.isArray(s.codex)) s.codex={};
+  ['units','weakByUnit','tests','bossSeen'].forEach(k=>{ if(s[k]&&typeof s[k]!=='object') s[k]={}; });
   return s;
 }
 function loadState(){
@@ -3502,6 +3508,9 @@ function skProgressHTML(){
   return {bars, heat};
 }
 function normWord(s){ return (s||'').replace(/[.,!?;:'"()]/g,'').trim(); }
+// v167：模块级 HTML 转义，专用于渲染「来自存档/导入备份」的不可信文本（如错题本 w.en/w.zh），
+// 杜绝损坏或被篡改的备份经 innerHTML 注入脚本（v92 已加 CSP，此处补齐最后一处渲染口）
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function speak(text){
   if(!text) return;
   const fn = (window.AUDIO_MAP && (window.AUDIO_MAP[text] || window.AUDIO_MAP[normWord(text)]));
@@ -3622,6 +3631,8 @@ function go(name){
   levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
   if(_heroAnimT){ clearTimeout(_heroAnimT); _heroAnimT=null; } // v128：切屏停首页吉祥物循环动画（防隐藏屏后台空转）
   heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[]; // v131：切屏清招手游离定时器（防隐藏屏后台空转挥手）
+  if(heroActionT){ clearTimeout(heroActionT); heroActionT=null; } // v167：切屏清大猫点击动作复位定时器（防离开首页后动作回调打在隐藏屏）
+  if(mascotMoodT){ clearTimeout(mascotMoodT); mascotMoodT=null; } // v167：切屏清吉祥物心境复位定时器
   if(_levelCardMask){ _levelCardMask.remove(); _levelCardMask=null; } // v156：切屏清关卡卡片遮罩（防常驻挡屏）
   hideLoading(); // v156：切屏兜底清加载遮罩，杜绝任何路径下 #loading 常驻卡死
   curScreen=name;
@@ -6053,7 +6064,7 @@ function renderProgress(){
     STATE.wrong.slice(0,30).forEach(w=>{
       const u=ALL_UNITS.find(x=>x.id===w.unit); if(!u) return;
       const el=document.createElement('div'); el.className='row spread'; el.style.padding='6px 0'; el.style.borderBottom='1px solid #f0eefa';
-      el.innerHTML=`<span><b>${w.en}</b> <span class="muted">${w.zh}</span></span>
+      el.innerHTML=`<span><b>${esc(w.en)}</b> <span class="muted">${esc(w.zh)}</span></span>
         <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="speak('${w.en.replace(/'/g,"\\'")}')"></button>`;
       wl.appendChild(el);
     });
