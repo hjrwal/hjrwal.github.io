@@ -2957,7 +2957,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 171;
+const APP_VERSION = 172;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3690,6 +3690,7 @@ function safeRender(fn){
 function go(name){
   stopEvalEngine();
   vocabRound=null; // v162：切屏即结束本轮词汇测验统计（防跨屏累计出幽灵小结）
+  skillQuiz=null; // v172：切屏/切教材同样结束听说读写连续测验（防残留上一本教材的题目对象造成跨书串数据；各使用点均已有 !skillQuiz 守卫）
   if(chTimer){ clearInterval(chTimer); chTimer=null; } // v117：切屏清理限时挑战倒计时
   bossActive=false; bossLock=false; // v127：切屏即停 BOSS 游离定时器（防中途退出仍触发 render 白拿星/首页弹胜利气泡）；v151：重置 BOSS 防连点锁
   levelActive=false; // v128：切屏即停闯关游离定时器（防返回地图/切屏后题间幽灵推进、BOSS 后台渲染）
@@ -4245,6 +4246,11 @@ function startSkill(mode){
     const q=pickSpeakSentence();
     if(!q){ area.innerHTML=back+`<h2 class="sec">跟读练习</h2><p class="muted">这个单元还没有句子哦，先学完词汇再来吧！</p>`; }
     else renderSpeak(area, back, q);
+    return;
+  }
+  // v172 防御：单元无词时直接提示——否则 N=0 会让 questions 为空、渲染时 q 为 undefined 而抛错
+  if(mode!=='speak' && (!u || !u.words || !u.words.length)){
+    area.innerHTML=back+`<h2 class="sec">听说读写</h2><p class="muted">这个单元还没有单词哦，换个单元试试吧！</p>`;
     return;
   }
   // 听音选义 / 听写拼写：生成 N 题连续测验（v160 升级，带进度+计分+结果，复用现有发音与计分管线）
