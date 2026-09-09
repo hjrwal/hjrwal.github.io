@@ -2957,7 +2957,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 170;
+const APP_VERSION = 171;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3390,7 +3390,7 @@ function getRank(s){
   return {idx:RANKS.length-1, level:100+N, cur:tier, nxt, pct, toNext:nextBase-s, myth:true, mythN:N};
 }
 function rankUpFx(){
-  const r=getRank(STATE.stars); celebrate(); confetti();
+  const r=getRank(STATE.stars); celebrate();   // v171 自检修复：celebrate() 内部已含 confetti()，去掉重复的那次
   foxSay('🎉 段位升级！你现在是「'+r.cur.ico+r.cur.t+'」'); toast('🎉 段位升级 → '+r.cur.ico+r.cur.t);
 }
 function openRank(){ const m=document.getElementById('rankModal'); if(!m) return;
@@ -3976,7 +3976,8 @@ function showVocabRoundResult(){
   const r={mode:_r.mode,done:_r.done,correct:_r.correct,wrong:[...new Map(_r.wrong.map(w=>[w.en,w])).values()]};
   const box=document.getElementById('vocabQuiz'); if(!box) return;
   const rate=r.done?Math.round(r.correct/r.done*100):0;
-  if(r.done>0 && rate===100) celebrate(true);   // v170 词汇测验本轮全对撒花
+  // v171 自检修复：本轮全对撒花每轮仅一次（原实现在「查看本轮结果」/重进题型时会重复撒花）
+  if(vocabRound && r.done>0 && rate===100 && !vocabRound.celebrated){ vocabRound.celebrated=true; celebrate(true); }
   const MODE_NAME={listen:'听音选词',meaning:'看义选词',spell:'听音拼写',dict:'听写填空'};
   const head = rate>=90?'🏆 太棒了！':rate>=70?'👍 做得不错':rate>=50?'🙂 继续加油':'💪 再来一组试试';
   const wrongHtml = r.wrong.length
@@ -5065,6 +5066,7 @@ function addTestWrong(en, unitId){
   STATE.wrong.push({en, zh, unit:unitId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
 }
 function finishTest(){
+  if(!once('finishTest',800)) return;   // v171 自检：防同一场测试重复结算导致重复撒花
   testActive=false; // v78：结束屏关闭不再弹退出确认
   const total=testQs.length;
   if(!total){ closeTestModal(); return; } // v129：防御性双重保险，绝不写 NaN 进 STATE.tests
