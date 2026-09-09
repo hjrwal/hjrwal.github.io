@@ -302,6 +302,11 @@
   .home-group .grid .tile:nth-child(4){animation-delay:.15s}
   .home-group .grid .tile:nth-child(5){animation-delay:.20s}
   .home-group .grid .tile:nth-child(6){animation-delay:.25s}
+  /* v170 磁贴入场错峰延伸到 7~9，并接入 prefers-reduced-motion 守卫 */
+  .home-group .grid .tile:nth-child(7){animation-delay:.30s}
+  .home-group .grid .tile:nth-child(8){animation-delay:.35s}
+  .home-group .grid .tile:nth-child(9){animation-delay:.40s}
+  @media (prefers-reduced-motion: reduce){ .home-group .grid .tile{animation:none !important;} }
   /* 窄屏（手机）适配 */
   @media(max-width:480px){
     .app{padding:10px calc(10px + env(safe-area-inset-right,0px)) calc(84px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px));}
@@ -2952,7 +2957,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 169;
+const APP_VERSION = 170;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3971,6 +3976,7 @@ function showVocabRoundResult(){
   const r={mode:_r.mode,done:_r.done,correct:_r.correct,wrong:[...new Map(_r.wrong.map(w=>[w.en,w])).values()]};
   const box=document.getElementById('vocabQuiz'); if(!box) return;
   const rate=r.done?Math.round(r.correct/r.done*100):0;
+  if(r.done>0 && rate===100) celebrate(true);   // v170 词汇测验本轮全对撒花
   const MODE_NAME={listen:'听音选词',meaning:'看义选词',spell:'听音拼写',dict:'听写填空'};
   const head = rate>=90?'🏆 太棒了！':rate>=70?'👍 做得不错':rate>=50?'🙂 继续加油':'💪 再来一组试试';
   const wrongHtml = r.wrong.length
@@ -4357,6 +4363,7 @@ function renderSkillResult(){
   const pct=Math.round(skillQuiz.score/skillQuiz.total*100);
   const title=skillQuiz.mode==='listen'?'听音选义':'听写拼写';
   const grade= pct===100?'🏆 全对，太棒了！' : pct>=60?'👍 不错，继续加油！' : '💪 多练几次就会了！';
+  if(pct===100) celebrate(true);   // v170 听说读写全对撒花
   area.innerHTML=back+`<h2 class="sec">${title} · 本次结果</h2>
     <div class="big-word">${skillQuiz.score} / ${skillQuiz.total}</div>
     <p class="muted" style="font-size:15px">正确率 ${pct}% — ${grade}</p>
@@ -5092,7 +5099,7 @@ function finishTest(){
   </div>`;
   renderMastery();
   abilityRadar();
-  if(score>=90){ confetti(); foxSay('🏆 满分小天才！'); }
+  if(score>=90){ celebrate(score>=100); foxSay('🏆 满分小天才！'); }
   else if(score>=60){ foxSay('👍 不错哦，继续练！'); }
 }
 /* ===== 方向B3：能力雷达 ===== */
@@ -6641,7 +6648,7 @@ function bumpGoal(ok){
   if(!ok) return;
   const d=dailyRec();
   d.count+=1;
-  if(d.count===goalTarget()) toast('🎉 今日目标达成！你太棒啦！');
+  if(d.count===goalTarget()){ toast('🎉 今日目标达成！你太棒啦！'); celebrate(true); setMascotMood('cheer'); }
   saveState();
 }
 function renderGoal(){
