@@ -315,6 +315,9 @@
   .cal-d.has{background:var(--c,#7c5cff); color:#fff;}
   .cal-d.today{outline:2px solid var(--grape); outline-offset:1px;}
   .cal-d.empty{background:transparent; cursor:default;}
+  .tw-list{margin:8px 0 2px; padding:9px 12px; border-radius:12px; background:var(--soft);
+    font-size:13px; font-weight:700; color:var(--muted); line-height:1.7; word-break:break-word; text-align:left;}
+  .tw-list.ok{background:rgba(46,160,67,.12); color:var(--forest);}
   .radar-wrap{margin-top:12px; padding:10px; background:rgba(124,92,255,.06); border-radius:14px;}
   .radar-title{font-weight:800; font-size:14px; margin-bottom:4px;}
   /* 首页卡片错峰浮现 */
@@ -3018,7 +3021,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 179;
+const APP_VERSION = 180;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -5022,7 +5025,7 @@ function selfEvalDone(){
 /* =========================================================
    单元测试（学习闭环）
    ========================================================= */
-let testQs=[], testIdx=0, testCorrect=0, testLocked=false, testTypeStat={};
+let testQs=[], testIdx=0, testCorrect=0, testLocked=false, testTypeStat={}, testWrongList=[]; // v180：本轮单元测试错词清单
 function renderMastery(){
   const list=document.getElementById('masteryList'); if(!list) return;
   list.innerHTML='';
@@ -5074,6 +5077,7 @@ function goVocabUnit(uid){ // 闯关失败引导：选中单元并进入词汇�
 let lastTestTypes = ['en','zh','spell','sent'];
 function startTest(types){
   packMode=false;
+  testWrongList=[]; // v180：开新一场测试＝清空本轮错词清单
   comboStreak=0; hideCombo(); setMascotMood('encourage'); // v88：新测试重置连对火苗；v89：开测白喵鼓励
   // 记录/回退 types
   if(types && types.length){ lastTestTypes = types.slice(); }
@@ -5277,7 +5281,10 @@ function commitTest(ok, enForWrong, delay){
   } else {
     comboStreak=0; hideCombo();
     floatText(enForWrong? '再想想' : '答错啦', 'miss'); setMascotMood('sad');
-    if(enForWrong){ addTestWrong(enForWrong, curUnitId); }
+    // v180：本轮错词清单——优先取当前题词（q.w.en），保证选择/听音/拼写各题型都记得到，不依赖 enForWrong 是否传
+    const _qen=(q&&q.w)?q.w.en:enForWrong;
+    if(_qen){ if(!STATE.wrong.some(w=>w.en===_qen&&w.unit===curUnitId)) addTestWrong(_qen, curUnitId);
+             if(testWrongList.indexOf(_qen)<0) testWrongList.push(_qen); }
   }
   testIdx++;
   setTimeout(renderTestQ, delay||480);
@@ -5297,6 +5304,14 @@ function finishTest(){
   STATE.tests[curUnitId]=Math.max(STATE.tests[curUnitId]||0, score);
   saveState();
   if(score>=60) collectUnit(curUnitId);
+  // v180：本轮错词清单（与 v179 闪卡小结同款观感，让孩子/家长一眼看到这轮错在哪）
+  let wrongHtml='';
+  if(testWrongList && testWrongList.length){
+    const _show=testWrongList.slice(0,10).map(x=>esc(x)).join(' · ');
+    wrongHtml='<div class="tw-list">本轮错了 <b>'+testWrongList.length+'</b> 个词：'+_show+(testWrongList.length>10?' …等'+testWrongList.length+' 个':'')+'</div>';
+  } else {
+    wrongHtml='<div class="tw-list ok">本轮全部答对，没有错题 🎉</div>';
+  }
   const area=document.getElementById('testModalBody');
   const hasWrong = STATE.wrong.some(w=>w.unit===curUnitId);
   const ts=testTypeStat||{};
@@ -5308,6 +5323,7 @@ function finishTest(){
     <div class="test-score">${score}分</div>
     <p class="muted">答对 ${testCorrect} / ${total} 题 · ${score>=90?'🏆 太棒了！':score>=60?'👍 不错！':'💪 继续加油！'}</p>
     <p class="muted" style="font-size:13px;margin-top:4px">选择 ${selC}/${selT} · 拼写 ${splC}/${splT} · 句子 ${sntC}/${sntT}</p>
+    ${wrongHtml}
     <div class="radar-wrap">
       <div class="radar-title">📊 我的能力雷达</div>
       <canvas id="abRadar" width="260" height="240"></canvas>
