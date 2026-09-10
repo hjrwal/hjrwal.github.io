@@ -114,6 +114,17 @@
   .resume-card .rs-go{margin-left:auto; flex:0 0 auto; font-size:13px; font-weight:800; color:var(--brand-d);}
   @media (prefers-reduced-motion: reduce){ .resume-card{transition:none !important;} }
   .lexi-entry .svg-ic{width:30px; height:30px; flex:none;}
+  /* v177 首页「最近在练」快捷行：不改动下方磁贴固定顺序，只在顶部加一排直达 chip */
+  .recent-row{display:flex; align-items:center; gap:8px; margin:10px 2px 0; flex-wrap:wrap;}
+  .recent-lb{font-size:12px; font-weight:800; color:var(--muted); flex:0 0 auto;}
+  .recent-chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .recent-chip{display:inline-flex; align-items:center; gap:6px; padding:7px 13px; min-height:36px;
+    border-radius:999px; border:2px solid var(--line); background:var(--card); color:var(--ink);
+    font-size:13px; font-weight:800; cursor:pointer;
+    transition:transform .14s ease, border-color .14s ease, box-shadow .14s ease;}
+  .recent-chip .svg-ic{width:17px; height:17px; flex:none; color:var(--brand);}
+  .recent-chip:active{transform:scale(.94);}
+  @media (prefers-reduced-motion: reduce){ .recent-chip{transition:none !important;} }
   .lexi-entry .le-t{font-size:17px; font-weight:900; letter-spacing:.5px;}
   .lexi-entry .le-s{margin-left:auto; font-size:13px; opacity:.92; font-weight:600;}
   @media(min-width:720px){.lexi-entry{padding:16px 22px;}}
@@ -1324,6 +1335,10 @@
       <span class="rs-body"><span class="rs-t">继续上次学习</span><span class="rs-u" id="resumeUnit">…</span></span>
       <span class="rs-go">去学习 →</span>
     </div>
+    <div class="recent-row hidden" id="recentRow">
+      <span class="recent-lb">最近在练</span>
+      <div class="recent-chips" id="recentChips"></div>
+    </div>
     <a class="lexi-entry" href="game.html" target="_blank" rel="noopener">
       <svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-gamepad"/></svg>
       <span class="le-t">词境冒险</span>
@@ -1654,6 +1669,9 @@ update → controllerchange
       </div>
       <div class="test-prog" id="vocabProg" style="margin:2px 0 8px;"><i id="vocabProgFill" style="width:0%"></i></div>
       <p class="muted" id="vocabProgTxt" style="margin:-2px 0 10px;font-size:12px;"></p>
+      <div class="row" style="margin:2px 0 10px;">
+        <div class="chip" id="weakOnlyChip" onclick="toggleWeakOnly()">只练不熟的词</div>
+      </div>
       <div class="row spread" style="margin:2px 0 10px;">
         <button class="btn ghost sm" id="cardPrevBtn" onclick="cardPrev()" style="display:inline-flex;align-items:center;gap:6px;"><svg class="ic svg-ic" viewBox="0 0 24 24" width="18" height="18"><use href="#i-arrow-l"/></svg> 上一张</button>
         <button class="btn ghost sm" id="cardNextBtn" onclick="cardNext()" style="display:inline-flex;align-items:center;gap:6px;">下一张 <svg class="ic svg-ic" viewBox="0 0 24 24" width="18" height="18"><use href="#i-arrow-r"/></svg></button>
@@ -2983,7 +3001,17 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 176;
+/* v177 首页「最近在练」：功能 key → 展示名 / 图标（key 与 go() 的屏名一致）。
+   声明位置与 APP_VERSION 同级（顶层最早执行处）——TDZ 铁律。 */
+const RECENT_META={
+  vocab:{t:'词汇练习', ic:'i-book'}, sentences:{t:'句型练习', ic:'i-chat'},
+  grammar:{t:'语法小课堂', ic:'i-puzzle'}, skills:{t:'听说读写', ic:'i-headphones'},
+  test:{t:'单元测试', ic:'i-clipboard'}, wrongbook:{t:'错题本', ic:'i-book-x'},
+  adventure:{t:'趣味闯关', ic:'i-map'}, games:{t:'单词游戏', ic:'i-gamepad'},
+  challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
+  progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
+};
+const APP_VERSION = 177;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3106,7 +3134,7 @@ function defaultState(){
     onboarded:false,
     guided:{},
     onlineSec:0, onlineDay:0, onlineDate:'', onlineHist:{},
-    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10, lastUnit:''} };
+    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10, lastUnit:'', recent:{}} };
 }
 function migrateState(s){
   if(!s || typeof s!=='object' || Array.isArray(s)) return defaultState();
@@ -3132,6 +3160,8 @@ function migrateState(s){
   if(!Array.isArray(s.wrong)) s.wrong=[]; else s.wrong=s.wrong.filter(x=>x&&typeof x==='object'&&typeof x.en==='string');
   if(!Array.isArray(s.trend)) s.trend=[];
   if(!Array.isArray(s.codex)) s.codex={};
+  if(!s.settings || typeof s.settings!=='object') s.settings={};
+  if(!s.settings.recent || typeof s.settings.recent!=='object' || Array.isArray(s.settings.recent)) s.settings.recent={};
   ['units','weakByUnit','tests','bossSeen'].forEach(k=>{ if(s[k]&&typeof s[k]!=='object') s[k]={}; });
   return s;
 }
@@ -3727,13 +3757,18 @@ function go(name){
   if(_levelCardMask){ _levelCardMask.remove(); _levelCardMask=null; } // v156：切屏清关卡卡片遮罩（防常驻挡屏）
   hideLoading(); // v156：切屏兜底清加载遮罩，杜绝任何路径下 #loading 常驻卡死
   curScreen=name;
+  // v177：记录最近使用的功能，供首页「最近在练」排序（回首页不计入，否则首页永远排第一）
+  try{ if(name && name!=='home' && RECENT_META[name] && STATE.settings){
+    const _r=(typeof STATE.settings.recent==='object' && STATE.settings.recent && !Array.isArray(STATE.settings.recent))? STATE.settings.recent : {};
+    _r[name]=Date.now(); STATE.settings.recent=_r; saveState();
+  } }catch(_){}
   // v173：记住当前学习单元，下次打开自动定位（切教材后会存成新教材的有效单元）
   try{ if(STATE.settings && STATE.settings.lastUnit!==curUnitId){ STATE.settings.lastUnit=curUnitId; saveState(); } }catch(_){}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
   window.scrollTo(0,0);
-  if(name==='home'){ safeRender(renderHero); safeRender(renderResume); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); startHeroAnim(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头 + v128 重启首页循环动画
+  if(name==='home'){ safeRender(renderHero); safeRender(renderResume); safeRender(renderRecent); setMascotMood('welcome'); playHeroWelcome(); mascotNod(); startHeroAnim(); } // v89 打招呼 + v124 迎宾 + v125 顶栏点头 + v128 重启首页循环动画
   if(name==='vocab') safeRender(initVocab);
   if(name==='sentences') safeRender(initSentences);
   if(name==='skills') safeRender(initSkills);
@@ -3807,6 +3842,7 @@ document.getElementById('dailyTip').textContent = TIPS[new Date().getDate()%TIPS
    词汇练习
    ========================================================= */
 let curUnitId='u1', cardIdx=0, curWord=null, flipped=false;
+let cardOnlyWeak=false; // v177：「只练不熟的词」开关（默认关＝过全部词，孩子先完整过一遍再聚焦薄弱项）
 function buildUnitChips(containerId, onPick){
   const c=document.getElementById(containerId); c.innerHTML='';
   UNITS.forEach(u=>{
@@ -3820,6 +3856,7 @@ function buildUnitChips(containerId, onPick){
 }
 function initVocab(){
   initCardSwipe(); // v176：首次进入词汇屏时挂上滑动翻卡手势
+  syncWeakChip();  // v177：同步「只练不熟的词」开关高亮
   buildUnitChips('vocabUnits', onVocabUnitPick);
   showCard();
   const flash=document.getElementById('flashcardPanel'); if(flash) flash.style.display='';
@@ -3829,6 +3866,7 @@ function initVocab(){
 }
 function onVocabUnitPick(){
   cardIdx=0;
+  syncWeakChip(); // v177：切单元后同步开关高亮
   const quizBox=document.getElementById('vocabQuiz');
   if(!quizBox.classList.contains('hidden') && curQuizMode){
     startVocabQuiz(curQuizMode);
@@ -3836,10 +3874,24 @@ function onVocabUnitPick(){
     showCard();
   }
 }
+/* v177：闪卡当前要过哪批词——关开关＝全部词；开开关＝还没记熟（不在 mastered）的词。
+   整单元都记熟时自动退回全部词，绝不返回空表造成白屏。 */
+function cardList(){
+  const u=curUnit(); if(!u||!u.words||!u.words.length) return [];
+  if(!cardOnlyWeak) return u.words;
+  let mas=[]; try{ mas=unitStat(u.id).mastered||[]; }catch(_){ mas=[]; }
+  const weak=u.words.filter(w=>!mas.includes(w.en));
+  return weak.length? weak : u.words;
+}
+function syncWeakChip(){ const c=document.getElementById('weakOnlyChip'); if(c) c.classList.toggle('on', cardOnlyWeak); }
 function curUnit(){ const u=UNITS.find(u=>u.id===curUnitId); if(!u&&UNITS.length){ curUnitId=UNITS[0].id; return UNITS[0]; } return u; } // v151：兜底——curUnitId 失效时自动跳第一个单元，绝不返回 undefined（13 处调用仅 1 处判空，原先靠 setGrade/setBook 重置撑着）
 function showCard(){
-  const u=curUnit(); if(cardIdx>=u.words.length) cardIdx=0;
-  curWord=u.words[cardIdx]; flipped=false;
+  const u=curUnit();
+  const list=cardList();                       // v177：按「只练不熟」开关决定过哪批词
+  if(!list.length){ curWord=null; return; }    // 空表兜底：绝不让 curWord 变成 undefined 后续抛错
+  if(cardIdx>=list.length) cardIdx=0;
+  if(cardIdx<0) cardIdx=0;
+  curWord=list[cardIdx]; if(!curWord) return; flipped=false;
   document.getElementById('cardWord').textContent=curWord.en;
   document.getElementById('cardPh').textContent='/'+(curWord.ph||curWord.en)+'/';
   document.getElementById('cardPos').textContent=curWord.pos||'';
@@ -3850,7 +3902,7 @@ function showCard(){
   if(curWord.ex){ exEl.textContent='📖 '+curWord.ex; exWrap.classList.remove('hidden'); }
   else { exWrap.classList.add('hidden'); }
   // 学词语进度条：第 X/Y 词 + 进度填充（0-based，与单元测试屏一致）
-  const _total=u.words.length;
+  const _total=list.length;
   const _vp=document.getElementById('vocabProgFill'); if(_vp) _vp.style.width=Math.round(cardIdx/_total*100)+'%';
   const _vt=document.getElementById('vocabProgTxt'); if(_vt) _vt.textContent='第 '+(cardIdx+1)+' / '+_total+' 词';
   const _pb=document.getElementById('cardPrevBtn'); if(_pb) _pb.disabled=(cardIdx<=0);
@@ -3897,8 +3949,8 @@ function cardPrev(){
   cardIdx--; showCard();
 }
 function cardNext(){
-  const u=curUnit();
-  if(cardIdx>=u.words.length-1) return;
+  const list=cardList(); // v177：只在当前这批词内前进
+  if(cardIdx>=list.length-1) return;
   cardIdx++; showCard();
 }
 /* 键盘翻动：词汇屏且闪卡可见、无测验/弹窗/输入框时，← 上一张 / → 下一张 */
@@ -3916,18 +3968,38 @@ document.addEventListener('keydown', (e)=>{
 });
 function cardResult(ok){
   if(!once('card',300)) return; // v155：防连点——翻卡期间按钮仍在，连点会重复 recordWord 并跳过卡片
-  recordWord(curUnitId, curWord.en, ok);
+  if(!curWord) return;
   const u=curUnit();
-  const wasLast = (cardIdx === u.words.length - 1); // 当前卡是单元最后一张
-  cardIdx++;
+  const before=cardList();                          // v177：标记前先记下表长（标「会了」会把当前词移出表）
+  const wasLast = (cardIdx === before.length - 1);  // 当前卡是这一批的最后一张
+  recordWord(curUnitId, curWord.en, ok);
   if(wasLast){
-    // 整个单元的词汇都熟悉完了 → 表扬动画 + 双按钮（重新学习 / 下一个单元）
+    // 这一批词汇都熟悉完了 → 表扬动画 + 双按钮（重新学习 / 下一个单元）
     finishVocabUnit(u);
+    touchDay(); // v177：学完整单元同样要记当日活跃，避免当天学完却断打卡
     return;
   }
+  const after=cardList();
+  // v177：当前词因「我会了」被移出表时，后面的词自动补位 → 索引不动即为下一张；否则正常 +1
+  if(after.length < before.length){ if(cardIdx>after.length-1) cardIdx=0; }
+  else cardIdx++;
+  if(cardIdx>after.length-1) cardIdx=0;
   showCard();
   toast(ok?'😎 太棒了，记住啦！':'💪 继续加油！');
   touchDay();
+}
+/* v177：切换「只练不熟的词」——切完回到这批词的第一张，并同步 chip 高亮 */
+function toggleWeakOnly(){
+  if(!once('weakOnly',300)) return; // 内联改数据处理器：防连点
+  cardOnlyWeak=!cardOnlyWeak;
+  syncWeakChip();
+  cardIdx=0;
+  const u=curUnit(); const list=cardList();
+  let mas=[]; try{ mas=unitStat(u.id).mastered||[]; }catch(_){ mas=[]; }
+  const allDone = !!(u && u.words && u.words.length && mas.length>=u.words.length);
+  if(cardOnlyWeak && allDone) toast('这个单元的词都记熟啦，先过一遍全部吧 😎');
+  else toast(cardOnlyWeak? '只过还不熟的词（'+list.length+' 个）' : '过全部单词（'+list.length+' 个）');
+  showCard();
 }
 /* 单元词汇熟悉完成：表扬动画 + 选择（重新学习 / 下一个单元） */
 function finishVocabUnit(u){
@@ -6805,6 +6877,28 @@ function renderResume(){
   box.style.display='';
   const _st=unitStat(u.id); const _done=(_st&&_st.mastered)?_st.mastered.length:0;
   lb.textContent=(u.emoji||'')+' '+u.title+' · 已学 '+_done+'/'+(u.words?u.words.length:0)+' 词';
+}
+/* v177 首页「最近在练」：按最近使用时间列出最多 3 个功能，一键直达。
+   刻意<b>不动</b>下方磁贴的固定顺序——孩子主要靠位置记忆找入口，重排反而会让人找不到。 */
+function renderRecent(){
+  const row=document.getElementById('recentRow'); const box=document.getElementById('recentChips');
+  if(!row||!box) return;
+  let r={};
+  try{ const _s=(STATE&&STATE.settings)?STATE.settings.recent:null;
+       if(_s && typeof _s==='object' && !Array.isArray(_s)) r=_s; }catch(_){ r={}; }
+  const keys=Object.keys(r).filter(k=>RECENT_META[k] && typeof r[k]==='number')
+                           .sort((a,b)=>r[b]-r[a]).slice(0,3);
+  if(keys.length<2){ row.classList.add('hidden'); return; } // 用得太少就不占位
+  row.classList.remove('hidden');
+  box.innerHTML='';
+  keys.forEach(k=>{
+    const m=RECENT_META[k];
+    const el=document.createElement('div');
+    el.className='recent-chip';
+    el.innerHTML='<svg class="svg-ic" viewBox="0 0 24 24"><use href="#'+m.ic+'"/></svg>'+m.t;
+    el.onclick=function(){ go(k); };
+    box.appendChild(el);
+  });
 }
 function resumeLastUnit(){ go('vocab'); }
 function renderHero(){
