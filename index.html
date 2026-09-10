@@ -3021,7 +3021,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 183;
+const APP_VERSION = 184;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -6826,8 +6826,15 @@ const REVIEW_INTERVALS=[1,2,4,7,15,30]; // 复习间隔（天）
 let reviewList=[];   // 本次复习队列（全局，供内联 onclick 调用）
 let reviewIdx=0;     // 当前复习到第几个
 function dueReviews(){ const t=todayStr(); return STATE.wrong.filter(w=>!w.due || w.due<=t); }
+// v184：智能复习排序——最该先复习的排前面：① 逾期越久越紧急 ② 累计错越多越该练 ③ SRS 阶段越低越没掌握
+function reviewKey(w){
+  const od = w.due ? Math.round((new Date(todayStr())-new Date(w.due))/86400000) : 999; // 负数=还没到时间，正数=已逾期天数
+  return [ -od, -(w.errs||0), (w.stage||0) ];
+}
+function smartReviewSort(list){ return list.slice().sort((a,b)=>{ const ka=reviewKey(a), kb=reviewKey(b); for(let i=0;i<ka.length;i++){ if(ka[i]!==kb[i]) return ka[i]-kb[i]; } return 0; }); }
 function startReview(forceAll){
-  reviewList = forceAll ? STATE.wrong.slice() : dueReviews();
+  let list = forceAll ? STATE.wrong.slice() : dueReviews();
+  list = smartReviewSort(list); // v184：按遗忘曲线+错频智能排序，最该先练的排前面
   if(reviewList.length===0){ toast('今天没有要复习的错题 🎉'); return; }
   reviewIdx=0;
   renderReview();
@@ -6850,10 +6857,13 @@ function renderReview(){
     return;
   }
   const w=reviewList[reviewIdx];
+  const _units=new Set(reviewList.map(x=>x.unit));
+  const _uEmoji=[..._units].map(u=>(ALL_UNITS.find(x=>x.id===u)||{}).emoji||'📘').join('');
   const stage=Math.min(w.stage||0,6);
   const leftStage=6-stage;
   body.innerHTML=`<div class="center">
     <p class="muted">第 ${reviewIdx+1} / ${reviewList.length} 个 · 已复习 ${w.reviews||0} 次</p>
+    <p class="muted rpt-pack">🧠 智能复习包 · 覆盖 ${_units.size} 个单元 · 按遗忘曲线+错频排序</p>
     <div class="big-word" style="font-size:40px">${w.en}</div>
     <div class="muted" style="margin-bottom:4px">${w.zh}</div>
     <button class="btn sky lg" style="margin:6px 0 10px" onclick="speak('${w.en.replace(/'/g,"\\'")}')">听发音</button>
@@ -6985,12 +6995,18 @@ function renderGoal(){
   // B2：错题主动复习推送——首页 callout 升级显示「今日 + 未来3天到期」，有待复习时高亮跳动
   const rc2=document.getElementById('reviewCallout');
   if(rc2){
-    const due=dueReviews().length;
+    const dueList=dueReviews();
+    const due=dueList.length;
     const up=STATE.wrong.filter(w=>w.due && w.due>todayStr() && w.due<=addDays(todayStr(),3)).length;
     const txt=rc2.querySelector('.rc-txt');
-    if(txt) txt.innerHTML = due>0
-      ? `今天该复习 <b>${due}</b> 个易错词`+(up?` · 未来3天还有 <b>${up}</b> 个将到期`:'')+`（没复习完会自动顺延到明天）`
-      : `暂无须复习 ✅`+(up?` · 未来3天有 <b>${up}</b> 个将到期`:'');
+    if(txt){
+      if(due>0){
+        const _top=smartReviewSort(dueList).slice(0,3).map(w=>w.en);
+        txt.innerHTML = `今天该复习 <b>${due}</b> 个易错词`+(up?` · 未来3天还有 <b>${up}</b> 个将到期`:'')+`（没复习完会自动顺延到明天）`+( _top.length?`<br>最该先练：<b>${esc(_top.join(' · '))}</b> 🧠`:'');
+      } else {
+        txt.innerHTML = `暂无须复习 ✅`+(up?` · 未来3天有 <b>${up}</b> 个将到期`:'');
+      }
+    }
     rc2.classList.toggle('due', due>0);
     const rm=document.getElementById('reviewMini');
     if(rm){ const tot=STATE.wrong.length; rm.style.width=(tot?Math.min(100,Math.round(due/tot*100)):0)+'%'; }
