@@ -775,6 +775,10 @@
   .vd-emo{font-size:68px; line-height:1; margin-bottom:6px; animation:pop .5s ease, wob 2.6s ease-in-out .5s infinite; transform-origin:50% 80%;}
   .vdone h2.sec{text-align:center; font-size:22px;}
   .vd-text{color:var(--ink); font-weight:700; margin:8px 0 18px; font-size:15px;}
+  /* v179 本轮小结：让孩子/家长一眼看到这轮标了几个、哪些词还没拿下 */
+  .vd-sum{margin:-6px 0 12px; font-size:14px; font-weight:800; color:var(--brand-d);}
+  .vd-weaklist{margin:-4px 0 14px; padding:9px 12px; border-radius:12px; background:var(--soft);
+    font-size:13px; font-weight:700; color:var(--muted); line-height:1.7; word-break:break-word; text-align:left;}
   .vd-btns{display:flex; gap:10px; flex-wrap:wrap;}
   .vd-btns .btn{flex:1 1 120px; font-size:15px; padding:13px 8px;}
   .seg{display:flex; gap:8px; margin:8px 0 4px;}
@@ -2043,6 +2047,8 @@ update → controllerchange
     <div class="vd-emo">🎉</div>
     <h2 class="sec">太棒啦！</h2>
     <p class="vd-text" id="vdText"></p>
+    <p class="vd-sum" id="vdSummary"></p>
+    <div class="vd-weaklist" id="vdWeakList" style="display:none"></div>
     <div class="vd-btns">
       <button class="btn ghost" onclick="vocabRedo()">重新学习</button>
       <button class="btn sky" id="vdWeakBtn" onclick="vocabDrillWeak()" style="display:none"></button>
@@ -3012,7 +3018,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 178;
+const APP_VERSION = 179;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3845,6 +3851,9 @@ document.getElementById('dailyTip').textContent = TIPS[new Date().getDate()%TIPS
    ========================================================= */
 let curUnitId='u1', cardIdx=0, curWord=null, flipped=false;
 let cardOnlyWeak=false; // v177：「只练不熟的词」开关（默认关＝过全部词，孩子先完整过一遍再聚焦薄弱项）
+/* v179 本轮闪卡小结：只统计「这一轮」手动标了几个，不是历史累计（历史累计看进度页/错题本） */
+let cardSession={ok:0, nope:0, weak:[]};
+function resetCardSession(){ cardSession={ok:0, nope:0, weak:[]}; }
 /* v178：恢复上次的选择——习惯只攻克薄弱项的话，重开 App 不用再点一次开关。
    每次进入词汇屏同步一次，与 toggle 的即时持久化始终一致，不会互相打架。 */
 function restoreWeakPref(){
@@ -3864,6 +3873,7 @@ function buildUnitChips(containerId, onPick){
 function initVocab(){
   initCardSwipe(); // v176：首次进入词汇屏时挂上滑动翻卡手势
   restoreWeakPref(); // v178：恢复上次的开关选择
+  resetCardSession(); // v179：进词汇屏＝开新的一轮
   syncWeakChip();  // v177：同步「只练不熟的词」开关高亮
   buildUnitChips('vocabUnits', onVocabUnitPick);
   showCard();
@@ -3874,6 +3884,7 @@ function initVocab(){
 }
 function onVocabUnitPick(){
   cardIdx=0;
+  resetCardSession(); // v179：切单元＝开新的一轮
   syncWeakChip(); // v177：切单元后同步开关高亮
   const quizBox=document.getElementById('vocabQuiz');
   if(!quizBox.classList.contains('hidden') && curQuizMode){
@@ -3981,6 +3992,12 @@ function cardResult(ok){
   const before=cardList();                          // v177：标记前先记下表长（标「会了」会把当前词移出表）
   const wasLast = (cardIdx === before.length - 1);  // 当前卡是这一批的最后一张
   recordWord(curUnitId, curWord.en, ok);
+  // v179：本轮小结累计（放在 finishVocabUnit 之前，保证结束弹窗能读到完整本轮数据）
+  try{
+    const _en=curWord.en, _wi=cardSession.weak.indexOf(_en);
+    if(ok){ cardSession.ok++; if(_wi>=0) cardSession.weak.splice(_wi,1); } // 之前标过不熟、这轮又记住了 → 从不熟名单移除
+    else { cardSession.nope++; if(_wi<0) cardSession.weak.push(_en); }
+  }catch(_){}
   if(wasLast){
     // 这一批词汇都熟悉完了 → 表扬动画 + 双按钮（重新学习 / 下一个单元）
     finishVocabUnit(u);
@@ -4003,6 +4020,7 @@ function toggleWeakOnly(){
   try{ if(STATE.settings){ STATE.settings.cardOnlyWeak=cardOnlyWeak; saveState(); } }catch(_){} // v178：记住这次选择
   syncWeakChip();
   cardIdx=0;
+  resetCardSession(); // v179：换一批词＝开新的一轮
   const u=curUnit(); const list=cardList();
   let mas=[]; try{ mas=unitStat(u.id).mastered||[]; }catch(_){ mas=[]; }
   const allDone = !!(u && u.words && u.words.length && mas.length>=u.words.length);
@@ -4023,6 +4041,22 @@ function finishVocabUnit(u){
   if(vt) vt.textContent = notYet>0
     ? '「'+u.emoji+' '+u.title+'」过完一轮啦！还有 '+notYet+' 个词没记熟，要不要集中练一练？'
     : '「'+u.emoji+' '+u.title+'」的全部词汇都熟悉完啦！';
+  // v179：本轮小结——标了几个「我会了」/「还不熟」，并列出还没拿下的词
+  const vs=document.getElementById('vdSummary');
+  if(vs){
+    if(cardSession.ok===0 && cardSession.nope===0) vs.textContent='这一轮还没标记过哦，下次记得点「我会了 / 还不熟」';
+    else if(cardSession.nope>0) vs.textContent='本轮：我会了 '+cardSession.ok+' 个 · 还不熟 '+cardSession.nope+' 个';
+    else vs.textContent='本轮：我会了 '+cardSession.ok+' 个，一个不熟的都没有';
+  }
+  const vl=document.getElementById('vdWeakList');
+  if(vl){
+    const _w=cardSession.weak||[];
+    if(_w.length){
+      const _show=_w.slice(0,10).map(x=>esc(x)).join(' · ');
+      vl.innerHTML='还没拿下：'+_show+(_w.length>10? ' …等 '+_w.length+' 个':'');
+      vl.style.display='';
+    } else { vl.innerHTML=''; vl.style.display='none'; }
+  }
   const wb=document.getElementById('vdWeakBtn');
   if(wb){ if(notYet>0){ wb.style.display=''; wb.textContent='只练这 '+notYet+' 个'; } else { wb.style.display='none'; } }
   const nb=document.getElementById('vdNextBtn');
@@ -4043,6 +4077,7 @@ function vocabDrillWeak(){
   cardOnlyWeak=true;
   try{ if(STATE.settings){ STATE.settings.cardOnlyWeak=true; saveState(); } }catch(_){}
   syncWeakChip();
+  resetCardSession(); // v179：开始集中练＝开新的一轮
   cardIdx=0;
   const list=cardList();
   if(!list.length){ // 兜底：都记熟了就退回全部词
@@ -4055,6 +4090,7 @@ function vocabDrillWeak(){
 }
 function vocabRedo(){
   document.getElementById('vocabDoneModal').classList.remove('show');
+  resetCardSession(); // v179：重新学习＝开新的一轮
   cardIdx=0; showCard();
   toast('🔄 重新学习这一单元～');
 }
@@ -4066,11 +4102,13 @@ function vocabNextUnit(){
     curUnitId=next.id;
     buildUnitChips('vocabUnits', onVocabUnitPick);
   }
+  resetCardSession(); // v179：进入下一单元＝开新的一轮
   cardIdx=0; showCard();
   if(next) toast('➡️ 进入 '+next.emoji+' '+next.title);
 }
 function vocabDoneClose(){
   document.getElementById('vocabDoneModal').classList.remove('show');
+  resetCardSession(); // v179：关掉弹窗回到第一张＝开新的一轮
   cardIdx=0; showCard();
 }
 function startVocabQuiz(mode){
