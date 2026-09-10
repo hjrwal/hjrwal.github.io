@@ -463,8 +463,13 @@
   }
   body.theme-dark .opt{color:#f5e9da !important;}
   .opt:active{transform:scale(.97);}
-  .opt.correct{background:var(--grass); border-color:var(--grass-d); color:#fff;}
-  .opt.wrong{background:var(--coral); border-color:var(--coral-d); color:#fff;}
+  /* v174 答错反馈增强：✓/✗ 角标 + 抖动动画，让对错一目了然 */
+  .opt.correct{background:var(--grass); border-color:var(--grass-d); color:#fff; position:relative;}
+  .opt.wrong{background:var(--coral); border-color:var(--coral-d); color:#fff; position:relative; animation:optShake .4s ease;}
+  .opt.correct::after{content:"✓"; position:absolute; top:6px; right:10px; font-weight:900; font-size:15px; line-height:1; opacity:.95;}
+  .opt.wrong::after{content:"✗"; position:absolute; top:6px; right:10px; font-weight:900; font-size:15px; line-height:1; opacity:.95;}
+  @keyframes optShake{0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(2px)}}
+  @media (prefers-reduced-motion: reduce){ .opt.wrong{animation:none !important;} }
   .opt:disabled{cursor:default;}
   .qprompt{font-size:16px; color:var(--muted); margin-bottom:6px;}
   .dict-ex{font-size:18px; line-height:1.7; padding:14px 16px; margin:10px 0; background:var(--card-2); border-radius:12px; border-left:4px solid var(--grape);}
@@ -2974,7 +2979,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 173;
+const APP_VERSION = 174;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4968,10 +4973,11 @@ function renderTestQ(){
             wu.sel=(wu.sel||0)+1;
             saveState();
           }
-          toast('😅 还不对，再想想');
-          // 所有选项都点完还没选对：自动提交（错题已入，commitTest 走 testIdx++）
+          toast('❌ 答错了，再试一个');
+          // v174 全部选错：把正确答案高亮成绿色（教孩子「对的是这个」），再延时提交
           if([...box.children].every(c=>c.disabled)){
-            setTimeout(()=>commitTest(false, q.w.en), 600);
+            [...box.children].forEach(c=>{ if(norm(c.textContent)===norm(q.w.en)) c.classList.add('correct'); });
+            setTimeout(()=>commitTest(false, q.w.en), 900);
           }
         }
       };
@@ -5000,9 +5006,10 @@ function renderTestQ(){
             wu.sel=(wu.sel||0)+1;
             saveState();
           }
-          toast('😅 还不对，再想想');
+          toast('❌ 答错了，再试一个');
           if([...box.children].every(c=>c.disabled)){
-            setTimeout(()=>commitTest(false, q.w.en), 600);
+            [...box.children].forEach(c=>{ if((c.textContent||'').trim()===(q.w.zh||'').trim()) c.classList.add('correct'); });
+            setTimeout(()=>commitTest(false, q.w.en), 900);
           }
         }
       };
