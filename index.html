@@ -3021,7 +3021,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 181;
+const APP_VERSION = 182;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4583,7 +4583,8 @@ function renderSkillResult(){
   const _wl=skillQuiz.wrongList||[];
   if(_wl.length){
     const _extra=_wl.length>10?`<span style="opacity:.7"> …等 ${_wl.length} 个</span>`:'';
-    wrongHtml=`<div class="tw-list">本轮错了 ${_wl.length} 个词：${_wl.slice(0,10).map(x=>esc(x)).join(' · ')}${_extra}</div>`;
+    const _wlLit='['+_wl.map(x=>"'"+String(x).replace(/'/g,"\\'")+"'").join(',')+']';
+    wrongHtml=`<div class="tw-list">本轮错了 ${_wl.length} 个词：${_wl.slice(0,10).map(x=>esc(x)).join(' · ')}${_extra}<br><button class="btn grape sm" style="margin-top:8px" onclick="reviewWrongList(${_wlLit})">复习这几个错的 📖</button></div>`;
   } else {
     wrongHtml=`<div class="tw-list ok">本轮全部答对，没有错题 🎉</div>`;
   }
@@ -5319,7 +5320,8 @@ function finishTest(){
   let wrongHtml='';
   if(testWrongList && testWrongList.length){
     const _show=testWrongList.slice(0,10).map(x=>esc(x)).join(' · ');
-    wrongHtml='<div class="tw-list">本轮错了 <b>'+testWrongList.length+'</b> 个词：'+_show+(testWrongList.length>10?' …等'+testWrongList.length+' 个':'')+'</div>';
+    const _twLit='['+testWrongList.map(x=>"'"+String(x).replace(/'/g,"\\'")+"'").join(',')+']';
+    wrongHtml='<div class="tw-list">本轮错了 <b>'+testWrongList.length+'</b> 个词：'+_show+(testWrongList.length>10?' …等'+testWrongList.length+' 个':'')+'<br><button class="btn grape sm" style="margin-top:8px" onclick="closeTestModal();reviewWrongList('+_twLit+')">复习这几个错的 📖</button></div>';
   } else {
     wrongHtml='<div class="tw-list ok">本轮全部答对，没有错题 🎉</div>';
   }
@@ -6843,6 +6845,17 @@ function reviewResult(known){
 }
 function closeReview(){ document.getElementById('reviewModal').classList.remove('show'); renderProgress(); renderGoal(); }
 function reviewWrong(){ startReview(true); }
+// v182：结果页「复习这几个错的」——只复习本轮错词（en 列表→当前单元错题本条目），走现有复习流/遗忘曲线
+function reviewWrongList(enList){
+  if(!enList || !enList.length){ toast('这一轮没有错题要复习 🎉'); return; }
+  const unit=curUnitId;
+  const list=STATE.wrong.filter(w=> w.unit===unit && enList.indexOf(w.en)>=0);
+  if(!list.length){ toast('这些词还没进错题本，先练练吧'); return; }
+  reviewList=list.slice();
+  reviewIdx=0;
+  renderReview();
+  document.getElementById('reviewModal').classList.add('show');
+}
 /* v156：发音跟读评测——调用浏览器 Web Speech API 识别读音，与目标词比对给细反馈。
    受手机硬件/系统限制（部分国产浏览器无 SpeechRecognition、需联网、需授权麦克风），
    全部走特性检测 + try/catch 优雅降级：不支持时提示「点听发音跟读即可」，绝不卡死。 */
