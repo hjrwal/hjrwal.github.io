@@ -3021,7 +3021,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 182;
+const APP_VERSION = 183;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3424,7 +3424,9 @@ function recordWord(id, en, ok){
     if(!ex){
       const _u=ALL_UNITS.find(x=>x.id===realId);
       const zh=(_u?(_u.words.find(w=>w.en===en)||{}).zh:'')||'';
-      STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
+      STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0, errs:0}); // v183：errs=累计答错次数（含复习"还不会"），用于家长周报「最常错的词」
+    } else {
+      ex.errs=(ex.errs||0)+1; // v183：同一词反复错→errs 累加，最贴合"最常错"语义
     }
   }
   saveState();
@@ -4584,7 +4586,7 @@ function renderSkillResult(){
   if(_wl.length){
     const _extra=_wl.length>10?`<span style="opacity:.7"> …等 ${_wl.length} 个</span>`:'';
     const _wlLit='['+_wl.map(x=>"'"+String(x).replace(/'/g,"\\'")+"'").join(',')+']';
-    wrongHtml=`<div class="tw-list">本轮错了 ${_wl.length} 个词：${_wl.slice(0,10).map(x=>esc(x)).join(' · ')}${_extra}<br><button class="btn grape sm" style="margin-top:8px" onclick="reviewWrongList(${_wlLit})">复习这几个错的 📖</button></div>`;
+    wrongHtml=`<div class="tw-list">本轮错了 ${_wl.length} 个词：${_wl.slice(0,10).map(x=>esc(x)).join(' · ')}${_extra}<br><button class="btn grape sm" style="margin-top:8px;margin-right:8px" onclick="reviewWrongList(${_wlLit})">复习这几个错的 📖</button><button class="btn sun sm" style="margin-top:8px" onclick="skillDrillWrong()">就练这几个错的 🔁</button></div>`;
   } else {
     wrongHtml=`<div class="tw-list ok">本轮全部答对，没有错题 🎉</div>`;
   }
@@ -5307,6 +5309,28 @@ function addTestWrong(en, unitId){
   const zh=(u.words.find(w=>w.en===en)||{}).zh||'';
   STATE.wrong.push({en, zh, unit:unitId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0});
 }
+// v183：单元测试结果页「就练这几个错的 🔁」——把本轮错词（en 列表）映射回单词对象，按 lastTestTypes 原题型给每个错词生成一题组成小测（复用 renderTestQ 出题流水线）
+function testDrillWrong(){
+  if(!testWrongList || !testWrongList.length){ toast('这一轮没有错题要练 🎉'); return; }
+  const u=UNITS.find(x=>x.id===curUnitId);
+  if(!u || !u.words || !u.words.length){ toast('这个单元还没有单词哦'); return; }
+  const types=(lastTestTypes && lastTestTypes.length)?lastTestTypes.slice():['en','zh','spell','sent'];
+  const wordTypes=types.filter(t=>t!=='sent');
+  const singles=u.words.filter(w=>!w.en.includes(' '));
+  const wantSent=types.includes('sent');
+  const wrongWords=testWrongList.map(en=>singles.find(w=>w.en===en)).filter(Boolean);
+  if(!wrongWords.length && !wantSent){ toast('这些错词在本单元没找到，先练练吧'); return; }
+  const questions=[];
+  wrongWords.forEach(w=>{ wordTypes.forEach(t=>questions.push({type:t, w})); });
+  if(wantSent){ const sents=shuffle(u.sentences.slice()); const sn=Math.max(1, Math.round(wrongWords.length*0.2)); sents.slice(0,sn).forEach(s=>questions.push({type:'sent', s})); }
+  if(!questions.length){ toast('暂无可练习的题目，换个题型或单元试试～'); return; }
+  testQs=shuffle(questions);
+  testIdx=0; testCorrect=0; testTypeStat={};
+  testWrongList=[]; // 新一场"再考"＝清空本轮错词清单，便于再次统计本轮错词
+  renderTestQ();
+  if(document.activeElement) document.activeElement.blur();
+  toast('🔁 再来考考这几个错词');
+}
 function finishTest(){
   if(!once('finishTest',800)) return;   // v171 自检：防同一场测试重复结算导致重复撒花
   testActive=false; // v78：结束屏关闭不再弹退出确认
@@ -5321,7 +5345,7 @@ function finishTest(){
   if(testWrongList && testWrongList.length){
     const _show=testWrongList.slice(0,10).map(x=>esc(x)).join(' · ');
     const _twLit='['+testWrongList.map(x=>"'"+String(x).replace(/'/g,"\\'")+"'").join(',')+']';
-    wrongHtml='<div class="tw-list">本轮错了 <b>'+testWrongList.length+'</b> 个词：'+_show+(testWrongList.length>10?' …等'+testWrongList.length+' 个':'')+'<br><button class="btn grape sm" style="margin-top:8px" onclick="closeTestModal();reviewWrongList('+_twLit+')">复习这几个错的 📖</button></div>';
+    wrongHtml='<div class="tw-list">本轮错了 <b>'+testWrongList.length+'</b> 个词：'+_show+(testWrongList.length>10?' …等'+testWrongList.length+' 个':'')+'<br><button class="btn grape sm" style="margin-top:8px;margin-right:8px" onclick="closeTestModal();reviewWrongList('+_twLit+')">复习这几个错的 📖</button><button class="btn sun sm" style="margin-top:8px" onclick="testDrillWrong()">就练这几个错的 🔁</button></div>';
   } else {
     wrongHtml='<div class="tw-list ok">本轮全部答对，没有错题 🎉</div>';
   }
@@ -6511,6 +6535,8 @@ function buildReportData(){
     return {id:u.id, emoji:u.emoji, title:u.title, tot, pct, mastered:st.mastered.length, total};
   }).filter(x=>x.tot>0).sort((a,b)=>b.tot-a.tot).slice(0,4);
   const wrongWords=(STATE.wrong||[]).slice(0,8);
+  // v183：本周最常错的词——按累计答错次数 errs 降序取 Top 5（errs 在 recordWord 答错 + 复习"还不会"时累加）
+  const topErrs=(STATE.wrong||[]).slice().sort((a,b)=>(b.errs||0)-(a.errs||0)).slice(0,5);
   const testVals=Object.values(STATE.tests||{}).filter(v=>typeof v==='number');
   const bestTest=testVals.length?Math.max.apply(null,testVals):null;
   const avgTest=testVals.length?Math.round(testVals.reduce((a,b)=>a+b,0)/testVals.length):null;
@@ -6522,7 +6548,7 @@ function buildReportData(){
   const calDays=35, cal=[], t0=new Date(todayStr());
   for(let i=calDays-1;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); const ds=d.toISOString().slice(0,10); cal.push({date:ds, active:!!activeMap[ds]}); }
   return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
-    weekNew,weakUnits,wrongWords,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),cal,date:todayStr()};
+    weekNew,weakUnits,wrongWords,topErrs,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),cal,date:todayStr()};
 }
 function buildAdvice(d){
   const a=[];
@@ -6530,6 +6556,7 @@ function buildAdvice(d){
   else if(d.weakUnits.length===0 && d.masPct>0) a.push('本周暂无明显新增，但基础已扎实，可适当挑战更高难度单元 ✨');
   else a.push('近 7 天新增掌握不多，建议每天固定 15 分钟，养成稳定节奏 📅');
   if(d.weakUnits.length){ const w=d.weakUnits[0]; a.push('「'+w.emoji+w.title+'」错得最多（'+w.tot+' 次），建议优先复习该单元，重点练'+(w.pct<60?'单词拼写与认读':'综合听说读写')+'。'); }
+  if(d.topErrs && d.topErrs.length){ const t=d.topErrs[0]; if((t.errs||0)>=3) a.push('「'+t.en+'」反复错了 '+(t.errs||0)+' 次，是本周最需要攻克的词，建议每天专门练它 2 分钟 ⏰'); }
   if(d.acc>0 && d.acc<70) a.push('整体正确率 '+d.acc+'% 偏低，做题时不妨先慢一点，把错题本里的高频词吃透 📒');
   if(d.wrongWords.length>=5) a.push('错题本有 '+d.wrongWords.length+' 个词待巩固，今天点「开始今日复习」集中消灭它们吧 🔁');
   if(d.streak>=7) a.push('已连续学习 '+d.streak+' 天，习惯养成得非常好，家长为你点赞 👍');
@@ -6553,6 +6580,7 @@ function exportWeekly(){
   if(d.weakUnits.length) d.weakUnits.forEach(w=>L.push('  '+w.emoji+' '+w.title+'：错 '+w.tot+' 次，掌握 '+w.mastered+'/'+w.total+'（'+w.pct+'%）'));
   else L.push('  （暂无明显薄弱单元）');
   if(d.wrongWords.length){ L.push(''); L.push('【常错单词】'); d.wrongWords.forEach(w=>L.push('  '+w.en+' '+(w.zh||''))); }
+  if(d.topErrs.length){ L.push(''); L.push('【本周最常错的词】'); d.topErrs.forEach(w=>L.push('  '+w.en+' '+(w.zh||'')+' —— 错 '+(w.errs||0)+' 次')); }
   L.push(''); L.push('【学习建议】'); d.advice.forEach(t=>L.push('  · '+t));
   L.push(''); L.push('—— 由 english5-helper 生成（hjrwal.github.io）');
   const txt=L.filter(x=>x!==undefined).join('\n');
@@ -6611,6 +6639,8 @@ function showReport(){
       : '<div class="rpt-wtype">'+d.weakTypes.map(t=>`<div class="rpt-wt-row"><span>${t.label}</span><b>${t.n} 次</b></div>`).join('')+'</div>'}
     <div class="rpt-sec">📒 常错单词</div>
     <div class="rpt-words">${wordsHtml}</div>
+    <div class="rpt-sec">🔥 本周最常错的词</div>
+    ${d.topErrs.length? d.topErrs.map(w=>`<div class="rpt-toperr"><span><b>${w.en}</b> <small class="muted">${w.zh||''}</small></span><span class="rpt-errs">错 ${w.errs||0} 次</span></div>`).join('') : '<p class="rpt-empty">暂无明显高频错词，保持得很好 🎉</p>'}
     <div class="rpt-sec">学习建议</div>
     <ul class="rpt-advice">${adviceHtml}</ul>
   </div>`;
@@ -6627,8 +6657,9 @@ function saveReportImage(){
     const wtTotal=(d.weakTypes||[]).reduce((a,t)=>a+t.n,0);
     const weakTypeH=wtTotal>0?150:24+24; // v156：薄弱类型改为甜甜圈图，预留更大高度
     const wordsH=d.wrongWords.length?90:40;
+    const topErrsH=d.topErrs.length?40+d.topErrs.length*26:40; // v183：最常错的词区块高度
     const adviceH=30+d.advice.length*72;
-    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+adviceH+40;
+    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+topErrsH+12+24+adviceH+40;
     const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
     const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
     const cs=getComputedStyle(document.body);
@@ -6758,6 +6789,15 @@ function saveReportImage(){
       ctx.fillStyle=ink; ctx.font='500 14px sans-serif'; y=drawWrapped(ctx,items,pad,y,W-pad*2,20)+10;
     } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('错题本空空如也，真厉害！', pad, y+16); y+=24; }
     y+=8;
+    // v183：最常错的词（按 errs 降序 Top5）
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('🔥 本周最常错的词', pad, y+16); y+=24;
+    if(d.topErrs.length){ d.topErrs.forEach(w=>{
+      ctx.fillStyle='#8A6FD0'; ctx.beginPath(); ctx.arc(pad+6, y+6, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle=ink; ctx.font='600 14px sans-serif'; ctx.fillText(w.en+(w.zh?('（'+w.zh+'）'):''), pad+18, y+11);
+      ctx.fillStyle='#d33'; ctx.font='700 13px sans-serif'; ctx.textAlign='right'; ctx.fillText('错 '+(w.errs||0)+' 次', W-pad, y+11); ctx.textAlign='left';
+      y+=26;
+    }); } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('暂无明显高频错词，保持得很好 🎉', pad, y+16); y+=30; }
+    y+=8;
     // 建议
     ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('💡 学习建议', pad, y+16); y+=26;
     ctx.fillStyle=ink; ctx.font='500 14px sans-serif';
@@ -6836,7 +6876,7 @@ function reviewResult(known){
       if(w.stage>=REVIEW_INTERVALS.length){ STATE.wrong.splice(idx,1); toast('🎉 已掌握，移出错题本！'); }
       else { w.due=addDays(todayStr(), REVIEW_INTERVALS[w.stage]); STATE.wrong[idx]=w; }
     } else {
-      w.stage=0; w.reviews=(w.reviews||0)+1; w.due=addDays(todayStr(),1); STATE.wrong[idx]=w;
+      w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183：复习"还不会"也累加 errs
       toast('💪 已安排明天再复习');
     }
     saveState();
@@ -6846,6 +6886,19 @@ function reviewResult(known){
 function closeReview(){ document.getElementById('reviewModal').classList.remove('show'); renderProgress(); renderGoal(); }
 function reviewWrong(){ startReview(true); }
 // v182：结果页「复习这几个错的」——只复习本轮错词（en 列表→当前单元错题本条目），走现有复习流/遗忘曲线
+// v183：听说读写结果页「就练这几个错的 🔁」——把本轮错词（en 列表）映射回当前单元单词对象，按原 mode 重新出一组题（复用现有题目生成 + renderSkillQuestion）
+function skillDrillWrong(){
+  if(!skillQuiz || !skillQuiz.wrongList || !skillQuiz.wrongList.length){ toast('这一轮没有错题要练 🎉'); return; }
+  const u=curUnit(); if(!u || !u.words || !u.words.length){ toast('这个单元还没有单词哦'); return; }
+  const mode=skillQuiz.mode;
+  const words=skillQuiz.wrongList.map(en=>u.words.find(w=>w.en===en)).filter(Boolean);
+  if(!words.length){ toast('这些错词在本单元词库里没找到，先练练吧'); return; }
+  const dn=Math.min(3, u.words.length-1);
+  const questions=[];
+  words.forEach(q=>{ const distract=sample(u.words,q,dn); questions.push({ en:q.en, zh:q.zh, opts:shuffle([q,...distract]).map(w=>w.zh) }); });
+  skillQuiz={ mode, questions, idx:0, score:0, total:questions.length, answered:false, wrongList:[] };
+  renderSkillQuestion();
+}
 function reviewWrongList(enList){
   if(!enList || !enList.length){ toast('这一轮没有错题要复习 🎉'); return; }
   const unit=curUnitId;
