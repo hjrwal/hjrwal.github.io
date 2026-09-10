@@ -775,8 +775,8 @@
   .vd-emo{font-size:68px; line-height:1; margin-bottom:6px; animation:pop .5s ease, wob 2.6s ease-in-out .5s infinite; transform-origin:50% 80%;}
   .vdone h2.sec{text-align:center; font-size:22px;}
   .vd-text{color:var(--ink); font-weight:700; margin:8px 0 18px; font-size:15px;}
-  .vd-btns{display:flex; gap:10px;}
-  .vd-btns .btn{flex:1; font-size:15px; padding:13px 8px;}
+  .vd-btns{display:flex; gap:10px; flex-wrap:wrap;}
+  .vd-btns .btn{flex:1 1 120px; font-size:15px; padding:13px 8px;}
   .seg{display:flex; gap:8px; margin:8px 0 4px;}
   .seg button{flex:1; border:2px solid var(--line); background:var(--soft); border-radius:14px; padding:12px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink);}
   .seg button.on{background:var(--grape); color:#fff; border-color:var(--grape);}
@@ -2045,6 +2045,7 @@ update → controllerchange
     <p class="vd-text" id="vdText"></p>
     <div class="vd-btns">
       <button class="btn ghost" onclick="vocabRedo()">重新学习</button>
+      <button class="btn sky" id="vdWeakBtn" onclick="vocabDrillWeak()" style="display:none"></button>
       <button class="btn grape" id="vdNextBtn" onclick="vocabNextUnit()">下一个单元</button>
     </div>
   </div>
@@ -3011,7 +3012,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 177;
+const APP_VERSION = 178;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3134,7 +3135,7 @@ function defaultState(){
     onboarded:false,
     guided:{},
     onlineSec:0, onlineDay:0, onlineDate:'', onlineHist:{},
-    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10, lastUnit:'', recent:{}} };
+    settings:{grade:'5', rate:0.9, theme:'light', book:'shang', fontScale:1, dailyGoal:20, autoBackup:true, timelineOrder:'asc', testCount:10, lastUnit:'', recent:{}, cardOnlyWeak:false} };
 }
 function migrateState(s){
   if(!s || typeof s!=='object' || Array.isArray(s)) return defaultState();
@@ -3162,6 +3163,7 @@ function migrateState(s){
   if(!Array.isArray(s.codex)) s.codex={};
   if(!s.settings || typeof s.settings!=='object') s.settings={};
   if(!s.settings.recent || typeof s.settings.recent!=='object' || Array.isArray(s.settings.recent)) s.settings.recent={};
+  if(typeof s.settings.cardOnlyWeak!=='boolean') s.settings.cardOnlyWeak=false; // v178：非布尔一律退回默认关
   ['units','weakByUnit','tests','bossSeen'].forEach(k=>{ if(s[k]&&typeof s[k]!=='object') s[k]={}; });
   return s;
 }
@@ -3843,6 +3845,11 @@ document.getElementById('dailyTip').textContent = TIPS[new Date().getDate()%TIPS
    ========================================================= */
 let curUnitId='u1', cardIdx=0, curWord=null, flipped=false;
 let cardOnlyWeak=false; // v177：「只练不熟的词」开关（默认关＝过全部词，孩子先完整过一遍再聚焦薄弱项）
+/* v178：恢复上次的选择——习惯只攻克薄弱项的话，重开 App 不用再点一次开关。
+   每次进入词汇屏同步一次，与 toggle 的即时持久化始终一致，不会互相打架。 */
+function restoreWeakPref(){
+  try{ cardOnlyWeak = !!(STATE && STATE.settings && STATE.settings.cardOnlyWeak); }catch(_){ cardOnlyWeak=false; }
+}
 function buildUnitChips(containerId, onPick){
   const c=document.getElementById(containerId); c.innerHTML='';
   UNITS.forEach(u=>{
@@ -3856,6 +3863,7 @@ function buildUnitChips(containerId, onPick){
 }
 function initVocab(){
   initCardSwipe(); // v176：首次进入词汇屏时挂上滑动翻卡手势
+  restoreWeakPref(); // v178：恢复上次的开关选择
   syncWeakChip();  // v177：同步「只练不熟的词」开关高亮
   buildUnitChips('vocabUnits', onVocabUnitPick);
   showCard();
@@ -3992,6 +4000,7 @@ function cardResult(ok){
 function toggleWeakOnly(){
   if(!once('weakOnly',300)) return; // 内联改数据处理器：防连点
   cardOnlyWeak=!cardOnlyWeak;
+  try{ if(STATE.settings){ STATE.settings.cardOnlyWeak=cardOnlyWeak; saveState(); } }catch(_){} // v178：记住这次选择
   syncWeakChip();
   cardIdx=0;
   const u=curUnit(); const list=cardList();
@@ -4007,7 +4016,15 @@ function finishVocabUnit(u){
   const m=document.getElementById('vocabDoneModal');
   const idx=UNITS.indexOf(u);
   const next=UNITS[idx+1];
-  document.getElementById('vdText').textContent='「'+u.emoji+' '+u.title+'」的全部词汇都熟悉完啦！';
+  // v178：这一轮过完后，还有几个词没记熟？——有就给「只练这 N 个」入口，没有才说全部熟悉完
+  let mas=[]; try{ mas=unitStat(u.id).mastered||[]; }catch(_){ mas=[]; }
+  const notYet=(u.words||[]).filter(w=>!mas.includes(w.en)).length;
+  const vt=document.getElementById('vdText');
+  if(vt) vt.textContent = notYet>0
+    ? '「'+u.emoji+' '+u.title+'」过完一轮啦！还有 '+notYet+' 个词没记熟，要不要集中练一练？'
+    : '「'+u.emoji+' '+u.title+'」的全部词汇都熟悉完啦！';
+  const wb=document.getElementById('vdWeakBtn');
+  if(wb){ if(notYet>0){ wb.style.display=''; wb.textContent='只练这 '+notYet+' 个'; } else { wb.style.display='none'; } }
   const nb=document.getElementById('vdNextBtn');
   if(next){
     nb.style.display='';
@@ -4017,6 +4034,24 @@ function finishVocabUnit(u){
   }
   m.classList.add('show');
   celebrate(); // 彩带 + 星爆 + 叮声
+}
+/* v178：完成弹窗里的「只练这 N 个」——自动打开「只练不熟」开关并从头过这批词。
+   若此刻已全部记熟（理论上不会，按钮只在 notYet>0 时出现），自动退回全部词并提示，绝不白屏。 */
+function vocabDrillWeak(){
+  if(!once('vdWeak',400)) return; // 防连点：避免重复弹窗/重复置位
+  document.getElementById('vocabDoneModal').classList.remove('show');
+  cardOnlyWeak=true;
+  try{ if(STATE.settings){ STATE.settings.cardOnlyWeak=true; saveState(); } }catch(_){}
+  syncWeakChip();
+  cardIdx=0;
+  const list=cardList();
+  if(!list.length){ // 兜底：都记熟了就退回全部词
+    cardOnlyWeak=false;
+    try{ if(STATE.settings){ STATE.settings.cardOnlyWeak=false; saveState(); } }catch(_){}
+    syncWeakChip(); cardIdx=0; showCard(); toast('都记熟啦，再过一遍全部吧 😎'); return;
+  }
+  showCard();
+  toast('只练还不熟的 '+list.length+' 个词');
 }
 function vocabRedo(){
   document.getElementById('vocabDoneModal').classList.remove('show');
