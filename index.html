@@ -470,6 +470,10 @@
   .opt.wrong::after{content:"✗"; position:absolute; top:6px; right:10px; font-weight:900; font-size:15px; line-height:1; opacity:.95;}
   @keyframes optShake{0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(2px)}}
   @media (prefers-reduced-motion: reduce){ .opt.wrong{animation:none !important;} }
+  /* v175 内联判题反馈：输入类题型（拼写/听写）答错后固定在题目下方，替代一闪而过的 toast */
+  .inline-fb{margin-top:10px; padding:10px 12px; border-radius:12px; font-weight:800; font-size:15px; text-align:center; border:2px solid;}
+  .inline-fb.ok{color:var(--forest-d); border-color:var(--forest); background:rgba(79,154,62,.12);}
+  .inline-fb.bad{color:var(--coral-d); border-color:var(--coral); background:rgba(220,106,80,.12);}
   .opt:disabled{cursor:default;}
   .qprompt{font-size:16px; color:var(--muted); margin-bottom:6px;}
   .dict-ex{font-size:18px; line-height:1.7; padding:14px 16px; margin:10px 0; background:var(--card-2); border-radius:12px; border-left:4px solid var(--grape);}
@@ -2979,7 +2983,7 @@ const KEY='english5_state_v1';
 /* IndexedDB / 自动备份相关状态变量：必须在 loadState() 之前声明，
    否则空 localStorage 时 loadState 内给 _localEmpty 赋值会触发 TDZ（Cannot access before initialization），导致整页启动崩溃 */
 let _idb=null, _idbReady=false, _localEmpty=false, _autoBkCount=0;
-const APP_VERSION = 174;
+const APP_VERSION = 175;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4368,10 +4372,14 @@ function skillWriteSubmit(ans, qidx){
   if(!once('skillWrite_'+qidx, 700)) return; // v155/160：防连点——提交后本题按钮常在，连点会重复 recordWord+加星
   if(!skillQuiz || skillQuiz.answered) return;
   skillQuiz.answered=true;
-  const v=(document.getElementById('writeIn')||{}).value||'';
+  const inp=document.getElementById('writeIn');
+  const v=inp?(inp.value||''):'';
   const ok=norm(v)===norm(ans);
   if(ok){ skillQuiz.score++; awardStars(2); }
   recordWord(curUnitId, ans, ok);
+  // v175：输入框标绿/标红 + 内联固定反馈（原先答错输入框无任何标记）
+  if(inp){ inp.style.borderColor = ok?'var(--grass)':'#d33'; inp.style.background = ok?'#f2fff2':'#fff0f0'; }
+  showInlineFb(document.getElementById('skillStage'), ok?'✓ 写对啦！':'✗ 答错了，正确拼写：'+ans, ok);
   toast(ok?'🎉 写对啦！+2⭐':'😅 正确拼写：'+ans);
   skillShowNext();
 }
@@ -5036,12 +5044,24 @@ function renderTestQ(){
   }
 }
 // 单元测试-拼写：防连点（testLocked 在 renderTestQ 渲染新题时统一重置）；判错标红由 commitTest 后 toast 提示
+/* v175 内联判题反馈：在容器末尾固定显示一行「✓ 答对啦 / ✗ 答错了，正确拼写：xxx」。
+   输入类题型（拼写 / 听写）原先答错只有一闪而过的 toast，孩子常常没看清就跳到下一题。 */
+function showInlineFb(box, msg, ok){
+  if(!box) return;
+  let d=box.querySelector('.inline-fb');
+  if(!d){ d=document.createElement('div'); d.className='inline-fb'; box.appendChild(d); }
+  d.className='inline-fb '+(ok?'ok':'bad');
+  d.textContent=msg;
+}
 function gradeTestSpell(){
   if(testLocked) return; testLocked=true;
-  const q=testQs[testIdx]; const v=document.getElementById('tSpell').value;
+  const q=testQs[testIdx]; const inp=document.getElementById('tSpell'); const v=inp?(inp.value||''):'';
   const ok=norm(v)===norm(q.w.en);
+  // v175：输入框标绿/标红 + 内联固定反馈（原先答错输入框无任何标记，只有一闪而过的 toast）
+  if(inp){ inp.style.borderColor = ok?'var(--grass)':'#d33'; inp.style.background = ok?'#f2fff2':'#fff0f0'; }
+  showInlineFb(document.getElementById('testModalBody'), ok?'✓ 答对啦！':'✗ 答错了，正确拼写：'+q.w.en, ok);
   if(!ok) toast('💡 正确拼写：'+q.w.en);
-  commitTest(ok, q.w.en);
+  commitTest(ok, q.w.en, 900); // 与连词成句一致，延时让孩子看清
 }
 // 单元测试-连词成句：句子答错不纳入错题本（句子非孤立单词，重做意义低；单词/选择/拼写错题才收集）
 function gradeTestSentence(){
