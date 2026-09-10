@@ -3021,7 +3021,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 180;
+const APP_VERSION = 181;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -4465,7 +4465,7 @@ function startSkill(mode){
     const distract=sample(u.words,q,dn);
     questions.push({ en:q.en, zh:q.zh, opts:shuffle([q,...distract]).map(w=>w.zh) });
   }
-  skillQuiz={ mode, questions, idx:0, score:0, total:N, answered:false };
+  skillQuiz={ mode, questions, idx:0, score:0, total:N, answered:false, wrongList:[] };
   renderSkillQuestion();
 }
 function renderSkillQuestion(){
@@ -4534,6 +4534,7 @@ function fillSkillOpts(opts, answer, enForRecord){
       const ok=o===answer;
       if(ok){ skillQuiz.score++; awardStars(2); }
       recordWord(curUnitId, enForRecord, ok);
+      if(!ok && skillQuiz.wrongList.indexOf(enForRecord)<0) skillQuiz.wrongList.push(enForRecord);
       [...box.children].forEach(c=>{ c.disabled=true; if(c.textContent===answer) c.classList.add('correct'); });
       if(!ok) el.classList.add('wrong');
       toast(ok?'🎉 对啦！+2⭐':'😅 正确答案：'+answer);
@@ -4551,6 +4552,7 @@ function skillWriteSubmit(ans, qidx){
   const ok=norm(v)===norm(ans);
   if(ok){ skillQuiz.score++; awardStars(2); }
   recordWord(curUnitId, ans, ok);
+  if(!ok && skillQuiz.wrongList.indexOf(ans)<0) skillQuiz.wrongList.push(ans);
   // v175：输入框标绿/标红 + 内联固定反馈（原先答错输入框无任何标记）
   if(inp){ inp.style.borderColor = ok?'var(--grass)':'#d33'; inp.style.background = ok?'#f2fff2':'#fff0f0'; }
   showInlineFb(document.getElementById('skillStage'), ok?'✓ 写对啦！':'✗ 答错了，正确拼写：'+ans, ok);
@@ -4577,9 +4579,18 @@ function renderSkillResult(){
   const title=skillQuiz.mode==='listen'?'听音选义':'听写拼写';
   const grade= pct===100?'🏆 全对，太棒了！' : pct>=60?'👍 不错，继续加油！' : '💪 多练几次就会了！';
   if(pct===100) celebrate(true);   // v170 听说读写全对撒花
+  let wrongHtml='';
+  const _wl=skillQuiz.wrongList||[];
+  if(_wl.length){
+    const _extra=_wl.length>10?`<span style="opacity:.7"> …等 ${_wl.length} 个</span>`:'';
+    wrongHtml=`<div class="tw-list">本轮错了 ${_wl.length} 个词：${_wl.slice(0,10).map(x=>esc(x)).join(' · ')}${_extra}</div>`;
+  } else {
+    wrongHtml=`<div class="tw-list ok">本轮全部答对，没有错题 🎉</div>`;
+  }
   area.innerHTML=back+`<h2 class="sec">${title} · 本次结果</h2>
     <div class="big-word">${skillQuiz.score} / ${skillQuiz.total}</div>
     <p class="muted" style="font-size:15px">正确率 ${pct}% — ${grade}</p>
+    ${wrongHtml}
     <div class="row" style="margin-top:14px; gap:10px; flex-wrap:wrap">
       <button class="btn sky lg" onclick="startSkill('${skillQuiz.mode}')">🔁 再来一组</button>
       <button class="btn ghost lg" onclick="renderSkillHome()">返回选技能</button>
