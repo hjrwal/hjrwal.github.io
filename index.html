@@ -825,7 +825,7 @@
   h2.sec .emo{animation:wob 3s ease-in-out infinite; display:inline-block;}
   .panel{border:1px solid var(--line); box-shadow:var(--shadow);}
   /* 错题本 */
-  .wb-row{display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px dashed var(--line);}
+  .wb-row{display:flex; align-items:flex-start; flex-wrap:wrap; gap:8px 10px; padding:9px 4px; border-bottom:1px dashed var(--line);}
   .wb-row:last-child{border-bottom:none;}
   .wb-en{font-weight:800; font-size:17px;}
   .wb-zh{color:var(--muted); font-size:13px; margin-left:6px;}
@@ -833,6 +833,18 @@
     border:1px solid var(--line); border-radius:999px; padding:2px 8px;}
   .wb-times{flex:0 0 auto; font-size:11px; color:var(--coral-d); font-weight:800;}
   .wb-actions{margin-left:auto; display:flex; gap:6px;}
+  /* v188 错题本进度可视化 */
+  .wb-prog{display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-basis:100%; margin-top:2px;}
+  .wb-pips{display:inline-flex; gap:3px;}
+  .wb-pip{width:20px; height:7px; border-radius:4px; background:#e2dcf3; transition:background .25s;}
+  .wb-pip.on{background:#7b5cff; box-shadow:0 0 0 2px rgba(123,92,255,.15);}
+  .wb-prog-txt{font-size:12px; color:var(--muted);}
+  .wb-status{flex:0 0 auto; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px;}
+  .wb-status.due{background:rgba(232,116,59,.14); color:#e8743b;}
+  .wb-status.wait{background:rgba(120,120,140,.12); color:#8a8597;}
+  .btn.sm{padding:4px 9px; font-size:12px;}
+  body.theme-dark .wb-pip{background:#3a3450;}
+  body.theme-dark .wb-status.wait{background:rgba(150,150,170,.18); color:#b9b2cf;}
   .wb-empty{text-align:center; padding:34px 18px; margin-top:6px; background:linear-gradient(135deg,#f3f0ff,#eafaf0); border:2px dashed #b9a7ff; border-radius:18px; color:#5a4b8a;}
   .wb-empty-emoji{font-size:46px; animation:wob 3s ease-in-out infinite;}
   .wb-empty-title{font-size:17px; font-weight:900; margin-top:8px;}
@@ -3063,7 +3075,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 187;
+const APP_VERSION = 188;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -6464,8 +6476,11 @@ function renderProgress(){
     wl.innerHTML='';
     STATE.wrong.slice(0,30).forEach(w=>{
       const u=ALL_UNITS.find(x=>x.id===w.unit); if(!u) return;
+      const ok=w.okStreak||0, grad=GRAD_STREAK, pips=Array.from({length:grad},(_,i)=>'<i class="wb-pip'+(i<ok?' on':'')+'"></i>').join(''), isDue=!w.due||w.due<=todayStr();
       const el=document.createElement('div'); el.className='row spread'; el.style.padding='6px 0'; el.style.borderBottom='1px solid #f0eefa';
       el.innerHTML=`<span><b>${esc(w.en)}</b> <span class="muted">${esc(w.zh)}</span></span>
+        <span class="wb-pips">${pips}</span>
+        <span class="wb-prog-txt">${ok}/${grad}${isDue?' · 🔴待复习':''}</span>
         <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="speak('${w.en.replace(/'/g,"\\'")}')"></button>`;
       wl.appendChild(el);
     });
@@ -7452,15 +7467,20 @@ function renderWrongbook(){
     } else {
       list.innerHTML=list2.map(w=>{
         const en=esc(w.en), zh=esc(w.zh), tag=esc(unitName(w.unit));
+        const ok=w.okStreak||0, grad=GRAD_STREAK;
+        const pips=Array.from({length:grad},(_,i)=>'<i class="wb-pip'+(i<ok?' on':'')+'"></i>').join('');
+        const isDue=!w.due||w.due<=todayStr();
+        const st=isDue?'<span class="wb-status due">🔴 待复习</span>':'<span class="wb-status wait">⏳ '+esc(w.due)+' 到期</span>';
+        const progTxt= ok>=grad?'已毕业 🎓' : (ok>0?('连续答对 '+ok+'/'+grad+' · 再对 '+(grad-ok)+' 次就毕业 🎓') : '答对 1 次开始计数');
         const enq=(w.en||'').replace(/'/g,"\\'"), unitq=(w.unit||'').replace(/'/g,"\\'");
         return '<div class="wb-row">'
           +'<button class="btn sky" style="padding:5px 9px;font-size:13px" onclick="speak(\''+enq+'\')"></button>'
           +'<button class="btn grape" style="padding:5px 9px;font-size:13px" onclick="startFollowRead(\''+enq+'\')">跟读</button>'
           +'<span class="wb-en">'+en+'</span>'
           +(zh?'<span class="wb-zh">'+zh+'</span>':'')
-          +'<span class="wb-tag">'+tag+'</span>'
+          +'<span class="wb-tag">'+tag+'</span>'+st
           +'<span class="wb-times">练'+(w.reviews||0)+'次</span>'
-          +'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
+          +'<div class="wb-prog"><div class="wb-pips">'+pips+'</div><div class="wb-prog-txt">'+progTxt+'</div><span class="wb-times">错 '+(w.errs||0)+' 次</span></div>'+'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
           +'</div>';
       }).join('');
     }
