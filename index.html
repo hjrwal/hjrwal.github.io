@@ -835,10 +835,24 @@
   .wb-actions{margin-left:auto; display:flex; gap:6px;}
   /* v188 错题本进度可视化 */
   .wb-prog{display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-basis:100%; margin-top:2px;}
-  .wb-pips{display:inline-flex; gap:3px;}
+  .wb-pips{display:inline-flex; gap:3px; position:relative; cursor:help;}
   .wb-pip{width:20px; height:7px; border-radius:4px; background:#e2dcf3; transition:background .25s;}
   .wb-pip.on{background:#7b5cff; box-shadow:0 0 0 2px rgba(123,92,255,.15);}
   .wb-prog-txt{font-size:12px; color:var(--muted);}
+  /* v189 错题本进度点 hover 提示 + 今日学习路径 */
+  .wb-pips[data-tip]:hover::after{content:attr(data-tip); position:absolute; z-index:40; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); background:#3A2B22; color:#fff; font-size:12px; line-height:1.35; white-space:nowrap; padding:5px 9px; border-radius:9px; box-shadow:0 6px 16px rgba(0,0,0,.22); pointer-events:none;}
+  .wb-pips[data-tip]:hover::before{content:''; position:absolute; z-index:40; left:50%; bottom:calc(100% + 2px); transform:translateX(-50%); border:6px solid transparent; border-top-color:#3A2B22; pointer-events:none;}
+  .path-items{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .path-row{display:flex; align-items:center; gap:10px; padding:9px 11px; background:var(--card,#f7f5ff); border:1px solid var(--line,#ece8f7); border-radius:13px;}
+  .path-row.done{opacity:.72;}
+  .path-ic{font-size:18px; flex:0 0 auto; width:22px; text-align:center;}
+  .path-main{flex:1 1 auto; min-width:0;}
+  .path-t{font-size:14px; font-weight:700; color:var(--ink,#2a1f17);}
+  .path-sub{font-size:12px; color:var(--muted); margin-top:1px;}
+  .path-btn{flex:0 0 auto;}
+  .path-ok{font-size:12px; color:#2f9e6b; font-weight:700; flex:0 0 auto;}
+  .path-empty{padding:8px 2px; font-size:13px; color:var(--muted);}
+  body.theme-dark .path-row{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1);}
   .wb-status{flex:0 0 auto; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px;}
   .wb-status.due{background:rgba(232,116,59,.14); color:#e8743b;}
   .wb-status.wait{background:rgba(120,120,140,.12); color:#8a8597;}
@@ -1443,6 +1457,10 @@
     <div class="panel timeline-card" id="homeTimeline" style="margin-top:14px">
       <div class="row spread"><b>🗓️ 学习动态</b><span class="muted">复习 · 进步 · 待补</span></div>
       <div id="tlItems" class="tl-items"></div>
+    </div>
+    <div class="panel path-card" id="homePath" style="margin-top:14px">
+      <div class="row spread"><b>🧭 今日学习路径</b><span class="muted" id="pathHint"></span></div>
+      <div id="pathItems" class="path-items"></div>
     </div>
     <div class="panel" style="margin-top:14px;">
       <div class="row spread"><b style="cursor:pointer" onclick="openGoal()">今日目标 <span class="edit-pen"></span></b><span class="muted" id="dailyTip"></span></div>
@@ -3075,7 +3093,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 188;
+const APP_VERSION = 189;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -6477,9 +6495,10 @@ function renderProgress(){
     STATE.wrong.slice(0,30).forEach(w=>{
       const u=ALL_UNITS.find(x=>x.id===w.unit); if(!u) return;
       const ok=w.okStreak||0, grad=GRAD_STREAK, pips=Array.from({length:grad},(_,i)=>'<i class="wb-pip'+(i<ok?' on':'')+'"></i>').join(''), isDue=!w.due||w.due<=todayStr();
+      const tip=ok>=grad?'已毕业 🎓':('还差 '+(grad-ok)+' 次就毕业 🎓');
       const el=document.createElement('div'); el.className='row spread'; el.style.padding='6px 0'; el.style.borderBottom='1px solid #f0eefa';
       el.innerHTML=`<span><b>${esc(w.en)}</b> <span class="muted">${esc(w.zh)}</span></span>
-        <span class="wb-pips">${pips}</span>
+        <span class="wb-pips" data-tip="${esc(tip)}">${pips}</span>
         <span class="wb-prog-txt">${ok}/${grad}${isDue?' · 🔴待复习':''}</span>
         <button class="btn sky" style="padding:6px 12px;font-size:13px" onclick="speak('${w.en.replace(/'/g,"\\'")}')"></button>`;
       wl.appendChild(el);
@@ -7098,6 +7117,27 @@ function renderHomeInsights(){
   nodes.push('<div class="tl-node tl-weak"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">📉 最该补的单元</div>'+weakNode+'</div></div>');
   box.innerHTML=nodes.join('');
 }
+function renderHomePath(){
+  const box=document.getElementById('pathItems'); if(!box) return;
+  const steps=[];
+  // ① 复习：今天该复习的易错词
+  const due=dueReviews().length;
+  if(due>0){ steps.push({ic:'🔁', t:'复习 <b>'+due+'</b> 个易错词', sub:'把快忘的词再巩固一遍', btn:'开始复习', act:'startReview()'}); }
+  // ② 最弱单元：weakByUnit 累计错最多
+  const wb=STATE.weakByUnit||{}; let topU=null, topTot=0, topCat=null;
+  Object.keys(wb).forEach(uid=>{ const o=wb[uid]; const tot=(o.sel||0)+(o.spell||0)+(o.sent||0); if(tot>topTot){ topTot=tot; topU=uid; topCat=o; } });
+  if(topU){ const u=(ALL_UNITS.find(x=>x.id===topU))||{emoji:'📘',title:topU}; steps.push({ic:u.emoji, t:'补强 <b>'+esc(u.title)+'</b>', sub:'累计错 '+topTot+' 次，针对性练习', btn:'去练习', act:'goTestUnit(\''+topU+'\')'}); }
+  // ③ 今日目标：还差几题
+  const d=dailyRec(), G=goalTarget(), n=Math.min(d.count,G), left=G-n;
+  if(left>0){ steps.push({ic:'🎯', t:'今日目标还差 <b>'+left+'</b> 题', sub:'每天 '+G+' 题，积少成多', btn:'去闯关', act:'go(\'adventure\')'}); }
+  else { steps.push({ic:'✅', t:'今日目标已达成', sub:'保持节奏，真棒', done:true}); }
+  let html;
+  if(!steps.length){ html='<div class="path-empty">🎉 今天没有待办，去 <button class="link-btn" onclick="go(\'adventure\')">词境冒险</button> 玩一玩吧！</div>'; }
+  else { html=steps.map(s=>'<div class="path-row'+(s.done?' done':'')+'"><span class="path-ic">'+s.ic+'</span><div class="path-main"><div class="path-t">'+s.t+'</div><div class="path-sub">'+s.sub+'</div></div>'+(s.btn?'<button class="btn sm path-btn" onclick="'+s.act+'">'+s.btn+'</button>':'<span class="path-ok">已完成 ✓</span>')+'</div>').join(''); }
+  box.innerHTML=html;
+  const hint=document.getElementById('pathHint');
+  if(hint) hint.textContent = steps.filter(s=>!s.done).length ? (steps.filter(s=>!s.done).length+' 项待完成') : '全部完成 🎉';
+}
 function renderGoal(){
   const d=dailyRec();
   const G=goalTarget();
@@ -7135,6 +7175,7 @@ function renderGoal(){
     } else wt.classList.add('hidden');
   }
   renderHomeInsights();
+  renderHomePath();
   refreshWrongDot();
   renderHero();
 }
@@ -7472,6 +7513,7 @@ function renderWrongbook(){
         const isDue=!w.due||w.due<=todayStr();
         const st=isDue?'<span class="wb-status due">🔴 待复习</span>':'<span class="wb-status wait">⏳ '+esc(w.due)+' 到期</span>';
         const progTxt= ok>=grad?'已毕业 🎓' : (ok>0?('连续答对 '+ok+'/'+grad+' · 再对 '+(grad-ok)+' 次就毕业 🎓') : '答对 1 次开始计数');
+        const tip= ok>=grad?'已毕业 🎓':('还差 '+(grad-ok)+' 次就毕业 🎓');
         const enq=(w.en||'').replace(/'/g,"\\'"), unitq=(w.unit||'').replace(/'/g,"\\'");
         return '<div class="wb-row">'
           +'<button class="btn sky" style="padding:5px 9px;font-size:13px" onclick="speak(\''+enq+'\')"></button>'
@@ -7480,7 +7522,7 @@ function renderWrongbook(){
           +(zh?'<span class="wb-zh">'+zh+'</span>':'')
           +'<span class="wb-tag">'+tag+'</span>'+st
           +'<span class="wb-times">练'+(w.reviews||0)+'次</span>'
-          +'<div class="wb-prog"><div class="wb-pips">'+pips+'</div><div class="wb-prog-txt">'+progTxt+'</div><span class="wb-times">错 '+(w.errs||0)+' 次</span></div>'+'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
+          +'<div class="wb-prog"><div class="wb-pips" data-tip="'+esc(tip)+'">'+pips+'</div><div class="wb-prog-txt">'+progTxt+'</div><span class="wb-times">错 '+(w.errs||0)+' 次</span></div>'+'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
           +'</div>';
       }).join('');
     }
