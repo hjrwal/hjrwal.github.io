@@ -887,24 +887,39 @@
   .wu-item .muted{margin-left:2px}
   .wu-item .link-btn{margin-left:auto}
   body.theme-dark .wu-item{background:rgba(232,116,59,.16)}
-  /* v186 首页学习动态时间轴 */
+  /* v187 首页学习动态时间轴（视觉打磨 + 本周新掌握词 chips） */
   .timeline-card .tl-items{margin-top:10px; display:flex; flex-direction:column;}
-  .tl-node{position:relative; display:flex; gap:12px; padding-bottom:14px;}
+  .tl-node{position:relative; display:flex; gap:12px; padding-bottom:16px; animation:tlIn .42s cubic-bezier(.22,.61,.36,1) both;}
+  .tl-node:nth-child(1){animation-delay:.04s;}
+  .tl-node:nth-child(2){animation-delay:.13s;}
+  .tl-node:nth-child(3){animation-delay:.22s;}
   .tl-node:last-child{padding-bottom:0;}
   .tl-rail{position:relative; flex:0 0 16px; display:flex; justify-content:center;}
-  .tl-dot{flex:0 0 16px; width:16px; height:16px; border-radius:50%; margin-top:2px; box-shadow:0 0 0 4px rgba(123,92,255,.12); z-index:1;}
-  .tl-node.tl-review .tl-dot{background:#e8743b; box-shadow:0 0 0 4px rgba(232,116,59,.15);}
-  .tl-node.tl-progress .tl-dot{background:#7b5cff;}
-  .tl-node.tl-weak .tl-dot{background:#e8743b;}
+  .tl-dot{flex:0 0 16px; width:16px; height:16px; border-radius:50%; margin-top:2px; box-shadow:0 0 0 4px rgba(123,92,255,.12); z-index:1; transition:box-shadow .3s;}
+  .tl-node.tl-review .tl-dot{background:#e8743b; box-shadow:0 0 0 4px rgba(232,116,59,.16);}
+  .tl-node.tl-progress .tl-dot{background:#7b5cff; box-shadow:0 0 0 4px rgba(123,92,255,.16);}
+  .tl-node.tl-weak .tl-dot{background:#e0506b; box-shadow:0 0 0 4px rgba(224,80,107,.16);}
+  .tl-node.tl-review.due .tl-dot{animation:tlPulse 1.5s ease-in-out infinite;}
   .tl-rail::before{content:''; position:absolute; top:18px; bottom:-2px; left:50%; width:2px; transform:translateX(-50%); background:var(--line);}
   .tl-node:last-child .tl-rail::before{display:none;}
-  .tl-body{flex:1; min-width:0;}
+  .tl-body{flex:1; min-width:0; transition:transform .18s;}
+  .tl-node:hover .tl-body{transform:translateX(2px);}
   .tl-title{font-weight:800; font-size:14px; color:var(--ink); display:flex; align-items:center; gap:6px;}
   .tl-title .tl-tag{margin-left:auto; font-size:11px; font-weight:700; color:var(--brand);}
   .tl-sub{font-size:13px; color:var(--muted); margin-top:3px; line-height:1.5;}
   .tl-sub b{color:var(--ink);}
   .tl-cta{margin-top:6px; display:inline-flex;}
   .tl-empty{font-size:13px; color:var(--muted); margin-top:3px;}
+  .tl-chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:7px;}
+  .tl-chip{font-size:12px; padding:2px 9px; border-radius:999px; background:rgba(123,92,255,.10); color:#5b3fd6; border:1px solid rgba(123,92,255,.18);}
+  .tl-chip .zh{color:#9a8cc9; margin-left:3px; font-size:11px;}
+  .tl-node.tl-weak .tl-chip{background:rgba(224,80,107,.10); color:#c8405b; border-color:rgba(224,80,107,.2);}
+  body.theme-dark .tl-chip{background:rgba(123,92,255,.18); color:#cdbcff; border-color:rgba(123,92,255,.3);}
+  body.theme-dark .tl-chip .zh{color:#9a8cc9;}
+  body.theme-dark .tl-node.tl-weak .tl-chip{background:rgba(224,80,107,.2); color:#ff9bb0; border-color:rgba(224,80,107,.35);}
+  @keyframes tlIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+  @keyframes tlPulse{0%,100%{box-shadow:0 0 0 4px rgba(232,116,59,.16);} 50%{box-shadow:0 0 0 8px rgba(232,116,59,.04);}}
+  @media (prefers-reduced-motion: reduce){ .tl-node{animation:none !important;} .tl-node.tl-review.due .tl-dot{animation:none;} .tl-body{transition:none;} }
   body.theme-dark .tl-dot{box-shadow:0 0 0 4px rgba(123,92,255,.22);}
   body.theme-dark .weak-tip{background:rgba(232,116,59,.14); color:#f3c98a; border-color:rgba(232,116,59,.32);}
   .link-btn{background:none; border:none; color:#1b8f5a; font-weight:800; font-size:13px; cursor:pointer; padding:0 2px; text-decoration:underline;}
@@ -3048,7 +3063,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 186;
+const APP_VERSION = 187;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -7047,7 +7062,7 @@ function renderHomeInsights(){
   const up=STATE.wrong.filter(w=>w.due && w.due>todayStr() && w.due<=addDays(todayStr(),3)).length;
   let reviewSub='今天还没有待复习的词，真棒 ✅'+(up?' · 未来3天有 '+up+' 个将到期':'');
   if(due>0){ const top=smartReviewSort(dueList).slice(0,3).map(w=>w.en); reviewSub='今天该复习 <b>'+due+'</b> 个易错词'+(up?' · 未来3天还有 <b>'+up+'</b> 个将到期':'')+(top.length?'<br>最该先练：<b>'+esc(top.join(' · '))+'</b> 🧠':'')+' · 没复习完会自动顺延到明天'; }
-  nodes.push('<div class="tl-node tl-review"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">🔁 该复习啦'+(due>0?'<span class="tl-tag">去复习 ▶</span>':'')+'</div><div class="tl-sub">'+reviewSub+'</div>'+(due>0?'<div class="tl-cta"><button class="link-btn" onclick="startReview()">开始今日复习</button></div>':'')+'</div></div>');
+  nodes.push('<div class="tl-node tl-review'+(due>0?' due':'')+'"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">🔁 该复习啦'+(due>0?'<span class="tl-tag">去复习 ▶</span>':'')+'</div><div class="tl-sub">'+reviewSub+'</div>'+(due>0?'<div class="tl-cta"><button class="link-btn" onclick="startReview()">开始今日复习</button></div>':'')+'</div></div>');
   // ② 本周进步
   const streak=STATE.streak||0;
   const ws=weekStart(todayStr()); const we=addDays(ws,7); const pws=weekStart(addDays(todayStr(),-7));
@@ -7055,7 +7070,10 @@ function renderHomeInsights(){
   Object.keys(ma).forEach(k=>{ const d=ma[k]; if(d>=ws&&d<we) cur++; else if(d>=pws&&d<ws) prev++; });
   const total=Object.values(STATE.units).reduce((a,u)=>a+((u.mastered&&u.mastered.length)||0),0);
   let cmp='和上周一样'; if(cur>prev) cmp='比上周多 '+(cur-prev)+' 词 ↑'; else if(cur<prev) cmp='比上周少 '+(prev-cur)+' 词 ↓';
-  nodes.push('<div class="tl-node tl-progress"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">📈 本周进步<span class="tl-tag">'+cmp+'</span></div><div class="tl-sub">本周新掌握 <b>'+cur+'</b> 词 · 连续打卡 <b>'+streak+'</b> 天 · 累计掌握 <b>'+total+'</b> 词</div></div></div>');
+  const wkList=Object.keys(ma).filter(k=>ma[k]>=ws&&ma[k]<we).map(k=>{const i=k.indexOf('::'); return findWordZh(k.slice(0,i),k.slice(i+2));});
+  let chipHtml='';
+  if(wkList.length){ const shown=wkList.slice(0,8); chipHtml='<div class="tl-chips">'+shown.map(w=>'<span class="tl-chip">'+esc(w.en)+(w.zh?'<span class="zh">'+esc(w.zh)+'</span>':'')+'</span>').join('')+(wkList.length>8?'<span class="tl-chip">+'+(wkList.length-8)+'</span>':'')+'</div>'; }
+  nodes.push('<div class="tl-node tl-progress"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">📈 本周进步<span class="tl-tag">'+cmp+'</span></div><div class="tl-sub">本周新掌握 <b>'+cur+'</b> 词 · 连续打卡 <b>'+streak+'</b> 天 · 累计掌握 <b>'+total+'</b> 词</div>'+chipHtml+'</div></div>');
   // ③ 最该补的单元
   const cnt={}; (STATE.wrong||[]).forEach(w=>{ if(w.unit) cnt[w.unit]=(cnt[w.unit]||0)+1; });
   const ranked=Object.keys(cnt).map(uid=>({uid,n:cnt[uid],u:(ALL_UNITS.find(x=>x.id===uid)||{emoji:'📘',title:uid})})).sort((a,b)=>b.n-a.n).slice(0,3);
