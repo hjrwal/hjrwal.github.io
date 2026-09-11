@@ -1165,6 +1165,22 @@
   .ach.locked{filter:grayscale(1); opacity:.45;}
   .ach .nm{font-size:12px; font-weight:800; margin-top:4px;}
   .ach .ds{font-size:10px; color:var(--muted); margin-top:2px;}
+  /* v190：未解锁勋章显示进度条 + N/M，离拿到还差多少一目了然 */
+  .ach .prog{margin-top:7px; height:6px; background:#efe9f7; border:1px solid rgba(58,43,34,.18); overflow:hidden;}
+  .ach .prog i{display:block; height:100%; background:linear-gradient(90deg,#b39dff,#7b5cff); transition:width .35s ease;}
+  .ach .pg-txt{font-size:10px; font-weight:800; color:var(--ink); margin-top:3px;}
+  .ach-sum-tip{display:block; margin-top:5px; font-size:12px; font-weight:800; color:var(--ink);}
+  /* v190：生词本（收藏夹） */
+  .fav-btn{display:inline-flex; align-items:center; gap:5px;}
+  .fav-btn .svg-ic{width:17px; height:17px;}
+  .fav-btn.on{background:var(--sun); border-color:rgba(58,43,34,.35); color:#6b4e00;}
+  .fav-btn.on .svg-ic{fill:var(--sun); stroke:#c98a00;}
+  .fav-list .fav-row{display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line);}
+  .fav-list .fav-row:last-child{border-bottom:none;}
+  .fav-list .fw{font-weight:800;}
+  .fav-list .fz{font-size:13px; color:var(--muted);}
+  .fav-list .fmeta{margin-left:auto; font-size:11px; color:var(--muted); white-space:nowrap;}
+  .fav-empty{padding:16px 4px; text-align:center; color:var(--muted); line-height:1.7;}
   .chips .chip.on{background:var(--grape); color:#fff; border-color:var(--grape-d);}
   /* TTS 不支持提示条 */
   .tts-warn{display:none; align-items:center; gap:10px; margin:0 0 12px; padding:11px 13px;
@@ -1317,6 +1333,7 @@
     <symbol id="i-gamepad" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="9" rx="4.5"/><path d="M7 11.5h2M8 10.5v2"/><circle cx="16" cy="11" r=".9"/><circle cx="18.2" cy="13.2" r=".9"/></symbol>
     <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V9.5"/><path d="M9.5 3h5"/></symbol>
     <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4.5h8V8a4 4 0 0 1-8 0z"/><path d="M8 5.5H5V8a3 3 0 0 0 3 3"/><path d="M16 5.5h3V8a3 3 0 0 1-3 3"/><path d="M12 12v4"/><path d="M9.5 20h5"/><path d="M10 16h4v4h-4z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.9.85-4.25 4.15 1 5.9L12 17l-5.25 2.8 1-5.9L3.5 9.75l5.9-.85z"/></symbol>
     <symbol id="i-library" viewBox="0 0 24 24"><path d="M5 4h4v16H5z"/><path d="M10 4h4v16h-4z"/><path d="M15.5 5l3.8.9L16.5 20l-3.8-.9z"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.9 1.9M17.1 17.1 19 19M19 5l-1.9 1.9M6.9 17.1 5 19"/></symbol>
     <symbol id="i-fox" viewBox="0 0 64 72">
@@ -1451,6 +1468,7 @@
         <div class="tile c-sun" onclick="go('achievements')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-trophy"/></svg><h3>成就墙</h3><p>我的勋章</p></div>
         <div class="tile c-grass" onclick="go('progress')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-chart"/></svg><h3>我的进度</h3><p>报告 + 导出</p></div>
         <div class="tile c-sky" onclick="go('codex')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-library"/></svg><h3>单词图鉴</h3><p>收集我的词库</p></div>
+        <div class="tile c-sun" onclick="go('fav')"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-star"/></svg><h3>生词本</h3><p>收藏不熟的词</p></div>
         <div class="tile c-coral" onclick="openWeakPanel()"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-bulb"/></svg><h3>薄弱点</h3><p>哪里常错</p><span class="count-dot hidden" id="weakDot">0</span></div>
     </div>
     </div>
@@ -1731,6 +1749,22 @@ update → controllerchange
     </div>
   </section>
 
+  <!-- v190 生词本（收藏夹） -->
+  <section class="screen" id="fav">
+    <div class="row spread" style="margin-bottom:10px;">
+      <button class="back" onclick="go('home')">返回</button>
+      <span class="muted">生词本</span>
+    </div>
+    <div class="panel">
+      <div class="row spread">
+        <h2 class="sec">我的收藏 <span class="muted" id="favCount" style="font-size:13px"></span></h2>
+        <button class="btn grape sm" id="favReviewBtn" onclick="favReview()">闪卡过一遍</button>
+      </div>
+      <p class="muted">在词汇闪卡、错题本里点星标，就能把不熟的词收进来，随时集中复习。</p>
+      <div id="favList"></div>
+    </div>
+  </section>
+
   <!-- VOCAB -->
   <section class="screen" id="vocab">
     <div class="row spread" style="margin-bottom:10px;">
@@ -1742,6 +1776,7 @@ update → controllerchange
       <div class="row spread">
         <h2 class="sec">闪卡</h2>
         <div class="row">
+          <button class="btn ghost fav-btn" id="favCardBtn" title="收藏到生词本" onclick="favToggleCard()"><svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-star"/></svg>收藏</button>
           <button class="btn ghost" onclick="flipCard()">翻面</button>
           <button class="btn sky" id="speakCard" onclick="listenWord()">听</button>
         </div>
@@ -1750,6 +1785,7 @@ update → controllerchange
       <p class="muted" id="vocabProgTxt" style="margin:-2px 0 10px;font-size:12px;"></p>
       <div class="row" style="margin:2px 0 10px;">
         <div class="chip" id="weakOnlyChip" onclick="toggleWeakOnly()">只练不熟的词</div>
+        <div class="chip on" id="favModeChip" style="display:none" onclick="exitFavMode()">生词本模式 · 点此退出</div>
       </div>
       <div class="row spread" style="margin:2px 0 10px;">
         <button class="btn ghost sm" id="cardPrevBtn" onclick="cardPrev()" style="display:inline-flex;align-items:center;gap:6px;"><svg class="ic svg-ic" viewBox="0 0 24 24" width="18" height="18"><use href="#i-arrow-l"/></svg> 上一张</button>
@@ -3091,9 +3127,13 @@ const RECENT_META={
   test:{t:'单元测试', ic:'i-clipboard'}, wrongbook:{t:'错题本', ic:'i-book-x'},
   adventure:{t:'趣味闯关', ic:'i-map'}, games:{t:'单词游戏', ic:'i-gamepad'},
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
-  progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
+  progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
+  fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 189;
+const APP_VERSION = 190;
+/* v190：生词本「闪卡过一遍」模式开关。声明位置与 APP_VERSION 同级（顶层最早执行处）——TDZ 铁律：
+   cardList()/showCard() 可能在启动早期就被调用，必须保证该 let 已初始化，否则踩暂时性死区报错。 */
+let favOnly=false;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3212,7 +3252,7 @@ function defaultState(){
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
     trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{}, masteredAt:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
-    rankIdx:0, codex:{}, bossSeen:{},
+    rankIdx:0, codex:{}, bossSeen:{}, gradTotal:0, revTotal:0, pathDone:0, pathDoneDay:'', fav:{}, // v190：毕业词数 / 累计复习次数 / 路径完成天数 / 生词本
     onboarded:false,
     guided:{},
     onlineSec:0, onlineDay:0, onlineDate:'', onlineHist:{},
@@ -3247,6 +3287,10 @@ function migrateState(s){
   if(typeof s.settings.cardOnlyWeak!=='boolean') s.settings.cardOnlyWeak=false; // v178：非布尔一律退回默认关
   ['units','weakByUnit','tests','bossSeen'].forEach(k=>{ if(s[k]&&typeof s[k]!=='object') s[k]={}; });
   if(!s.masteredAt || typeof s.masteredAt!=='object') s.masteredAt={}; // v185：首次掌握日期映射（支撑本周新掌握）
+  // v190：生词本与成就计数——旧档自动补默认值，已有数据一律不覆盖
+  if(!s.fav || typeof s.fav!=='object' || Array.isArray(s.fav)) s.fav={};
+  ['gradTotal','revTotal','pathDone'].forEach(k=>{ if(typeof s[k]!=='number' || !isFinite(s[k]) || s[k]<0) s[k]=0; });
+  if(typeof s.pathDoneDay!=='string') s.pathDoneDay='';
   return s;
 }
 function loadState(){
@@ -3497,7 +3541,7 @@ function recordWord(id, en, ok){
     if(wi>=0){
       const w=STATE.wrong[wi];
       w.okStreak=(w.okStreak||0)+1;
-      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(wi,1); toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握，移出错题本！'); }
+      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(wi,1); STATE.gradTotal=(STATE.gradTotal||0)+1; toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握，移出错题本！'); } // v190：累计毕业词数（成就「首次毕业 / 毕业十词」）
       else { STATE.wrong[wi]=w; toast('答对 +1（连续 '+w.okStreak+'/'+GRAD_STREAK+'）· 再对 '+(GRAD_STREAK-w.okStreak)+' 次就记住啦'); }
     }
     bumpGoal(true);
@@ -3880,6 +3924,7 @@ function go(name){
   if(name==='test') safeRender(renderMastery);
   if(name==='games') safeRender(renderGameHome);
   if(name==='achievements') safeRender(renderAchievements);
+  if(name==='fav') safeRender(renderFav);
   if(name==='tech') safeRender(renderTech);
   if(name==='codex'){
     let cb=document.getElementById('codexBody');
@@ -3959,6 +4004,7 @@ function buildUnitChips(containerId, onPick){
   });
 }
 function initVocab(){
+  favOnly=false; // v190：默认退出「生词本模式」（由生词本「闪卡过一遍」按钮重新进入）
   initCardSwipe(); // v176：首次进入词汇屏时挂上滑动翻卡手势
   restoreWeakPref(); // v178：恢复上次的开关选择
   resetCardSession(); // v179：进词汇屏＝开新的一轮
@@ -3969,6 +4015,7 @@ function initVocab(){
   document.getElementById('vocabQuiz').classList.add('hidden');
   const _picker=document.getElementById('vocabQuizPicker'); if(_picker) _picker.style.display=''; // v126：进入词汇页时复位题型选择器（防离开测验后选择器残留隐藏，导致再也开不了测验）
   curQuizMode='';
+  syncFavChip(); // v190：同步「生词本模式」chip 显隐
 }
 function onVocabUnitPick(){
   cardIdx=0;
@@ -3984,6 +4031,8 @@ function onVocabUnitPick(){
 /* v177：闪卡当前要过哪批词——关开关＝全部词；开开关＝还没记熟（不在 mastered）的词。
    整单元都记熟时自动退回全部词，绝不返回空表造成白屏。 */
 function cardList(){
+  // v190：生词本「闪卡过一遍」模式——先过收藏词（可跨单元）；收藏被清空时自动退回单元词，绝不返回空表
+  if(favOnly){ const _f=favWords(); if(_f.length) return _f; favOnly=false; syncFavChip(); }
   const u=curUnit(); if(!u||!u.words||!u.words.length) return [];
   if(!cardOnlyWeak) return u.words;
   let mas=[]; try{ mas=unitStat(u.id).mastered||[]; }catch(_){ mas=[]; }
@@ -4014,6 +4063,7 @@ function showCard(){
   const _vt=document.getElementById('vocabProgTxt'); if(_vt) _vt.textContent='第 '+(cardIdx+1)+' / '+_total+' 词';
   const _pb=document.getElementById('cardPrevBtn'); if(_pb) _pb.disabled=(cardIdx<=0);
   const _nb=document.getElementById('cardNextBtn'); if(_nb) _nb.disabled=(cardIdx>=_total-1);
+  syncFavBtn(); // v190：同步收藏星标（生词本模式下按词自带单元判定）
 }
 /* v176：点击单词卡任意处即可朗读（孩子天然会点大字，不必去找小「听」按钮） */
 function flashTapSpeak(e){
@@ -4079,14 +4129,14 @@ function cardResult(ok){
   const u=curUnit();
   const before=cardList();                          // v177：标记前先记下表长（标「会了」会把当前词移出表）
   const wasLast = (cardIdx === before.length - 1);  // 当前卡是这一批的最后一张
-  recordWord(curUnitId, curWord.en, ok);
+  recordWord((curWord&&curWord.unit)||curUnitId, curWord.en, ok); // v190：生词本模式下按词自带单元记账，避免跨单元收藏词错记到当前单元
   // v179：本轮小结累计（放在 finishVocabUnit 之前，保证结束弹窗能读到完整本轮数据）
   try{
     const _en=curWord.en, _wi=cardSession.weak.indexOf(_en);
     if(ok){ cardSession.ok++; if(_wi>=0) cardSession.weak.splice(_wi,1); } // 之前标过不熟、这轮又记住了 → 从不熟名单移除
     else { cardSession.nope++; if(_wi<0) cardSession.weak.push(_en); }
   }catch(_){}
-  if(wasLast){
+  if(wasLast && !favOnly){ // v190：生词本模式过完最后一张不弹「整单元学完」，直接循环回第一张
     // 这一批词汇都熟悉完了 → 表扬动画 + 双按钮（重新学习 / 下一个单元）
     finishVocabUnit(u);
     touchDay(); // v177：学完整单元同样要记当日活跃，避免当天学完却断打卡
@@ -5683,21 +5733,116 @@ function memTap(i){
 }
 
 /* =========================================================
+   v190 生词本（收藏夹）
+   —— 平时看到不熟的词点星标收进来，随时集中过一遍
+   ========================================================= */
+function favKey(en, unit){ return (unit||'')+'::'+en; }
+function isFav(en, unit){ if(!en) return false; const f=STATE.fav||{}; return !!f[favKey(en, unit||curUnitId)]; }
+/* 收藏词列表：以 STATE.fav 的键为准（与错题本一致的 (词,单元) 双键），
+   再从当前教材词库补齐音标/词性/例句等展示字段——词库更新后收藏词自动跟上，不会因为只存了 en 而缺字段 */
+function favWords(){
+  const f=STATE.fav||{}; const out=[];
+  Object.keys(f).forEach(k=>{
+    const v=f[k]; if(!v || !v.en) return;
+    const arr=((ALL_UNITS.find(x=>x.id===v.unit)||{}).words)||[];
+    const hit=arr.find(w=>w.en===v.en);
+    out.push({ en:v.en, zh:(hit&&hit.zh)||v.zh||'', ph:(hit&&hit.ph)||'', pos:(hit&&hit.pos)||'', ex:(hit&&hit.ex)||'', unit:v.unit, added:v.added||'' });
+  });
+  return out.sort((a,b)=>String(b.added).localeCompare(String(a.added))); // 最近收藏的排前面
+}
+function favCount(){ return favWords().length; }
+/* 收藏 / 取消收藏，返回收藏后的状态（true=已收藏） */
+function toggleFav(en, unit){
+  if(!en) return null;
+  const f=STATE.fav||{}; const uid=unit||curUnitId; const k=favKey(en,uid);
+  if(f[k]){ delete f[k]; STATE.fav=f; saveState(); return false; }
+  const arr=((ALL_UNITS.find(x=>x.id===uid)||{}).words)||[];
+  const hit=arr.find(w=>w.en===en)||{};
+  f[k]={ en:en, zh:hit.zh||'', unit:uid, added:todayStr() };
+  STATE.fav=f; saveState(); return true;
+}
+function favToggleCard(){
+  if(!curWord) return;
+  if(!once('fav',300)) return; // v190：防连点——连点会把刚收藏的词又取消
+  const on=toggleFav(curWord.en, curWord.unit||curUnitId);
+  syncFavBtn();
+  toast(on?'⭐ 已收藏到生词本':'已从生词本移除');
+}
+function favToggleWB(btn, en, unit){
+  if(!once('fav',300)) return; // v190：防连点
+  const on=toggleFav(en, unit);
+  if(btn) btn.classList.toggle('on', !!on);
+  toast(on?'⭐ 已收藏到生词本':'已从生词本移除');
+}
+function favRemove(en, unit){ toggleFav(en, unit); toast('已从生词本移除'); renderFav(); }
+function syncFavBtn(){
+  const b=document.getElementById('favCardBtn'); if(!b) return;
+  const on = curWord ? isFav(curWord.en, curWord.unit||curUnitId) : false;
+  b.classList.toggle('on', !!on);
+}
+function syncFavChip(){ const c=document.getElementById('favModeChip'); if(c) c.style.display = favOnly?'':'none'; }
+function exitFavMode(){ favOnly=false; cardIdx=0; syncFavChip(); showCard(); toast('已回到单元词汇'); }
+/* 生词本「闪卡过一遍」：切到词汇屏，用收藏词当牌堆（可跨单元） */
+function favReview(){
+  const f=favWords();
+  if(!f.length){ toast('生词本还是空的，先在闪卡或错题本点收藏吧'); return; }
+  go('vocab');
+  favOnly=true; cardIdx=0; showCard(); syncFavChip();
+  toast('生词本模式：共 '+f.length+' 个收藏词');
+}
+function renderFav(){
+  const box=document.getElementById('favList'); if(!box) return;
+  const list=favWords();
+  const c=document.getElementById('favCount'); if(c) c.textContent='('+list.length+' 个)';
+  const rb=document.getElementById('favReviewBtn'); if(rb) rb.disabled = list.length===0;
+  if(!list.length){ box.innerHTML='<div class="fav-empty">生词本还是空的～<br>在词汇闪卡、错题本里点星标，就能把不熟的词收进来</div>'; return; }
+  box.className='fav-list';
+  box.innerHTML=list.map(w=>{
+    const u=ALL_UNITS.find(x=>x.id===w.unit)||{};
+    const enq=String(w.en).replace(/'/g,"\\'"), unq=String(w.unit).replace(/'/g,"\\'");
+    return '<div class="fav-row">'
+      +'<button class="btn sky sm" title="听发音" onclick="speak(\''+enq+'\')"><svg class="svg-ic" viewBox="0 0 24 24" width="17" height="17"><use href="#i-headphones"/></svg></button>'
+      +'<div><div class="fw">'+esc(w.en)+'</div><div class="fz">'+esc(w.zh||'—')+'</div></div>'
+      +'<span class="fmeta">'+(u.emoji||'📘')+' '+esc(String(u.title||'').split(' ')[0]||'')+'</span>'
+      +'<button class="btn ghost sm" onclick="favRemove(\''+enq+'\',\''+unq+'\')">移除</button>'
+      +'</div>';
+  }).join('');
+}
+
+/* =========================================================
    成就墙
    ========================================================= */
+/* v190：勋章统计helper——纯读 STATE，供 ACHS 的 ok()/prog() 复用 */
+function masteredTotal(){ let n=0; try{ Object.keys(STATE.units||{}).forEach(k=>{ n+=((STATE.units[k]||{}).mastered||[]).length; }); }catch(_){} return n; }
+function attemptsTotal(){ let n=0; try{ Object.keys(STATE.units||{}).forEach(k=>{ n+=((STATE.units[k]||{}).attempts||0); }); }catch(_){} return n; }
+/* v190：本周（周一对齐）新掌握词数——与首页「本周进步」同源同口径 */
+function weekNewCount(){ try{ const ws=weekStart(todayStr()); let n=0; const ma=STATE.masteredAt||{}; Object.keys(ma).forEach(k=>{ if(ma[k]>=ws) n++; }); return n; }catch(_){ return 0; } }
+/* v190：勋章表扩到 21 枚。ok()=是否已解锁；prog()=[当前,目标] 供未解锁时显示进度条。
+   新增勋章全部挂在 v183~v189 的新机制上（错题毕业 / 复习量 / 周进步 / 学习路径 / 生词本），
+   让「看不到进度」的长期目标变成「还差几个」的可见任务。 */
 const ACHS=[
-  {ico:'🌟',nm:'十星小将',ds:'集满 10 星',ok:()=>STATE.stars>=10},
-  {ico:'⭐',nm:'三十星达人',ds:'集满 30 星',ok:()=>STATE.stars>=30},
-  {ico:'🔥',nm:'三天打卡',ds:'连续 3 天',ok:()=>STATE.streak>=3},
-  {ico:'💯',nm:'一周坚持',ds:'连续 7 天',ok:()=>STATE.streak>=7},
-  {ico:'🌈',nm:'半月坚持',ds:'连续 15 天',ok:()=>STATE.streak>=15},
-  {ico:'🏆',nm:'月月坚持',ds:'连续 30 天',ok:()=>STATE.streak>=30},
-  {ico:'📚',nm:'词汇先锋',ds:'掌握 20+ 词',ok:()=>Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0)>=20},
-  {ico:'🏅',nm:'错题清零',ds:'消灭所有错题',ok:()=>STATE.wrong.length===0 && Object.values(STATE.units).reduce((a,u)=>a+u.attempts,0)>0},
+  {ico:'🌟',nm:'十星小将',ds:'集满 10 星',ok:()=>STATE.stars>=10, prog:()=>[STATE.stars,10]},
+  {ico:'⭐',nm:'三十星达人',ds:'集满 30 星',ok:()=>STATE.stars>=30, prog:()=>[STATE.stars,30]},
+  {ico:'🔥',nm:'三天打卡',ds:'连续 3 天',ok:()=>STATE.streak>=3, prog:()=>[STATE.streak,3]},
+  {ico:'💯',nm:'一周坚持',ds:'连续 7 天',ok:()=>STATE.streak>=7, prog:()=>[STATE.streak,7]},
+  {ico:'🌈',nm:'半月坚持',ds:'连续 15 天',ok:()=>STATE.streak>=15, prog:()=>[STATE.streak,15]},
+  {ico:'🏆',nm:'月月坚持',ds:'连续 30 天',ok:()=>STATE.streak>=30, prog:()=>[STATE.streak,30]},
+  {ico:'📚',nm:'词汇先锋',ds:'掌握 20+ 词',ok:()=>masteredTotal()>=20, prog:()=>[masteredTotal(),20]},
+  {ico:'📖',nm:'词汇大师',ds:'掌握 100 词',ok:()=>masteredTotal()>=100, prog:()=>[masteredTotal(),100]},
+  {ico:'🏅',nm:'错题清零',ds:'消灭所有错题',ok:()=>STATE.wrong.length===0 && attemptsTotal()>0},
   {ico:'📝',nm:'测验达人',ds:'测验≥90分',ok:()=>Object.values(STATE.tests||{}).some(s=>s>=90)},
-  {ico:'⚡',nm:'挑战王者',ds:'挑战 15 题',ok:()=>STATE.chBest>=15},
+  {ico:'⚡',nm:'挑战王者',ds:'挑战 15 题',ok:()=>(STATE.chBest||0)>=15, prog:()=>[STATE.chBest||0,15]},
+  {ico:'👑',nm:'纪录保持者',ds:'挑战 30 题',ok:()=>(STATE.chBest||0)>=30, prog:()=>[STATE.chBest||0,30]},
   {ico:'🎮',nm:'游戏高手',ds:'赢一局游戏',ok:()=>STATE.gameWins>=1},
-  {ico:'🧩',nm:'语法学霸',ds:'语法答对10题',ok:()=>STATE.gramRight>=10},
+  {ico:'🧩',nm:'语法学霸',ds:'语法答对 10 题',ok:()=>(STATE.gramRight||0)>=10, prog:()=>[STATE.gramRight||0,10]},
+  {ico:'🎯',nm:'今日达人',ds:'一天答对 20 题',ok:()=>!!(STATE.daily && STATE.daily.count>=20)},
+  {ico:'🎓',nm:'首次毕业',ds:'1 个词从错题本毕业',ok:()=>(STATE.gradTotal||0)>=1, prog:()=>[Math.min(STATE.gradTotal||0,1),1]},
+  {ico:'🎓',nm:'毕业十词',ds:'10 个词毕业',ok:()=>(STATE.gradTotal||0)>=10, prog:()=>[STATE.gradTotal||0,10]},
+  {ico:'🔁',nm:'复习达人',ds:'累计复习 50 次',ok:()=>(STATE.revTotal||0)>=50, prog:()=>[Math.min(STATE.revTotal||0,50),50]},
+  {ico:'🔂',nm:'复习狂人',ds:'累计复习 200 次',ok:()=>(STATE.revTotal||0)>=200, prog:()=>[Math.min(STATE.revTotal||0,200),200]},
+  {ico:'🗓️',nm:'周进步',ds:'一周新掌握 10 词',ok:()=>weekNewCount()>=10, prog:()=>[weekNewCount(),10]},
+  {ico:'🧭',nm:'路径全通',ds:'完成今日路径 7 天',ok:()=>(STATE.pathDone||0)>=7, prog:()=>[Math.min(STATE.pathDone||0,7),7]},
+  {ico:'💛',nm:'生词收集家',ds:'收藏 20 个生词',ok:()=>favCount()>=20, prog:()=>[Math.min(favCount(),20),20]},
 ];
 function renderAchievements(){
   const grid=document.getElementById('achGrid'); const sum=document.getElementById('achSummary');
@@ -5707,10 +5852,18 @@ function renderAchievements(){
   ACHS.forEach((a,i)=>{ const ok=a.ok(); if(ok) got++;
     if(ok && !STATE._achSeen.includes(i)) newly++;
     const el=document.createElement('div'); el.className='ach'+(ok?'':' locked');
-    el.innerHTML=`<span class="ico">${a.ico}</span><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div>`;
+    // v190：未解锁的勋章若有 prog()，显示进度条 + N/M，把「还差多少」说清楚
+    let ph='';
+    if(!ok && typeof a.prog==='function'){
+      let c=0, m=1; try{ const pr=a.prog()||[0,1]; c=Math.round(pr[0]||0); m=Math.max(1,Math.round(pr[1]||1)); }catch(_){}
+      c=Math.max(0, Math.min(c, m));
+      ph='<div class="prog"><i style="width:'+Math.round(c/m*100)+'%"></i></div><div class="pg-txt">'+c+' / '+m+'</div>';
+    }
+    el.innerHTML=`<span class="ico">${a.ico}</span><div class="nm">${a.nm}</div><div class="ds">${a.ds}</div>`+ph;
     grid.appendChild(el);
   });
-  if(sum) sum.textContent='已获得 '+got+' / '+ACHS.length+' 枚勋章'+(got===ACHS.length?' 🎉 全部解锁！':'');
+  const _nx=ACHS.find(a=>!a.ok());
+  if(sum) sum.innerHTML='已获得 '+got+' / '+ACHS.length+' 枚勋章'+(got===ACHS.length?' 🎉 全部解锁！':(_nx?('<span class="ach-sum-tip">下一个目标：'+_nx.ico+' '+_nx.nm+' · '+_nx.ds+'</span>'):''));
   if(newly>0){ STATE._achSeen=ACHS.map((a,i)=>a.ok()?i:-1).filter(i=>i>=0); saveState();
     celebrate(); foxSay('🏆 解锁了 '+newly+' 枚新勋章，太厉害了！'); }
 }
@@ -6504,22 +6657,12 @@ function renderProgress(){
       wl.appendChild(el);
     });
   }
-  // badges
+  // badges —— v190：改为复用成就墙 ACHS 单一数据源。
+  // 原先这里硬编码了第二份勋章清单（与 ACHS 内容近似但不完全一致，改一处漏一处），
+  // 现在只保留一份数据源，进度页与成就墙永远同步；顺带给未解锁的加 title 说明获取条件。
   const badges=document.getElementById('badges'); badges.innerHTML='';
-  const awards=[
-    {c:STATE.stars>=10, t:'🌟 十星小将'},
-    {c:STATE.stars>=30, t:'⭐ 三十星达人'},
-    {c:STATE.streak>=3, t:'🔥 三天打卡'},
-    {c:STATE.streak>=7, t:'💯 一周坚持'},
-    {c:STATE.streak>=15, t:'🌈 半月坚持'},
-    {c:STATE.streak>=30, t:'🏆 月月坚持'},
-    {c:Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0)>=20, t:'📚 词汇先锋'},
-    {c:STATE.wrong.length>0 && STATE.wrong.every(w=>unitStat(w.unit).mastered.includes(w.en)), t:'🏅 错题清零'},
-    {c:(STATE.chBest||0)>=15, t:'⚡ 挑战王'},
-    {c:(STATE.chBest||0)>=30, t:'👑 纪录保持者'},
-    {c:STATE.daily && STATE.daily.count>=20, t:'🎯 今日达人'}
-  ];
-  awards.forEach(a=>{ const b=document.createElement('span'); b.className='badge'; b.textContent=a.t; if(!a.c) b.style.opacity='.35'; badges.appendChild(b); });
+  ACHS.forEach(a=>{ const b=document.createElement('span'); b.className='badge'; b.textContent=a.ico+' '+a.nm; if(!a.ok()){ b.style.opacity='.35'; b.title=a.ds; } badges.appendChild(b); });
+  const _moreAch=document.createElement('button'); _moreAch.className='btn ghost sm'; _moreAch.textContent='去成就墙看全部 →'; _moreAch.onclick=()=>go('achievements'); badges.appendChild(_moreAch);
   // 学习趋势（近 14 天柱状）
   const tb=document.getElementById('trendBox');
   if(tb){
@@ -6943,7 +7086,10 @@ function smartReviewSort(list){ return list.slice().sort((a,b)=>{ const ka=revie
 function startReview(forceAll){
   let list = forceAll ? STATE.wrong.slice() : dueReviews();
   list = smartReviewSort(list); // v184：按遗忘曲线+错频智能排序，最该先练的排前面
-  if(reviewList.length===0){ toast('今天没有要复习的错题 🎉'); return; }
+  // v190 修复：原来这里判的是 reviewList（上一轮的残留队列）、且从头到尾没把本次 list 落到 reviewList，
+  // 导致「开始今日复习」永远弹「今天没有要复习的错题」，或复习到上一轮遗留的词。两处一并修正。
+  if(list.length===0){ toast('今天没有要复习的错题 🎉'); return; }
+  reviewList=list.slice();
   reviewIdx=0;
   renderReview();
   document.getElementById('reviewModal').classList.add('show');
@@ -6987,11 +7133,12 @@ function reviewResult(known){
   if(!once('review',400)) return; // v155：防连点——连点会让复习等级连跳两级、复习次数虚高
   const w=reviewList[reviewIdx];
   if(!w){ return; }
+  STATE.revTotal=(STATE.revTotal||0)+1; // v190：累计复习次数（成就「复习达人 / 复习狂人」）
   const idx=STATE.wrong.findIndex(x=>x.en===w.en && x.unit===w.unit);
   if(idx>=0){
     if(known){
       w.stage=(w.stage||0)+1; w.reviews=(w.reviews||0)+1; w.okStreak=(w.okStreak||0)+1; // v185：连续答对计数
-      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(idx,1); toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握！'); }
+      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(idx,1); STATE.gradTotal=(STATE.gradTotal||0)+1; toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握！'); } // v190：累计毕业词数
       else { w.due=addDays(todayStr(), REVIEW_INTERVALS[Math.min(w.stage,REVIEW_INTERVALS.length-1)]); STATE.wrong[idx]=w; }
     } else {
       w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.okStreak=0; w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183：复习"还不会"也累加 errs；v185：清零连续答对
@@ -7135,6 +7282,8 @@ function renderHomePath(){
   if(!steps.length){ html='<div class="path-empty">🎉 今天没有待办，去 <button class="link-btn" onclick="go(\'adventure\')">词境冒险</button> 玩一玩吧！</div>'; }
   else { html=steps.map(s=>'<div class="path-row'+(s.done?' done':'')+'"><span class="path-ic">'+s.ic+'</span><div class="path-main"><div class="path-t">'+s.t+'</div><div class="path-sub">'+s.sub+'</div></div>'+(s.btn?'<button class="btn sm path-btn" onclick="'+s.act+'">'+s.btn+'</button>':'<span class="path-ok">已完成 ✓</span>')+'</div>').join(''); }
   box.innerHTML=html;
+  // v190：今日学习路径全部完成 → 记一天（成就「路径全通」），同一天只记一次
+  if(steps.length && steps.every(s=>s.done) && STATE.pathDoneDay!==todayStr()){ STATE.pathDone=(STATE.pathDone||0)+1; STATE.pathDoneDay=todayStr(); saveState(); }
   const hint=document.getElementById('pathHint');
   if(hint) hint.textContent = steps.filter(s=>!s.done).length ? (steps.filter(s=>!s.done).length+' 项待完成') : '全部完成 🎉';
 }
@@ -7522,7 +7671,7 @@ function renderWrongbook(){
           +(zh?'<span class="wb-zh">'+zh+'</span>':'')
           +'<span class="wb-tag">'+tag+'</span>'+st
           +'<span class="wb-times">练'+(w.reviews||0)+'次</span>'
-          +'<div class="wb-prog"><div class="wb-pips" data-tip="'+esc(tip)+'">'+pips+'</div><div class="wb-prog-txt">'+progTxt+'</div><span class="wb-times">错 '+(w.errs||0)+' 次</span></div>'+'<div class="wb-actions"><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
+          +'<div class="wb-prog"><div class="wb-pips" data-tip="'+esc(tip)+'">'+pips+'</div><div class="wb-prog-txt">'+progTxt+'</div><span class="wb-times">错 '+(w.errs||0)+' 次</span></div>'+'<div class="wb-actions"><button class="btn ghost fav-btn'+(isFav(w.en,w.unit)?' on':'')+'" title="收藏到生词本" onclick="favToggleWB(this,\''+enq+'\',\''+unitq+'\')"><svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-star"/></svg></button><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
           +'</div>';
       }).join('');
     }
