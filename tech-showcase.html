@@ -1,503 +1,503 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>五年级英语小探险家 · 技术亮点</title>
-<!--
-  技术成果展示页（独立单文件 · 浅色商务风）
-  ⚠️ 更新版本时，只改下面的 META 即可：
-     页面里的版本号 / 工程指标都会通过 data-meta 自动同步，无需逐处修改。
--->
-<script>
-  const META = {
-    version: 185,       // 与 english5-helper.html 的 APP_VERSION 保持一致
-    cache:   'eng5-v242',// 与 sw.js 的 CACHE 保持一致（v184：错词智能复习升级——SRS+错频智能排序 + 跨单元包 + 首页主动点名）
-    words:   523,       // 核心词数（四册全量）
-    audio:   1455,      // 预录音频数
-    audioMB: 21,        // 音频总体积(MB)
-    deps:    0,         // 第三方依赖数
-    offline: 100,       // 离线可用比例(%)
-    iter:    185,       // 迭代版本数
-    updated: '2026-09-11'
-  };
-</script>
-<style>
-  :root{
-    --bg:#f5f7fb; --panel:#ffffff; --ink:#1f2433; --muted:#5b6478;
-    --line:#e6e9f2; --indigo:#4f46e5; --indigo2:#6d5efc; --teal:#0ea5a4;
-    --amber:#f59e0b; --shadow:0 2px 10px rgba(20,30,60,.06), 0 10px 26px rgba(20,30,60,.05);
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    --sans:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
-    line-height:1.6; -webkit-font-smoothing:antialiased;
-    background-image:radial-gradient(circle at 18% 0%, #eef1fb 0 22%, transparent 22.5%),
-                     radial-gradient(circle at 92% 6%, #e7f6f6 0 20%, transparent 20.5%);
-    background-attachment:fixed;
-  }
-  .wrap{max-width:980px; margin:0 auto; padding:30px 20px 60px;}
-  a{color:var(--indigo); text-decoration:none;}
-
-  /* header */
-  .hd{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:18px 22px;
-    background:var(--panel); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow);}
-  .logo{width:58px; height:58px; border-radius:16px; flex:0 0 auto;
-    background:linear-gradient(135deg,#6d5efc,#3ec6ff); display:flex; align-items:center; justify-content:center;
-    font-size:30px; box-shadow:0 8px 18px rgba(109,94,252,.32);}
-  .hd .tt{display:flex; flex-direction:column;}
-  .hd .tt h1{margin:0; font-size:22px; font-weight:900; letter-spacing:.4px;}
-  .hd .tt .en{font:600 12px var(--mono); color:var(--muted); letter-spacing:.5px;}
-  .hd .tags{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-  .pill{font:800 12px var(--mono); color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff);
-    padding:6px 12px; border-radius:999px; box-shadow:0 6px 14px rgba(109,94,252,.28);}
-  .tag{font-size:12px; font-weight:700; color:var(--muted); background:#eef1f8;
-    border:1px solid var(--line); padding:5px 11px; border-radius:999px;}
-  .backlink{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800; color:var(--ink);
-    background:var(--panel); border:1px solid var(--line); padding:8px 14px; border-radius:999px; box-shadow:var(--shadow);
-    transition:.18s;}
-  .backlink:hover{color:var(--indigo); border-color:var(--indigo); transform:translateY(-1px);}
-
-  /* hero */
-  .hero{margin:26px 0 8px;}
-  .hero h2{margin:0 0 10px; font-size:34px; line-height:1.25; font-weight:900; letter-spacing:.3px;}
-  .hero h2 .hl{background:linear-gradient(120deg,#6d5efc,#0ea5a4); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .hero p{margin:0; max-width:680px; color:var(--muted); font-size:15px;}
-  .cta{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
-  .cta a{font-weight:800; font-size:14px; padding:11px 18px; border-radius:14px;}
-  .cta .pri{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 8px 18px rgba(109,94,252,.28);}
-  .cta .sec{color:var(--ink); background:var(--panel); border:1px solid var(--line); box-shadow:var(--shadow);}
-
-  /* sections */
-  .sec{margin-top:40px;}
-  .sec-h{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
-  .sec-h .n{font:900 13px var(--mono); color:#fff; background:var(--indigo); width:26px; height:26px;
-    border-radius:8px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
-  .sec-h h3{margin:0; font-size:20px; font-weight:900; letter-spacing:.4px;}
-  .sec-h .ln{flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent);}
-
-  /* architecture svg */
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow);}
-  .arch-svg{width:100%; height:auto; display:block;}
-
-  /* algo grid */
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
-  .acard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
-  .acard h4{margin:0 0 6px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
-  .acard p{margin:0 0 10px; font-size:13px; color:var(--muted);}
-  pre.code{margin:0; background:#f6f8fc; border:1px solid var(--line); border-radius:12px; padding:11px 13px;
-    font:12.5px/1.6 var(--mono); color:#2c3350; overflow:auto; white-space:pre-wrap;}
-  pre.code .c{color:#9aa3bd;}     /* comment */
-  pre.code .k{color:#6d5efc; font-weight:700;}
-
-  /* metrics */
-  .mgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
-  .mcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px 10px; text-align:center; box-shadow:var(--shadow);}
-  .mcard .n{font:900 30px var(--mono); color:var(--indigo);}
-  .mcard .n small{font-size:14px; font-weight:800; color:#9aa3bd;}
-  .mcard .l{font-size:12px; color:var(--muted); margin-top:4px;}
-
-  /* tech stack */
-  .stack{display:flex; gap:10px; flex-wrap:wrap;}
-  .chip{font-size:13px; font-weight:700; color:var(--ink); background:var(--panel); border:1px solid var(--line);
-    border-radius:12px; padding:9px 14px; box-shadow:var(--shadow);}
-  .chip b{color:var(--indigo2);}
-
-  /* timeline */
-  .tl{position:relative; margin-left:8px; padding-left:22px; border-left:2px solid #e2dcfb;}
-  .tl .it{position:relative; padding:9px 0;}
-  .tl .it::before{content:''; position:absolute; left:-29px; top:13px; width:12px; height:12px; border-radius:50%;
-    background:var(--indigo2); border:2px solid #fff; box-shadow:0 0 0 3px #e8e4fb;}
-  .tl .it b{font-size:14px;}
-  .tl .it span{display:block; font-size:12px; color:var(--muted);}
-
-  /* challenges */
-  .sec-sub{margin:-4px 0 14px; font-size:13px; color:var(--muted);}
-  code{font:600 12.5px var(--mono); color:var(--indigo2); background:#eef0fb; padding:1px 6px; border-radius:6px;}
-  .qcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
-  .qcard h4{margin:0 0 10px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
-  .qrow{display:flex; gap:9px; margin-top:9px; align-items:flex-start;}
-  .qtag{flex:0 0 auto; font:800 11px var(--mono); padding:3px 9px; border-radius:999px; white-space:nowrap; margin-top:1px;}
-  .qtag.q{color:#b45309; background:#fef3c7;}
-  .qtag.p{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 4px 10px rgba(109,94,252,.25);}
-  .qtxt{font-size:13px; color:var(--muted); line-height:1.55;}
-  .qcard pre.code{margin-top:10px;}
-
-  .foot{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); text-align:center;}
-  @media(max-width:640px){
-    .grid2,.mgrid{grid-template-columns:1fr;}
-    .hero h2{font-size:27px;}
-  }
-  .tl-seg{display:flex; justify-content:space-between; align-items:center; margin:6px 0 14px;}
-  .tl-seg .muted{font-size:14px;}
-  .tl-seg .seg{display:flex; gap:8px; width:220px; margin:0;}
-  .tl-seg .seg button{flex:1; border:2px solid var(--line); background:var(--panel); border-radius:12px; padding:10px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink); transition:.15s;}
-  .tl-seg .seg button.on{background:var(--indigo); color:#fff; border-color:var(--indigo);}
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <!-- HEADER -->
-  <header class="hd">
-    <div class="logo">🦊</div>
-    <div class="tt">
-      <h1>五年级英语小探险家</h1>
-      <span class="en">OFFLINE ENGLISH LEARNING PWA · GRADE 5</span>
-    </div>
-    <div class="tags">
-      <a class="backlink" href="index.html">← 返回英语助手</a>
-      <span class="pill" data-meta="version">v22</span>
-      <span class="tag">PWA</span>
-      <span class="tag">离线优先</span>
-      <span class="tag">0 第三方依赖</span>
-    </div>
-  </header>
-
-  <!-- HERO -->
-  <section class="hero">
-    <h2>一个<span class="hl">为离线而生</span>的五年级英语 PWA</h2>
-    <p>单文件、零依赖、可安装到手机桌面的离线学习应用。从词库、语音、复习算法到缓存策略，整套工程都在本地闭环运行——无账号、无联网上报、无后端服务器。</p>
-    <div class="cta">
-      <a class="pri" href="https://hjrwal.github.io/" target="_blank" rel="noopener">▶ 在线体验</a>
-      <a class="sec" href="#arch">查看架构 ↓</a>
-    </div>
-  </section>
-
-  <!-- 1. ARCHITECTURE -->
-  <section class="sec" id="arch">
-    <div class="sec-h"><span class="n">1</span><h3>系统分层架构</h3><span class="ln"></span></div>
-    <div class="card">
-      <svg class="arch-svg" viewBox="0 0 820 392" role="img" aria-label="系统分层架构图">
-        <defs>
-          <linearGradient id="gL" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#3ec6ff"/>
-          </linearGradient>
-          <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1.1" fill="#d9deec"/>
-          </pattern>
-        </defs>
-        <rect x="0" y="0" width="820" height="392" fill="url(#dots)" opacity=".5"/>
-        <g font-family="PingFang SC, Microsoft YaHei, system-ui, sans-serif">
-          <!-- L1 表现层 -->
-          <rect x="60" y="22" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="22" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="48" font-size="17" font-weight="800" fill="#1f2433">表现层</text>
-          <text x="92" y="70" font-size="13" fill="#5b6478">单文件 PWA · 响应式 UI · 三档主题引擎（浅色 / 深色 / 护眼 + 跟随系统）</text>
-          <!-- L2 核心引擎 -->
-          <rect x="60" y="114" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="114" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="140" font-size="17" font-weight="800" fill="#1f2433">核心引擎</text>
-          <text x="92" y="162" font-size="13" fill="#5b6478">SRS 复习 · 单元测试 · 趣味闯关 · 单词游戏 · 双维度弱项诊断</text>
-          <!-- L3 数据层 -->
-          <rect x="60" y="206" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="206" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="232" font-size="17" font-weight="800" fill="#1f2433">数据层</text>
-          <text x="92" y="254" font-size="13" fill="#5b6478">localStorage 状态机 · 错题本 · 进度趋势 · 成就系统</text>
-          <!-- L4 资源层 -->
-          <rect x="60" y="298" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
-          <rect x="60" y="298" width="10" height="62" rx="5" fill="url(#gL)"/>
-          <text x="92" y="324" font-size="17" font-weight="800" fill="#1f2433">资源层</text>
-          <text x="92" y="346" font-size="13" fill="#5b6478">Service Worker 离线缓存 · 671 个预录音频 · 人教 PEP 词库</text>
-        </g>
-        <!-- connectors -->
-        <g stroke="#c7cde0" stroke-width="2" fill="#c7cde0">
-          <line x1="410" y1="84" x2="410" y2="112"/><polygon points="410,118 405,108 415,108"/>
-          <line x1="410" y1="176" x2="410" y2="204"/><polygon points="410,210 405,200 415,200"/>
-          <line x1="410" y1="268" x2="410" y2="296"/><polygon points="410,302 405,292 415,292"/>
-        </g>
-      </svg>
-    </div>
-  </section>
-
-  <!-- 2. ALGORITHMS -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">2</span><h3>关键技术与算法</h3><span class="ln"></span></div>
-    <div class="grid2">
-      <div class="acard">
-        <h4>🧠 SRS 间隔复习</h4>
-        <p>艾宾浩斯式分级调度，错词按间隔重新出现，掌握后自动移出错题本。</p>
-        <pre class="code"><span class="c">// 间隔天数（天）</span>
-REVIEW_INTERVALS = [1, 2, 4, 7, 15, 30]
-<span class="k">due</span> = today + INTERVALS[stage]
-<span class="k">if</span> stage &gt;= len: 移出错题本</pre>
-      </div>
-      <div class="acard">
-        <h4>⚡ SW 缓存失效策略</h4>
-        <p>安装即接管页面，资源更新后自动刷新，根治 PWA「常驻不重启」老问题。</p>
-        <pre class="code">install → <span class="k">skipWaiting</span>()
-update  → <span class="k">controllerchange</span>
-        → location.reload()</pre>
-      </div>
-      <div class="acard">
-        <h4>🔊 TTS 降级方案</h4>
-        <p>设备缺失语音引擎时，用 edge-tts 预录本地音频优先播放，失败则静默降级。</p>
-        <pre class="code"><span class="k">speak</span>(text):
-  <span class="k">if</span> AUDIO_MAP[text]:
-      play(local_mp3)
-  <span class="k">else</span>: webTTS(text)</pre>
-      </div>
-      <div class="acard">
-        <h4>🎯 双维度弱项诊断</h4>
-        <p>按单元统计错次（热力色阶）+ 掌握度（进度条），精准定位薄弱环节。</p>
-        <pre class="code">weakByUnit[unit] = {
-  sel, spell, sent   <span class="c">// 错题计数</span>
-}
-master = solved / total <span class="c">// 进度条</span></pre>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. METRICS -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">3</span><h3>工程指标</h3><span class="ln"></span></div>
-    <div class="mgrid">
-      <div class="mcard"><div class="n" data-meta="words">341</div><div class="l">核心词汇</div></div>
-      <div class="mcard"><div class="n" data-meta="audio">671</div><div class="l">预录音频</div></div>
-      <div class="mcard"><div class="n"><span data-meta="audioMB">9.5</span><small>MB</small></div><div class="l">音频总量</div></div>
-      <div class="mcard"><div class="n" data-meta="deps">0</div><div class="l">第三方依赖</div></div>
-      <div class="mcard"><div class="n"><span data-meta="offline">100</span><small>%</small></div><div class="l">离线可用</div></div>
-      <div class="mcard"><div class="n" data-meta="iter">63</div><div class="l">迭代版本</div></div>
-    </div>
-  </section>
-
-  <!-- 4. TECH STACK -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">4</span><h3>技术栈</h3><span class="ln"></span></div>
-    <div class="card">
-      <div class="stack">
-        <span class="chip"><b>前端</b> · 原生 HTML / CSS / JavaScript（零框架）</span>
-        <span class="chip"><b>存储</b> · localStorage 状态机</span>
-        <span class="chip"><b>离线</b> · Service Worker（Cache-First）</span>
-        <span class="chip"><b>语音</b> · edge-tts 预录 + Web Speech API 降级</span>
-        <span class="chip"><b>部署</b> · GitHub Pages（静态托管）</span>
-        <span class="chip"><b>可安装</b> · Web App Manifest + PWA</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. CHALLENGES -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">5</span><h3>技术难点与解决方案</h3><span class="ln"></span></div>
-    <p class="sec-sub">真实开发中被「卡住」过、并逐一破解的工程问题——每一个都来自真机实测。</p>
-    <div class="grid2">
-      <div class="qcard">
-        <h4>🔇 设备级 TTS 整体缺失</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">一加 Ace 5 Pro / ColorOS 16 的 Web Speech API 朗读整台设备不可用（系统级语音引擎缺失，非浏览器问题），QQ 浏览器与系统浏览器均无法出声。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">用 edge-tts（en-US-AriaNeural）批量预录 671 个 mp3（341 词 + 341 例句 + 句型，共 9.5MB），建立 <code>AUDIO_MAP</code> 内嵌；<code>speak()</code> 优先播本地音频，无则降级 web TTS，彻底摆脱运行时 TTS 依赖。</span></div>
-        <pre class="code"><span class="k">speak</span>(text):
-  <span class="k">if</span> AUDIO_MAP[text]: play(local_mp3)
-  <span class="k">else</span>: webTTS(text)</pre>
-      </div>
-      <div class="qcard">
-        <h4>🔄 PWA 常驻不重启，更新到不了</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">手机 PWA 长期驻留内存，Service Worker 不接管新版本，旧缓存一直生效，用户永远看不到更新。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">install 阶段 <code>try/catch</code> 后必执行 <code>skipWaiting()</code> 抢接管；注册后监听 <code>controllerchange</code> → <code>saveState()</code> 后 <code>location.reload()</code>；页面可见时（<code>visibilitychange</code>）主动 <code>reg.update()</code> 查新。双保险根治缓存陈旧。</span></div>
-        <pre class="code">install → <span class="k">skipWaiting</span>()   <span class="c">// 必执行</span>
-update  → <span class="k">controllerchange</span>
-        → saveState(); location.reload()</pre>
-      </div>
-      <div class="qcard">
-        <h4>📦 671 音频的离线 + 国内可访问</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">671 个音频共 9.5MB，既要离线可听又不能拖慢首屏；且 Vercel / Cloudflare 子域在国内被 DNS 污染，无法直连。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">SW 对 <code>/audio/</code> 走 cache-first 永久离线；仅 install 预缓存壳资源（index / sw / icon），音频按需 fetch 时缓存；部署锁定 GitHub Pages（<code>*.github.io</code> 国内可直连）。</span></div>
-      </div>
-      <div class="qcard">
-        <h4>🎯 弱项诊断：从「有错」到「知道错在哪」</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">仅统计错题总数无法指导复习，孩子不知道该练哪个单元、哪种题型。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt"><code>weakByUnit[unit] = {sel, spell, sent}</code> 三维计数；进度页双维度热力图（色=错次、蓝条=掌握度）；首页推荐「去练某单元某题型」，单元测试与闯关两路错题同源汇聚。</span></div>
-        <pre class="code">weakByUnit[unit] = {
-  sel, spell, sent   <span class="c">// 错次计数</span>
-}
-<span class="c">// 色阶: 错次→红 ; 蓝条: 掌握度</span></pre>
-      </div>
-      <div class="qcard">
-        <h4>🗂️ 零依赖下的可维护词库</h4>
-        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">单文件 + 零依赖，341 词手维护易错、易漏音标，且音频与词表易失同步。</span></div>
-        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">本地 Python 工具链（<code>rebuild / expand / validate</code>）管词库，脚本式校验词数一致；<code>AUDIO_MAP</code> 由脚本生成，保证与词库同源同步，改词后一键重生成音频。</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. TIMELINE -->
-  <section class="sec">
-    <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
-      <div class="card">
-      <div class="tl-seg">
-        <span class="muted">时间线排序</span>
-        <div class="seg" id="tlOrderSeg">
-          <button data-tl="asc" onclick="tsSetTimelineOrder('asc')">低 → 高</button>
-          <button data-tl="desc" onclick="tsSetTimelineOrder('desc')">高 → 低</button>
-        </div>
-      </div>
-      <div class="tl">
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      </div>
-    </div>
-  </section>
-
-  <div class="foot">
-    五年级英语小探险家 · 单文件离线 PWA · 数据全部存于本机浏览器，无账号、无联网上报<br>
-    版本 <span data-meta="version">v116</span> · 缓存 <span data-meta="cache">eng5-v117</span> · 更新于 <span data-meta="updated">2026-08-20</span><br>
-    <a class="backlink" style="margin-top:12px;" href="index.html">← 返回英语助手</a>
-  </div>
-
-</div>
-
-<script src="tech-timeline.js"></script>
-<script>
-  // 通过 data-meta 自动填充版本 / 指标，更新时只需改顶部 META
-  document.querySelectorAll('[data-meta]').forEach(function(el){
-    var k = el.getAttribute('data-meta');
-    if (META[k] === undefined) return;
-    el.textContent = (k === 'version' ? 'v' : '') + META[k];
-  });
-
-  // 版本演进时间线：升降序可切换，偏好存 localStorage
-  
-  function tsSetTimelineOrder(order){
-    try{ localStorage.setItem('tech_tl_order', order); }catch(e){}
-    var seg=document.getElementById('tlOrderSeg');
-    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
-    if(window.renderTimeline) renderTimeline(document.querySelector('.tl'), order);
-  }
-  (function(){
-    var order='asc';  // 本版调成 desc：默认「高 → 低」，最新项顶在最上。原默认 asc 会让 v8 顶在最上、v143 底在最下，让用户「看不到最新项」
-    try{ order=localStorage.getItem('tech_tl_order')||'desc'; }catch(e){}
-    if(window.renderTimeline) renderTimeline(document.querySelector('.tl'), order);
-    var seg=document.getElementById('tlOrderSeg');
-    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
-  })();
-</script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>五年级英语小探险家 · 技术亮点</title>
+<!--
+  技术成果展示页（独立单文件 · 浅色商务风）
+  ⚠️ 更新版本时，只改下面的 META 即可：
+     页面里的版本号 / 工程指标都会通过 data-meta 自动同步，无需逐处修改。
+-->
+<script>
+  const META = {
+    version: 186,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    cache:   'eng5-v243',// 与 sw.js 的 CACHE 保持一致（v184：错词智能复习升级——SRS+错频智能排序 + 跨单元包 + 首页主动点名）
+    words:   523,       // 核心词数（四册全量）
+    audio:   1455,      // 预录音频数
+    audioMB: 21,        // 音频总体积(MB)
+    deps:    0,         // 第三方依赖数
+    offline: 100,       // 离线可用比例(%)
+    iter:    186,       // 迭代版本数
+    updated: '2026-09-11'
+  };
+</script>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#1f2433; --muted:#5b6478;
+    --line:#e6e9f2; --indigo:#4f46e5; --indigo2:#6d5efc; --teal:#0ea5a4;
+    --amber:#f59e0b; --shadow:0 2px 10px rgba(20,30,60,.06), 0 10px 26px rgba(20,30,60,.05);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 18% 0%, #eef1fb 0 22%, transparent 22.5%),
+                     radial-gradient(circle at 92% 6%, #e7f6f6 0 20%, transparent 20.5%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:30px 20px 60px;}
+  a{color:var(--indigo); text-decoration:none;}
+
+  /* header */
+  .hd{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:18px 22px;
+    background:var(--panel); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow);}
+  .logo{width:58px; height:58px; border-radius:16px; flex:0 0 auto;
+    background:linear-gradient(135deg,#6d5efc,#3ec6ff); display:flex; align-items:center; justify-content:center;
+    font-size:30px; box-shadow:0 8px 18px rgba(109,94,252,.32);}
+  .hd .tt{display:flex; flex-direction:column;}
+  .hd .tt h1{margin:0; font-size:22px; font-weight:900; letter-spacing:.4px;}
+  .hd .tt .en{font:600 12px var(--mono); color:var(--muted); letter-spacing:.5px;}
+  .hd .tags{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .pill{font:800 12px var(--mono); color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff);
+    padding:6px 12px; border-radius:999px; box-shadow:0 6px 14px rgba(109,94,252,.28);}
+  .tag{font-size:12px; font-weight:700; color:var(--muted); background:#eef1f8;
+    border:1px solid var(--line); padding:5px 11px; border-radius:999px;}
+  .backlink{display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800; color:var(--ink);
+    background:var(--panel); border:1px solid var(--line); padding:8px 14px; border-radius:999px; box-shadow:var(--shadow);
+    transition:.18s;}
+  .backlink:hover{color:var(--indigo); border-color:var(--indigo); transform:translateY(-1px);}
+
+  /* hero */
+  .hero{margin:26px 0 8px;}
+  .hero h2{margin:0 0 10px; font-size:34px; line-height:1.25; font-weight:900; letter-spacing:.3px;}
+  .hero h2 .hl{background:linear-gradient(120deg,#6d5efc,#0ea5a4); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero p{margin:0; max-width:680px; color:var(--muted); font-size:15px;}
+  .cta{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .cta a{font-weight:800; font-size:14px; padding:11px 18px; border-radius:14px;}
+  .cta .pri{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 8px 18px rgba(109,94,252,.28);}
+  .cta .sec{color:var(--ink); background:var(--panel); border:1px solid var(--line); box-shadow:var(--shadow);}
+
+  /* sections */
+  .sec{margin-top:40px;}
+  .sec-h{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .sec-h .n{font:900 13px var(--mono); color:#fff; background:var(--indigo); width:26px; height:26px;
+    border-radius:8px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .sec-h h3{margin:0; font-size:20px; font-weight:900; letter-spacing:.4px;}
+  .sec-h .ln{flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent);}
+
+  /* architecture svg */
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; box-shadow:var(--shadow);}
+  .arch-svg{width:100%; height:auto; display:block;}
+
+  /* algo grid */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .acard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
+  .acard h4{margin:0 0 6px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
+  .acard p{margin:0 0 10px; font-size:13px; color:var(--muted);}
+  pre.code{margin:0; background:#f6f8fc; border:1px solid var(--line); border-radius:12px; padding:11px 13px;
+    font:12.5px/1.6 var(--mono); color:#2c3350; overflow:auto; white-space:pre-wrap;}
+  pre.code .c{color:#9aa3bd;}     /* comment */
+  pre.code .k{color:#6d5efc; font-weight:700;}
+
+  /* metrics */
+  .mgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .mcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px 10px; text-align:center; box-shadow:var(--shadow);}
+  .mcard .n{font:900 30px var(--mono); color:var(--indigo);}
+  .mcard .n small{font-size:14px; font-weight:800; color:#9aa3bd;}
+  .mcard .l{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  /* tech stack */
+  .stack{display:flex; gap:10px; flex-wrap:wrap;}
+  .chip{font-size:13px; font-weight:700; color:var(--ink); background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:9px 14px; box-shadow:var(--shadow);}
+  .chip b{color:var(--indigo2);}
+
+  /* timeline */
+  .tl{position:relative; margin-left:8px; padding-left:22px; border-left:2px solid #e2dcfb;}
+  .tl .it{position:relative; padding:9px 0;}
+  .tl .it::before{content:''; position:absolute; left:-29px; top:13px; width:12px; height:12px; border-radius:50%;
+    background:var(--indigo2); border:2px solid #fff; box-shadow:0 0 0 3px #e8e4fb;}
+  .tl .it b{font-size:14px;}
+  .tl .it span{display:block; font-size:12px; color:var(--muted);}
+
+  /* challenges */
+  .sec-sub{margin:-4px 0 14px; font-size:13px; color:var(--muted);}
+  code{font:600 12.5px var(--mono); color:var(--indigo2); background:#eef0fb; padding:1px 6px; border-radius:6px;}
+  .qcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:16px 18px; box-shadow:var(--shadow);}
+  .qcard h4{margin:0 0 10px; font-size:16px; font-weight:900; display:flex; align-items:center; gap:8px;}
+  .qrow{display:flex; gap:9px; margin-top:9px; align-items:flex-start;}
+  .qtag{flex:0 0 auto; font:800 11px var(--mono); padding:3px 9px; border-radius:999px; white-space:nowrap; margin-top:1px;}
+  .qtag.q{color:#b45309; background:#fef3c7;}
+  .qtag.p{color:#fff; background:linear-gradient(135deg,#6d5efc,#3ec6ff); box-shadow:0 4px 10px rgba(109,94,252,.25);}
+  .qtxt{font-size:13px; color:var(--muted); line-height:1.55;}
+  .qcard pre.code{margin-top:10px;}
+
+  .foot{margin-top:46px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); text-align:center;}
+  @media(max-width:640px){
+    .grid2,.mgrid{grid-template-columns:1fr;}
+    .hero h2{font-size:27px;}
+  }
+  .tl-seg{display:flex; justify-content:space-between; align-items:center; margin:6px 0 14px;}
+  .tl-seg .muted{font-size:14px;}
+  .tl-seg .seg{display:flex; gap:8px; width:220px; margin:0;}
+  .tl-seg .seg button{flex:1; border:2px solid var(--line); background:var(--panel); border-radius:12px; padding:10px 6px; font-weight:800; font-family:inherit; font-size:14px; cursor:pointer; color:var(--ink); transition:.15s;}
+  .tl-seg .seg button.on{background:var(--indigo); color:#fff; border-color:var(--indigo);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="hd">
+    <div class="logo">🦊</div>
+    <div class="tt">
+      <h1>五年级英语小探险家</h1>
+      <span class="en">OFFLINE ENGLISH LEARNING PWA · GRADE 5</span>
+    </div>
+    <div class="tags">
+      <a class="backlink" href="index.html">← 返回英语助手</a>
+      <span class="pill" data-meta="version">v22</span>
+      <span class="tag">PWA</span>
+      <span class="tag">离线优先</span>
+      <span class="tag">0 第三方依赖</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h2>一个<span class="hl">为离线而生</span>的五年级英语 PWA</h2>
+    <p>单文件、零依赖、可安装到手机桌面的离线学习应用。从词库、语音、复习算法到缓存策略，整套工程都在本地闭环运行——无账号、无联网上报、无后端服务器。</p>
+    <div class="cta">
+      <a class="pri" href="https://hjrwal.github.io/" target="_blank" rel="noopener">▶ 在线体验</a>
+      <a class="sec" href="#arch">查看架构 ↓</a>
+    </div>
+  </section>
+
+  <!-- 1. ARCHITECTURE -->
+  <section class="sec" id="arch">
+    <div class="sec-h"><span class="n">1</span><h3>系统分层架构</h3><span class="ln"></span></div>
+    <div class="card">
+      <svg class="arch-svg" viewBox="0 0 820 392" role="img" aria-label="系统分层架构图">
+        <defs>
+          <linearGradient id="gL" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#6d5efc"/><stop offset="1" stop-color="#3ec6ff"/>
+          </linearGradient>
+          <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.1" fill="#d9deec"/>
+          </pattern>
+        </defs>
+        <rect x="0" y="0" width="820" height="392" fill="url(#dots)" opacity=".5"/>
+        <g font-family="PingFang SC, Microsoft YaHei, system-ui, sans-serif">
+          <!-- L1 表现层 -->
+          <rect x="60" y="22" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="22" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="48" font-size="17" font-weight="800" fill="#1f2433">表现层</text>
+          <text x="92" y="70" font-size="13" fill="#5b6478">单文件 PWA · 响应式 UI · 三档主题引擎（浅色 / 深色 / 护眼 + 跟随系统）</text>
+          <!-- L2 核心引擎 -->
+          <rect x="60" y="114" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="114" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="140" font-size="17" font-weight="800" fill="#1f2433">核心引擎</text>
+          <text x="92" y="162" font-size="13" fill="#5b6478">SRS 复习 · 单元测试 · 趣味闯关 · 单词游戏 · 双维度弱项诊断</text>
+          <!-- L3 数据层 -->
+          <rect x="60" y="206" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="206" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="232" font-size="17" font-weight="800" fill="#1f2433">数据层</text>
+          <text x="92" y="254" font-size="13" fill="#5b6478">localStorage 状态机 · 错题本 · 进度趋势 · 成就系统</text>
+          <!-- L4 资源层 -->
+          <rect x="60" y="298" width="700" height="62" rx="14" fill="#fff" stroke="#e6e9f2"/>
+          <rect x="60" y="298" width="10" height="62" rx="5" fill="url(#gL)"/>
+          <text x="92" y="324" font-size="17" font-weight="800" fill="#1f2433">资源层</text>
+          <text x="92" y="346" font-size="13" fill="#5b6478">Service Worker 离线缓存 · 671 个预录音频 · 人教 PEP 词库</text>
+        </g>
+        <!-- connectors -->
+        <g stroke="#c7cde0" stroke-width="2" fill="#c7cde0">
+          <line x1="410" y1="84" x2="410" y2="112"/><polygon points="410,118 405,108 415,108"/>
+          <line x1="410" y1="176" x2="410" y2="204"/><polygon points="410,210 405,200 415,200"/>
+          <line x1="410" y1="268" x2="410" y2="296"/><polygon points="410,302 405,292 415,292"/>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 2. ALGORITHMS -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">2</span><h3>关键技术与算法</h3><span class="ln"></span></div>
+    <div class="grid2">
+      <div class="acard">
+        <h4>🧠 SRS 间隔复习</h4>
+        <p>艾宾浩斯式分级调度，错词按间隔重新出现，掌握后自动移出错题本。</p>
+        <pre class="code"><span class="c">// 间隔天数（天）</span>
+REVIEW_INTERVALS = [1, 2, 4, 7, 15, 30]
+<span class="k">due</span> = today + INTERVALS[stage]
+<span class="k">if</span> stage &gt;= len: 移出错题本</pre>
+      </div>
+      <div class="acard">
+        <h4>⚡ SW 缓存失效策略</h4>
+        <p>安装即接管页面，资源更新后自动刷新，根治 PWA「常驻不重启」老问题。</p>
+        <pre class="code">install → <span class="k">skipWaiting</span>()
+update  → <span class="k">controllerchange</span>
+        → location.reload()</pre>
+      </div>
+      <div class="acard">
+        <h4>🔊 TTS 降级方案</h4>
+        <p>设备缺失语音引擎时，用 edge-tts 预录本地音频优先播放，失败则静默降级。</p>
+        <pre class="code"><span class="k">speak</span>(text):
+  <span class="k">if</span> AUDIO_MAP[text]:
+      play(local_mp3)
+  <span class="k">else</span>: webTTS(text)</pre>
+      </div>
+      <div class="acard">
+        <h4>🎯 双维度弱项诊断</h4>
+        <p>按单元统计错次（热力色阶）+ 掌握度（进度条），精准定位薄弱环节。</p>
+        <pre class="code">weakByUnit[unit] = {
+  sel, spell, sent   <span class="c">// 错题计数</span>
+}
+master = solved / total <span class="c">// 进度条</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. METRICS -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">3</span><h3>工程指标</h3><span class="ln"></span></div>
+    <div class="mgrid">
+      <div class="mcard"><div class="n" data-meta="words">341</div><div class="l">核心词汇</div></div>
+      <div class="mcard"><div class="n" data-meta="audio">671</div><div class="l">预录音频</div></div>
+      <div class="mcard"><div class="n"><span data-meta="audioMB">9.5</span><small>MB</small></div><div class="l">音频总量</div></div>
+      <div class="mcard"><div class="n" data-meta="deps">0</div><div class="l">第三方依赖</div></div>
+      <div class="mcard"><div class="n"><span data-meta="offline">100</span><small>%</small></div><div class="l">离线可用</div></div>
+      <div class="mcard"><div class="n" data-meta="iter">63</div><div class="l">迭代版本</div></div>
+    </div>
+  </section>
+
+  <!-- 4. TECH STACK -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">4</span><h3>技术栈</h3><span class="ln"></span></div>
+    <div class="card">
+      <div class="stack">
+        <span class="chip"><b>前端</b> · 原生 HTML / CSS / JavaScript（零框架）</span>
+        <span class="chip"><b>存储</b> · localStorage 状态机</span>
+        <span class="chip"><b>离线</b> · Service Worker（Cache-First）</span>
+        <span class="chip"><b>语音</b> · edge-tts 预录 + Web Speech API 降级</span>
+        <span class="chip"><b>部署</b> · GitHub Pages（静态托管）</span>
+        <span class="chip"><b>可安装</b> · Web App Manifest + PWA</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CHALLENGES -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">5</span><h3>技术难点与解决方案</h3><span class="ln"></span></div>
+    <p class="sec-sub">真实开发中被「卡住」过、并逐一破解的工程问题——每一个都来自真机实测。</p>
+    <div class="grid2">
+      <div class="qcard">
+        <h4>🔇 设备级 TTS 整体缺失</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">一加 Ace 5 Pro / ColorOS 16 的 Web Speech API 朗读整台设备不可用（系统级语音引擎缺失，非浏览器问题），QQ 浏览器与系统浏览器均无法出声。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">用 edge-tts（en-US-AriaNeural）批量预录 671 个 mp3（341 词 + 341 例句 + 句型，共 9.5MB），建立 <code>AUDIO_MAP</code> 内嵌；<code>speak()</code> 优先播本地音频，无则降级 web TTS，彻底摆脱运行时 TTS 依赖。</span></div>
+        <pre class="code"><span class="k">speak</span>(text):
+  <span class="k">if</span> AUDIO_MAP[text]: play(local_mp3)
+  <span class="k">else</span>: webTTS(text)</pre>
+      </div>
+      <div class="qcard">
+        <h4>🔄 PWA 常驻不重启，更新到不了</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">手机 PWA 长期驻留内存，Service Worker 不接管新版本，旧缓存一直生效，用户永远看不到更新。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">install 阶段 <code>try/catch</code> 后必执行 <code>skipWaiting()</code> 抢接管；注册后监听 <code>controllerchange</code> → <code>saveState()</code> 后 <code>location.reload()</code>；页面可见时（<code>visibilitychange</code>）主动 <code>reg.update()</code> 查新。双保险根治缓存陈旧。</span></div>
+        <pre class="code">install → <span class="k">skipWaiting</span>()   <span class="c">// 必执行</span>
+update  → <span class="k">controllerchange</span>
+        → saveState(); location.reload()</pre>
+      </div>
+      <div class="qcard">
+        <h4>📦 671 音频的离线 + 国内可访问</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">671 个音频共 9.5MB，既要离线可听又不能拖慢首屏；且 Vercel / Cloudflare 子域在国内被 DNS 污染，无法直连。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">SW 对 <code>/audio/</code> 走 cache-first 永久离线；仅 install 预缓存壳资源（index / sw / icon），音频按需 fetch 时缓存；部署锁定 GitHub Pages（<code>*.github.io</code> 国内可直连）。</span></div>
+      </div>
+      <div class="qcard">
+        <h4>🎯 弱项诊断：从「有错」到「知道错在哪」</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">仅统计错题总数无法指导复习，孩子不知道该练哪个单元、哪种题型。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt"><code>weakByUnit[unit] = {sel, spell, sent}</code> 三维计数；进度页双维度热力图（色=错次、蓝条=掌握度）；首页推荐「去练某单元某题型」，单元测试与闯关两路错题同源汇聚。</span></div>
+        <pre class="code">weakByUnit[unit] = {
+  sel, spell, sent   <span class="c">// 错次计数</span>
+}
+<span class="c">// 色阶: 错次→红 ; 蓝条: 掌握度</span></pre>
+      </div>
+      <div class="qcard">
+        <h4>🗂️ 零依赖下的可维护词库</h4>
+        <div class="qrow"><span class="qtag q">难点</span><span class="qtxt">单文件 + 零依赖，341 词手维护易错、易漏音标，且音频与词表易失同步。</span></div>
+        <div class="qrow"><span class="qtag p">方案</span><span class="qtxt">本地 Python 工具链（<code>rebuild / expand / validate</code>）管词库，脚本式校验词数一致；<code>AUDIO_MAP</code> 由脚本生成，保证与词库同源同步，改词后一键重生成音频。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. TIMELINE -->
+  <section class="sec">
+    <div class="sec-h"><span class="n">6</span><h3>版本演进</h3><span class="ln"></span></div>
+      <div class="card">
+      <div class="tl-seg">
+        <span class="muted">时间线排序</span>
+        <div class="seg" id="tlOrderSeg">
+          <button data-tl="asc" onclick="tsSetTimelineOrder('asc')">低 → 高</button>
+          <button data-tl="desc" onclick="tsSetTimelineOrder('desc')">高 → 低</button>
+        </div>
+      </div>
+      <div class="tl">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    五年级英语小探险家 · 单文件离线 PWA · 数据全部存于本机浏览器，无账号、无联网上报<br>
+    版本 <span data-meta="version">v116</span> · 缓存 <span data-meta="cache">eng5-v117</span> · 更新于 <span data-meta="updated">2026-08-20</span><br>
+    <a class="backlink" style="margin-top:12px;" href="index.html">← 返回英语助手</a>
+  </div>
+
+</div>
+
+<script src="tech-timeline.js"></script>
+<script>
+  // 通过 data-meta 自动填充版本 / 指标，更新时只需改顶部 META
+  document.querySelectorAll('[data-meta]').forEach(function(el){
+    var k = el.getAttribute('data-meta');
+    if (META[k] === undefined) return;
+    el.textContent = (k === 'version' ? 'v' : '') + META[k];
+  });
+
+  // 版本演进时间线：升降序可切换，偏好存 localStorage
+  
+  function tsSetTimelineOrder(order){
+    try{ localStorage.setItem('tech_tl_order', order); }catch(e){}
+    var seg=document.getElementById('tlOrderSeg');
+    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
+    if(window.renderTimeline) renderTimeline(document.querySelector('.tl'), order);
+  }
+  (function(){
+    var order='asc';  // 本版调成 desc：默认「高 → 低」，最新项顶在最上。原默认 asc 会让 v8 顶在最上、v143 底在最下，让用户「看不到最新项」
+    try{ order=localStorage.getItem('tech_tl_order')||'desc'; }catch(e){}
+    if(window.renderTimeline) renderTimeline(document.querySelector('.tl'), order);
+    var seg=document.getElementById('tlOrderSeg');
+    if(seg) seg.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.dataset.tl===order); });
+  })();
+</script>
+</body>
+</html>

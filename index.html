@@ -887,6 +887,25 @@
   .wu-item .muted{margin-left:2px}
   .wu-item .link-btn{margin-left:auto}
   body.theme-dark .wu-item{background:rgba(232,116,59,.16)}
+  /* v186 首页学习动态时间轴 */
+  .timeline-card .tl-items{margin-top:10px; display:flex; flex-direction:column;}
+  .tl-node{position:relative; display:flex; gap:12px; padding-bottom:14px;}
+  .tl-node:last-child{padding-bottom:0;}
+  .tl-rail{position:relative; flex:0 0 16px; display:flex; justify-content:center;}
+  .tl-dot{flex:0 0 16px; width:16px; height:16px; border-radius:50%; margin-top:2px; box-shadow:0 0 0 4px rgba(123,92,255,.12); z-index:1;}
+  .tl-node.tl-review .tl-dot{background:#e8743b; box-shadow:0 0 0 4px rgba(232,116,59,.15);}
+  .tl-node.tl-progress .tl-dot{background:#7b5cff;}
+  .tl-node.tl-weak .tl-dot{background:#e8743b;}
+  .tl-rail::before{content:''; position:absolute; top:18px; bottom:-2px; left:50%; width:2px; transform:translateX(-50%); background:var(--line);}
+  .tl-node:last-child .tl-rail::before{display:none;}
+  .tl-body{flex:1; min-width:0;}
+  .tl-title{font-weight:800; font-size:14px; color:var(--ink); display:flex; align-items:center; gap:6px;}
+  .tl-title .tl-tag{margin-left:auto; font-size:11px; font-weight:700; color:var(--brand);}
+  .tl-sub{font-size:13px; color:var(--muted); margin-top:3px; line-height:1.5;}
+  .tl-sub b{color:var(--ink);}
+  .tl-cta{margin-top:6px; display:inline-flex;}
+  .tl-empty{font-size:13px; color:var(--muted); margin-top:3px;}
+  body.theme-dark .tl-dot{box-shadow:0 0 0 4px rgba(123,92,255,.22);}
   body.theme-dark .weak-tip{background:rgba(232,116,59,.14); color:#f3c98a; border-color:rgba(232,116,59,.32);}
   .link-btn{background:none; border:none; color:#1b8f5a; font-weight:800; font-size:13px; cursor:pointer; padding:0 2px; text-decoration:underline;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.75}}
@@ -1394,19 +1413,9 @@
         <div class="tile c-coral" onclick="openWeakPanel()"><svg class="ic svg-ic" viewBox="0 0 24 24"><use href="#i-bulb"/></svg><h3>薄弱点</h3><p>哪里常错</p><span class="count-dot hidden" id="weakDot">0</span></div>
     </div>
     </div>
-    <div class="review-callout" id="reviewCallout" onclick="startReview()">
-      <span class="rc-ic"><svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-refresh"/></svg></span>
-      <span class="rc-txt">今日复习 <b id="reviewCount">0</b> 个易错词</span>
-      <span class="rc-mini" title="待复习占全部错题的比例"><i id="reviewMini"></i></span>
-      <span class="rc-go">去复习 →</span>
-    </div>
-    <div class="panel weekly-card" id="weeklyCard" style="margin-top:14px">
-      <div class="row spread"><b>📈 本周进步</b><span class="muted" id="weekCmp"></span></div>
-      <div class="wk-grid">
-        <div class="wk-cell"><div class="wk-num" id="weekStreak">0</div><div class="wk-lbl">连续打卡(天)</div></div>
-        <div class="wk-cell"><div class="wk-num" id="weekNew">0</div><div class="wk-lbl">本周新掌握(词)</div></div>
-        <div class="wk-cell"><div class="wk-num" id="weekTotal">0</div><div class="wk-lbl">累计掌握(词)</div></div>
-      </div>
+    <div class="panel timeline-card" id="homeTimeline" style="margin-top:14px">
+      <div class="row spread"><b>🗓️ 学习动态</b><span class="muted">复习 · 进步 · 待补</span></div>
+      <div id="tlItems" class="tl-items"></div>
     </div>
     <div class="panel" style="margin-top:14px;">
       <div class="row spread"><b style="cursor:pointer" onclick="openGoal()">今日目标 <span class="edit-pen"></span></b><span class="muted" id="dailyTip"></span></div>
@@ -1418,10 +1427,6 @@
       <p class="muted" style="margin:8px 0 0">每天 15 分钟：先学一个单元词汇，再做 1 关闯关，坚持就能集满 ⭐！</p>
     </div>
   </section>
-    <div class="panel" id="weakUnitsCard" style="margin-top:14px">
-      <div class="row spread"><b>📉 最该补的单元</b><span class="muted">按错词数排序</span></div>
-      <div id="weakUnitsList" class="wu-list"></div>
-    </div>
 
   <!-- 技术亮点 -->
   <section class="screen" id="tech">
@@ -3043,7 +3048,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 185;
+const APP_VERSION = 186;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -6546,6 +6551,10 @@ function recordTrend(){
   if(STATE.trend.length>14) STATE.trend=STATE.trend.slice(-14);
   saveState();
 }
+function findWordZh(unitId, en){
+  const u=ALL_UNITS.find(x=>x.id===unitId); if(!u) return {zh:'', emoji:'📘', title:unitId};
+  const w=(u.words||[]).find(x=>x.en===en); return {zh:(w&&w.zh)||'', emoji:u.emoji, title:u.title};
+}
 function buildReportData(){
   const grade=STATE.settings.grade==='6'?'六年级':'五年级';
   const mastered=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
@@ -6570,6 +6579,12 @@ function buildReportData(){
   const wrongWords=(STATE.wrong||[]).slice(0,8);
   // v183：本周最常错的词——按累计答错次数 errs 降序取 Top 5（errs 在 recordWord 答错 + 复习"还不会"时累加）
   const topErrs=(STATE.wrong||[]).slice().sort((a,b)=>(b.errs||0)-(a.errs||0)).slice(0,5);
+  // v186：本周新掌握的词（由 masteredAt 按本周周一对齐筛选，列出实际词 en/zh/单元）
+  const nws=weekStart(todayStr()); const nwe=addDays(nws,7);
+  const nma=STATE.masteredAt||{};
+  const newMastered=Object.keys(nma).filter(k=>{ const d=nma[k]; return d>=nws && d<nwe; })
+    .map(k=>{ const i=k.indexOf('::'); const uid=k.slice(0,i), en=k.slice(i+2); const f=findWordZh(uid,en); return {en, zh:f.zh, emoji:f.emoji, title:f.title, date:nma[k]}; })
+    .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:0));
   const testVals=Object.values(STATE.tests||{}).filter(v=>typeof v==='number');
   const bestTest=testVals.length?Math.max.apply(null,testVals):null;
   const avgTest=testVals.length?Math.round(testVals.reduce((a,b)=>a+b,0)/testVals.length):null;
@@ -6581,7 +6596,7 @@ function buildReportData(){
   const calDays=35, cal=[], t0=new Date(todayStr());
   for(let i=calDays-1;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); const ds=d.toISOString().slice(0,10); cal.push({date:ds, active:!!activeMap[ds]}); }
   return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
-    weekNew,weakUnits,wrongWords,topErrs,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),cal,date:todayStr()};
+    weekNew,weakUnits,wrongWords,topErrs,newMastered,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),cal,date:todayStr()};
 }
 function buildAdvice(d){
   const a=[];
@@ -6614,6 +6629,7 @@ function exportWeekly(){
   else L.push('  （暂无明显薄弱单元）');
   if(d.wrongWords.length){ L.push(''); L.push('【常错单词】'); d.wrongWords.forEach(w=>L.push('  '+w.en+' '+(w.zh||''))); }
   if(d.topErrs.length){ L.push(''); L.push('【本周最常错的词】'); d.topErrs.forEach(w=>L.push('  '+w.en+' '+(w.zh||'')+' —— 错 '+(w.errs||0)+' 次')); }
+  if(d.newMastered.length){ L.push(''); L.push('【本周新掌握的词】'); d.newMastered.forEach(w=>L.push('  '+w.en+' '+(w.zh||'')+' · '+(w.emoji||'')+w.title)); }
   L.push(''); L.push('【学习建议】'); d.advice.forEach(t=>L.push('  · '+t));
   L.push(''); L.push('—— 由 english5-helper 生成（hjrwal.github.io）');
   const txt=L.filter(x=>x!==undefined).join('\n');
@@ -6664,6 +6680,7 @@ function showReport(){
     </div>
     <div class="rpt-line">本周新增掌握 <b>${d.weekNew}</b> 词 · 待巩固错题 <b>${d.wrongWords.length}</b> 个${d.bestTest!=null?(' · 测验最佳 <b>'+d.bestTest+'</b> 分'):''}</div>
     ${trendBars?`<div class="rpt-sec">📈 近况（掌握单词趋势）</div><div class="rpt-trend">${trendBars}</div>`:''}
+    ${d.newMastered.length?`<div class="rpt-sec">🌟 本周新掌握的词</div><div class="rpt-words">${d.newMastered.map(w=>`<span class="rpt-chip">${w.en}<small class="muted">${w.zh||''}</small></span>`).join('')}</div>`:`<div class="rpt-sec">🌟 本周新掌握的词</div><p class="rpt-empty">本周还没新掌握的单词，加油哦 💪</p>`}
     <div class="rpt-sec">🔥 薄弱单元</div>
     ${weakHtml}
     <div class="rpt-sec">🎯 薄弱类型</div>
@@ -6691,8 +6708,9 @@ function saveReportImage(){
     const weakTypeH=wtTotal>0?150:24+24; // v156：薄弱类型改为甜甜圈图，预留更大高度
     const wordsH=d.wrongWords.length?90:40;
     const topErrsH=d.topErrs.length?40+d.topErrs.length*26:40; // v183：最常错的词区块高度
+    const newMasteredH=d.newMastered.length?24+14+d.newMastered.length*26:40; // v186：本周新掌握的词区块高度
     const adviceH=30+d.advice.length*72;
-    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+topErrsH+12+24+adviceH+40;
+    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+24+newMasteredH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+topErrsH+12+24+adviceH+40;
     const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
     const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
     const cs=getComputedStyle(document.body);
@@ -6787,6 +6805,13 @@ function saveReportImage(){
       ctx.textAlign='left';
       y+=topReserve+barAreaH+botReserve;
     }
+    // v186：本周新掌握的词
+    ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('🌟 本周新掌握的词', pad, y+16); y+=24;
+    if(d.newMastered.length){ d.newMastered.forEach(w=>{
+      ctx.fillStyle='#8A6FD0'; ctx.beginPath(); ctx.arc(pad+6, y+6, 4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=ink; ctx.font='600 14px sans-serif'; ctx.fillText(w.en+(w.zh?('（'+w.zh+'）'):'')+'  · '+(w.emoji||'')+w.title, pad+18, y+11);
+      y+=26;
+    }); y+=8; } else { ctx.fillStyle=muted; ctx.font='500 14px sans-serif'; ctx.fillText('本周还没新掌握的单词，加油哦 💪', pad, y+16); y+=30; }
     // 薄弱单元
     ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.fillText('🔥 薄弱单元', pad, y+16); y+=24;
     if(d.weakUnits.length){ d.weakUnits.forEach(w=>{
@@ -7015,31 +7040,30 @@ function bumpGoal(ok){
 }
 function weekStart(d){ const dt=new Date(d+'T00:00:00'); const day=(dt.getDay()+6)%7; dt.setDate(dt.getDate()-day); const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,'0'), dd=String(dt.getDate()).padStart(2,'0'); return y+'-'+m+'-'+dd; }
 function renderHomeInsights(){
-  const wc=document.getElementById('weeklyCard');
-  if(wc){
-    const streak=STATE.streak||0;
-    const ws=weekStart(todayStr()); const we=addDays(ws,7); const pws=weekStart(addDays(todayStr(),-7));
-    const ma=STATE.masteredAt||{}; let cur=0, prev=0;
-    Object.keys(ma).forEach(k=>{ const d=ma[k]; if(d>=ws&&d<we) cur++; else if(d>=pws&&d<ws) prev++; });
-    const total=Object.values(STATE.units).reduce((a,u)=>a+((u.mastered&&u.mastered.length)||0),0);
-    const e1=document.getElementById('weekStreak'); if(e1) e1.textContent=streak;
-    const e2=document.getElementById('weekNew'); if(e2) e2.textContent=cur;
-    const e3=document.getElementById('weekTotal'); if(e3) e3.textContent=total;
-    const cmp=document.getElementById('weekCmp');
-    if(cmp){ if(cur>prev) cmp.textContent='比上周多 '+(cur-prev)+' 词 ↑'; else if(cur<prev) cmp.textContent='比上周少 '+(prev-cur)+' 词 ↓'; else cmp.textContent='和上周一样'; }
-  }
-  const card=document.getElementById('weakUnitsCard');
-  if(card){
-    const list=document.getElementById('weakUnitsList');
-    const cnt={};
-    (STATE.wrong||[]).forEach(w=>{ if(w.unit) cnt[w.unit]=(cnt[w.unit]||0)+1; });
-    const ranked=Object.keys(cnt).map(uid=>({uid,n:cnt[uid],u:(ALL_UNITS.find(x=>x.id===uid)||{emoji:'📘',title:uid})})).sort((a,b)=>b.n-a.n).slice(0,3);
-    if(!ranked.length){ card.classList.add('hidden'); }
-    else {
-      card.classList.remove('hidden');
-      if(list) list.innerHTML=ranked.map(r=>'<div class="wu-item">'+r.u.emoji+' <b>'+esc(r.u.title)+'</b><span class="muted">错 '+r.n+' 个</span><button class="link-btn" onclick="goTestUnit('+JSON.stringify(r.uid)+')">去练习▶</button></div>').join('');
-    }
-  }
+  const box=document.getElementById('tlItems'); if(!box) return;
+  const nodes=[];
+  // ① 该复习啦
+  const dueList=dueReviews(); const due=dueList.length;
+  const up=STATE.wrong.filter(w=>w.due && w.due>todayStr() && w.due<=addDays(todayStr(),3)).length;
+  let reviewSub='今天还没有待复习的词，真棒 ✅'+(up?' · 未来3天有 '+up+' 个将到期':'');
+  if(due>0){ const top=smartReviewSort(dueList).slice(0,3).map(w=>w.en); reviewSub='今天该复习 <b>'+due+'</b> 个易错词'+(up?' · 未来3天还有 <b>'+up+'</b> 个将到期':'')+(top.length?'<br>最该先练：<b>'+esc(top.join(' · '))+'</b> 🧠':'')+' · 没复习完会自动顺延到明天'; }
+  nodes.push('<div class="tl-node tl-review"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">🔁 该复习啦'+(due>0?'<span class="tl-tag">去复习 ▶</span>':'')+'</div><div class="tl-sub">'+reviewSub+'</div>'+(due>0?'<div class="tl-cta"><button class="link-btn" onclick="startReview()">开始今日复习</button></div>':'')+'</div></div>');
+  // ② 本周进步
+  const streak=STATE.streak||0;
+  const ws=weekStart(todayStr()); const we=addDays(ws,7); const pws=weekStart(addDays(todayStr(),-7));
+  const ma=STATE.masteredAt||{}; let cur=0, prev=0;
+  Object.keys(ma).forEach(k=>{ const d=ma[k]; if(d>=ws&&d<we) cur++; else if(d>=pws&&d<ws) prev++; });
+  const total=Object.values(STATE.units).reduce((a,u)=>a+((u.mastered&&u.mastered.length)||0),0);
+  let cmp='和上周一样'; if(cur>prev) cmp='比上周多 '+(cur-prev)+' 词 ↑'; else if(cur<prev) cmp='比上周少 '+(prev-cur)+' 词 ↓';
+  nodes.push('<div class="tl-node tl-progress"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">📈 本周进步<span class="tl-tag">'+cmp+'</span></div><div class="tl-sub">本周新掌握 <b>'+cur+'</b> 词 · 连续打卡 <b>'+streak+'</b> 天 · 累计掌握 <b>'+total+'</b> 词</div></div></div>');
+  // ③ 最该补的单元
+  const cnt={}; (STATE.wrong||[]).forEach(w=>{ if(w.unit) cnt[w.unit]=(cnt[w.unit]||0)+1; });
+  const ranked=Object.keys(cnt).map(uid=>({uid,n:cnt[uid],u:(ALL_UNITS.find(x=>x.id===uid)||{emoji:'📘',title:uid})})).sort((a,b)=>b.n-a.n).slice(0,3);
+  let weakNode;
+  if(!ranked.length){ weakNode='<div class="tl-empty">🎉 没有薄弱单元，继续保持！</div>'; }
+  else { weakNode=ranked.map(r=>'<div class="wu-item" style="background:transparent;padding-left:0">'+r.u.emoji+' <b>'+esc(r.u.title)+'</b><span class="muted">错 '+r.n+' 个</span><button class="link-btn" onclick="goTestUnit('+JSON.stringify(r.uid)+')">去练习▶</button></div>').join(''); }
+  nodes.push('<div class="tl-node tl-weak"><div class="tl-rail"><span class="tl-dot"></span></div><div class="tl-body"><div class="tl-title">📉 最该补的单元</div>'+weakNode+'</div></div>');
+  box.innerHTML=nodes.join('');
 }
 function renderGoal(){
   const d=dailyRec();
@@ -7053,26 +7077,7 @@ function renderGoal(){
   if(bar) bar.classList.toggle('done', n>=G);
   if(done) done.textContent = n>=G ? '🎉 今日目标已达成！' : '今天已答对 '+d.count+' 题 · 还差 '+(G-n)+' 题';
   if(label) label.textContent=n+' / '+G+' 题';
-  const rc=document.getElementById('reviewCount'); if(rc) rc.textContent=dueReviews().length;
-  // B2：错题主动复习推送——首页 callout 升级显示「今日 + 未来3天到期」，有待复习时高亮跳动
-  const rc2=document.getElementById('reviewCallout');
-  if(rc2){
-    const dueList=dueReviews();
-    const due=dueList.length;
-    const up=STATE.wrong.filter(w=>w.due && w.due>todayStr() && w.due<=addDays(todayStr(),3)).length;
-    const txt=rc2.querySelector('.rc-txt');
-    if(txt){
-      if(due>0){
-        const _top=smartReviewSort(dueList).slice(0,3).map(w=>w.en);
-        txt.innerHTML = `今天该复习 <b>${due}</b> 个易错词`+(up?` · 未来3天还有 <b>${up}</b> 个将到期`:'')+`（没复习完会自动顺延到明天）`+( _top.length?`<br>最该先练：<b>${esc(_top.join(' · '))}</b> 🧠`:'');
-      } else {
-        txt.innerHTML = `暂无须复习 ✅`+(up?` · 未来3天有 <b>${up}</b> 个将到期`:'');
-      }
-    }
-    rc2.classList.toggle('due', due>0);
-    const rm=document.getElementById('reviewMini');
-    if(rm){ const tot=STATE.wrong.length; rm.style.width=(tot?Math.min(100,Math.round(due/tot*100)):0)+'%'; }
-  }
+  // v186：首页「该复习啦」节点改由 renderHomeInsights 统一渲染（见 homeTimeline）
   if(n>=G && STATE.goalPartyDate!==todayStr()){
     STATE.goalPartyDate=todayStr(); saveState();
     confetti(); foxSay('🎉 今天的目标圆满达成，你真是英语小探险家！');
