@@ -877,6 +877,16 @@
   .goal-bar.done i{background:var(--sun); background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 4px, transparent 4px 8px); animation:pulse 1s ease infinite;}
   .goal-text{font-size:13px; font-weight:700; color:var(--muted); margin-top:6px; display:flex; justify-content:space-between;}
   .weak-tip{margin-top:10px; padding:8px 12px; border-radius:12px; background:rgba(232,116,59,.10); color:#9a6b00; font-size:13px; font-weight:700; border:1px solid rgba(232,116,59,.22);}
+  .weekly-card .wk-grid{display:flex; gap:8px; margin-top:8px}
+  .weekly-card .wk-cell{flex:1; text-align:center; background:rgba(123,92,255,.08); border-radius:12px; padding:10px 4px}
+  .weekly-card .wk-num{font-size:22px; font-weight:800; color:#7b5cff}
+  .weekly-card .wk-lbl{font-size:11px; color:#9a9aa5; margin-top:2px}
+  body.theme-dark .weekly-card .wk-cell{background:rgba(123,92,255,.18)}
+  .wu-list{margin-top:8px; display:flex; flex-direction:column; gap:6px}
+  .wu-item{display:flex; align-items:center; gap:8px; font-size:13px; padding:6px 8px; border-radius:10px; background:rgba(232,116,59,.08)}
+  .wu-item .muted{margin-left:2px}
+  .wu-item .link-btn{margin-left:auto}
+  body.theme-dark .wu-item{background:rgba(232,116,59,.16)}
   body.theme-dark .weak-tip{background:rgba(232,116,59,.14); color:#f3c98a; border-color:rgba(232,116,59,.32);}
   .link-btn{background:none; border:none; color:#1b8f5a; font-weight:800; font-size:13px; cursor:pointer; padding:0 2px; text-decoration:underline;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.75}}
@@ -1390,6 +1400,14 @@
       <span class="rc-mini" title="待复习占全部错题的比例"><i id="reviewMini"></i></span>
       <span class="rc-go">去复习 →</span>
     </div>
+    <div class="panel weekly-card" id="weeklyCard" style="margin-top:14px">
+      <div class="row spread"><b>📈 本周进步</b><span class="muted" id="weekCmp"></span></div>
+      <div class="wk-grid">
+        <div class="wk-cell"><div class="wk-num" id="weekStreak">0</div><div class="wk-lbl">连续打卡(天)</div></div>
+        <div class="wk-cell"><div class="wk-num" id="weekNew">0</div><div class="wk-lbl">本周新掌握(词)</div></div>
+        <div class="wk-cell"><div class="wk-num" id="weekTotal">0</div><div class="wk-lbl">累计掌握(词)</div></div>
+      </div>
+    </div>
     <div class="panel" style="margin-top:14px;">
       <div class="row spread"><b style="cursor:pointer" onclick="openGoal()">今日目标 <span class="edit-pen"></span></b><span class="muted" id="dailyTip"></span></div>
       <div class="goal-wrap">
@@ -1400,6 +1418,10 @@
       <p class="muted" style="margin:8px 0 0">每天 15 分钟：先学一个单元词汇，再做 1 关闯关，坚持就能集满 ⭐！</p>
     </div>
   </section>
+    <div class="panel" id="weakUnitsCard" style="margin-top:14px">
+      <div class="row spread"><b>📉 最该补的单元</b><span class="muted">按错词数排序</span></div>
+      <div id="weakUnitsList" class="wu-list"></div>
+    </div>
 
   <!-- 技术亮点 -->
   <section class="screen" id="tech">
@@ -3021,7 +3043,7 @@ const RECENT_META={
   challenge:{t:'限时挑战', ic:'i-timer'}, achievements:{t:'成就墙', ic:'i-trophy'},
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'}
 };
-const APP_VERSION = 184;
+const APP_VERSION = 185;
 const SCHEMA_VERSION = 1; // 状态 schema 版本：bump 后旧档由 migrateState 自动补齐，绝不丢数据
 /* v155：通用防连点 once()——内联 onclick 的按钮在重绘/动画期间依然存在，连点会重复 recordWord /
    awardStars / bumpGoal / 推进题目。once(key,ms) 首次放行，ms 毫秒内重复调用被拦。
@@ -3138,7 +3160,7 @@ function closeSettings(){
 function defaultState(){
   return { version:1, stars:0, streak:0, lastActive:'', _lastAutoBk:'',
     units:{}, wrong:[], wrongFixed:0, chBest:0, daily:{date:'',count:0},
-    trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{},
+    trend:[], tests:{}, gameWins:0, gramRight:0, weak:{sel:0,spell:0,sent:0}, weakByUnit:{}, masteredAt:{},
     ab:{sel:{c:0,t:0},spell:{c:0,t:0},sent:{c:0,t:0},listen:{c:0,t:0}},
     rankIdx:0, codex:{}, bossSeen:{},
     onboarded:false,
@@ -3174,6 +3196,7 @@ function migrateState(s){
   if(!s.settings.recent || typeof s.settings.recent!=='object' || Array.isArray(s.settings.recent)) s.settings.recent={};
   if(typeof s.settings.cardOnlyWeak!=='boolean') s.settings.cardOnlyWeak=false; // v178：非布尔一律退回默认关
   ['units','weakByUnit','tests','bossSeen'].forEach(k=>{ if(s[k]&&typeof s[k]!=='object') s[k]={}; });
+  if(!s.masteredAt || typeof s.masteredAt!=='object') s.masteredAt={}; // v185：首次掌握日期映射（支撑本周新掌握）
   return s;
 }
 function loadState(){
@@ -3413,20 +3436,30 @@ function recordWord(id, en, ok){
   const u=unitStat(realId);
   if(!u.seen.includes(en)) u.seen.push(en);
   u.attempts+=1; if(ok) u.correct+=1;
-  if(ok && !u.mastered.includes(en)) u.mastered.push(en);
+  if(ok && !u.mastered.includes(en)){
+    u.mastered.push(en);
+    if(!STATE.masteredAt) STATE.masteredAt={};
+    STATE.masteredAt[realId+'::'+en]=todayStr(); // v185：记录首次掌握日期，支撑「本周新掌握」
+  }
   if(ok){
-    // 答对了：从错题本移除（已掌握）——v152：按 (en,unit) 双键精确匹配（与入库键一致），防跨年级/跨册重复词移错条目（如五上与六上都有 cat，练六上答对不该移出五上那条）
+    // 答对了：v185 复习假掌握防火墙——不再"答对一次就移出"，需连续答对 GRAD_STREAK 次才真正移出错题本
     const wi=STATE.wrong.findIndex(w=>w.en===en&&w.unit===realId);
-    if(wi>=0) STATE.wrong.splice(wi,1);
+    if(wi>=0){
+      const w=STATE.wrong[wi];
+      w.okStreak=(w.okStreak||0)+1;
+      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(wi,1); toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握，移出错题本！'); }
+      else { STATE.wrong[wi]=w; toast('答对 +1（连续 '+w.okStreak+'/'+GRAD_STREAK+'）· 再对 '+(GRAD_STREAK-w.okStreak)+' 次就记住啦'); }
+    }
     bumpGoal(true);
   } else {
     const ex=STATE.wrong.find(w=>w.en===en&&w.unit===realId);
     if(!ex){
       const _u=ALL_UNITS.find(x=>x.id===realId);
       const zh=(_u?(_u.words.find(w=>w.en===en)||{}).zh:'')||'';
-      STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0, errs:0}); // v183：errs=累计答错次数（含复习"还不会"），用于家长周报「最常错的词」
+
+      STATE.wrong.push({en, zh, unit:realId, added:todayStr(), due:addDays(todayStr(),1), stage:0, reviews:0, errs:0, okStreak:0}); // v183：errs=累计答错次数；v185：okStreak=连续答对计数（假掌握防火墙）
     } else {
-      ex.errs=(ex.errs||0)+1; // v183：同一词反复错→errs 累加，最贴合"最常错"语义
+      ex.errs=(ex.errs||0)+1; ex.okStreak=0; // v183：同一词反复错→errs 累加；v185：答错清零连续答对计数
     }
   }
   saveState();
@@ -6823,6 +6856,7 @@ function drawWrapped(ctx,text,x,y,maxW,lh){ let line=''; for(const ch of text){ 
    错题复习（艾宾浩斯遗忘曲线排期）
    ========================================================= */
 const REVIEW_INTERVALS=[1,2,4,7,15,30]; // 复习间隔（天）
+const GRAD_STREAK=3; // v185：连续答对这么多次才真正移出错题本（假掌握防火墙）
 let reviewList=[];   // 本次复习队列（全局，供内联 onclick 调用）
 let reviewIdx=0;     // 当前复习到第几个
 function dueReviews(){ const t=todayStr(); return STATE.wrong.filter(w=>!w.due || w.due<=t); }
@@ -6869,7 +6903,7 @@ function renderReview(){
     <button class="btn sky lg" style="margin:6px 0 10px" onclick="speak('${w.en.replace(/'/g,"\\'")}')">听发音</button>
     <button class="btn grape lg" style="margin:6px 0 10px" onclick="startFollowRead('${w.en.replace(/'/g,"\\'")}')">🎤 跟读评测</button>
     ${srsDots(w.stage)}
-    <p class="muted srs-cap">掌握进度 <b>${stage}/6</b>${leftStage>0?' · 还差 '+leftStage+' 次彻底记住':''}</p>
+    <p class="muted srs-cap">连续答对 <b>${(w.okStreak||0)}</b>/${GRAD_STREAK}${(w.okStreak||0)<GRAD_STREAK?' · 再对 '+(GRAD_STREAK-(w.okStreak||0))+' 次就毕业 🎓':' · 可以毕业啦 🎉'}</p>
     <div class="row" style="justify-content:center">
       <button class="btn coral" style="flex:1" onclick="reviewResult(false)">还不会</button>
       <button class="btn grass" style="flex:1" onclick="reviewResult(true)">我会了</button>
@@ -6882,11 +6916,11 @@ function reviewResult(known){
   const idx=STATE.wrong.findIndex(x=>x.en===w.en && x.unit===w.unit);
   if(idx>=0){
     if(known){
-      w.stage=(w.stage||0)+1; w.reviews=(w.reviews||0)+1;
-      if(w.stage>=REVIEW_INTERVALS.length){ STATE.wrong.splice(idx,1); toast('🎉 已掌握，移出错题本！'); }
-      else { w.due=addDays(todayStr(), REVIEW_INTERVALS[w.stage]); STATE.wrong[idx]=w; }
+      w.stage=(w.stage||0)+1; w.reviews=(w.reviews||0)+1; w.okStreak=(w.okStreak||0)+1; // v185：连续答对计数
+      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(idx,1); toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握！'); }
+      else { w.due=addDays(todayStr(), REVIEW_INTERVALS[Math.min(w.stage,REVIEW_INTERVALS.length-1)]); STATE.wrong[idx]=w; }
     } else {
-      w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183：复习"还不会"也累加 errs
+      w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.okStreak=0; w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183：复习"还不会"也累加 errs；v185：清零连续答对
       toast('💪 已安排明天再复习');
     }
     saveState();
@@ -6979,6 +7013,34 @@ function bumpGoal(ok){
   if(d.count===goalTarget()){ toast('🎉 今日目标达成！你太棒啦！'); celebrate(true); setMascotMood('cheer'); }
   saveState();
 }
+function weekStart(d){ const dt=new Date(d+'T00:00:00'); const day=(dt.getDay()+6)%7; dt.setDate(dt.getDate()-day); const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,'0'), dd=String(dt.getDate()).padStart(2,'0'); return y+'-'+m+'-'+dd; }
+function renderHomeInsights(){
+  const wc=document.getElementById('weeklyCard');
+  if(wc){
+    const streak=STATE.streak||0;
+    const ws=weekStart(todayStr()); const we=addDays(ws,7); const pws=weekStart(addDays(todayStr(),-7));
+    const ma=STATE.masteredAt||{}; let cur=0, prev=0;
+    Object.keys(ma).forEach(k=>{ const d=ma[k]; if(d>=ws&&d<we) cur++; else if(d>=pws&&d<ws) prev++; });
+    const total=Object.values(STATE.units).reduce((a,u)=>a+((u.mastered&&u.mastered.length)||0),0);
+    const e1=document.getElementById('weekStreak'); if(e1) e1.textContent=streak;
+    const e2=document.getElementById('weekNew'); if(e2) e2.textContent=cur;
+    const e3=document.getElementById('weekTotal'); if(e3) e3.textContent=total;
+    const cmp=document.getElementById('weekCmp');
+    if(cmp){ if(cur>prev) cmp.textContent='比上周多 '+(cur-prev)+' 词 ↑'; else if(cur<prev) cmp.textContent='比上周少 '+(prev-cur)+' 词 ↓'; else cmp.textContent='和上周一样'; }
+  }
+  const card=document.getElementById('weakUnitsCard');
+  if(card){
+    const list=document.getElementById('weakUnitsList');
+    const cnt={};
+    (STATE.wrong||[]).forEach(w=>{ if(w.unit) cnt[w.unit]=(cnt[w.unit]||0)+1; });
+    const ranked=Object.keys(cnt).map(uid=>({uid,n:cnt[uid],u:(ALL_UNITS.find(x=>x.id===uid)||{emoji:'📘',title:uid})})).sort((a,b)=>b.n-a.n).slice(0,3);
+    if(!ranked.length){ card.classList.add('hidden'); }
+    else {
+      card.classList.remove('hidden');
+      if(list) list.innerHTML=ranked.map(r=>'<div class="wu-item">'+r.u.emoji+' <b>'+esc(r.u.title)+'</b><span class="muted">错 '+r.n+' 个</span><button class="link-btn" onclick="goTestUnit('+JSON.stringify(r.uid)+')">去练习▶</button></div>').join('');
+    }
+  }
+}
 function renderGoal(){
   const d=dailyRec();
   const G=goalTarget();
@@ -7034,6 +7096,7 @@ function renderGoal(){
       wt.innerHTML='建议多练：<b>'+u.emoji+' '+u.title+'</b> 的'+c0[1]+'（累计错 '+c0[2]+' 次） · <button class="link-btn" onclick="goTestUnit(\''+topU+'\')">去练习▶</button> <button class="link-btn" onclick="genPracticePack()">练习包</button>';
     } else wt.classList.add('hidden');
   }
+  renderHomeInsights();
   refreshWrongDot();
   renderHero();
 }
