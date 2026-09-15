@@ -7,6 +7,8 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>词境冒险 / LexiQuest</title>
+    <!-- v253：显式声明 favicon，消除浏览器默认请求 /favicon.ico 造成的 404（线上探测到的唯一死链） -->
+    <link rel="icon" href="icon.png" type="image/png" />
     <style>
       html,
       body {
@@ -22,16 +24,82 @@
         box-sizing: border-box;
       }
       #game-root {
+        position: relative; /* v253：抬到启动占位层之上，canvas 一旦绘制即覆盖之 */
+        z-index: 1;
         width: 100%;
         height: 100%;
       }
       #game-root canvas {
         display: block;
       }
+      /* v253：首屏启动占位层。纯 HTML/CSS（零 JS、零素材），随 HTML 一起解析即渲染，
+         避免 1.4MB JS 下载/解析期间是一片纯黑；Phaser READY 后由 main.ts 移除。
+         层级低于 #game-root，因此画布出现后自然被盖住，无需额外隐藏逻辑兜底。 */
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+        color: #9fb3c8;
+        pointer-events: none;
+        user-select: none;
+      }
+      #boot-splash .bs-title {
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 8px;
+        color: #ffd9a8;
+      }
+      #boot-splash .bs-sub {
+        font-size: 15px;
+        opacity: 0.7;
+      }
+      #boot-splash .bs-bar {
+        width: 168px;
+        height: 6px;
+        border-radius: 3px;
+        background: #1b2230;
+        overflow: hidden;
+      }
+      #boot-splash .bs-bar i {
+        display: block;
+        width: 38%;
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #f08a3d, #f4a93c);
+        animation: bs-slide 1.15s ease-in-out infinite;
+      }
+      @keyframes bs-slide {
+        0% {
+          transform: translateX(-115%);
+        }
+        100% {
+          transform: translateX(375%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash .bs-bar i {
+          animation: none;
+          width: 100%;
+          opacity: 0.45;
+        }
+      }
     </style>
-    <script type="module" crossorigin src="./assets/game/game-hBPewmmx.js"></script>
+    <script type="module" crossorigin src="./assets/game/game-DZMW9usB.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/game/rolldown-runtime-CbXtAM7H.js">
+    <link rel="modulepreload" crossorigin href="./assets/game/phaser-CUdU0QcG.js">
   </head>
   <body>
+    <div id="boot-splash">
+      <div class="bs-title">词境冒险</div>
+      <div class="bs-sub">正在唤醒词灵…</div>
+      <div class="bs-bar"><i></i></div>
+    </div>
     <div id="game-root"></div>
     <!-- v192：主站预录音频映射表（与 PWA 同源同站，audio/<md5>.mp3）；经典脚本先于 module 执行，保证发音前已就绪 -->
     <script src="/audio-map.js"></script>
