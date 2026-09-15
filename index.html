@@ -3418,7 +3418,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 193;
+const APP_VERSION = 194;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4140,7 +4140,7 @@ function norm(s){ return (s||'').toLowerCase().replace(/[^a-z\s]/g,'').replace(/
    ========================================================= */
 function renderTech(){
   const v=document.getElementById('techVer'); if(v) v.textContent='v'+APP_VERSION;
-  const order=(STATE.settings && STATE.settings.timelineOrder)||'asc';
+  const order=(STATE.settings && STATE.settings.timelineOrder)||'desc';
   syncSeg('tlOrderSeg','tl',order);
   if(window.renderTimeline) renderTimeline(document.querySelector('#tech .tl'), order);
 }
