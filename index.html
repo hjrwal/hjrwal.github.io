@@ -1295,6 +1295,286 @@
     .map{gap:0;} .map > * + *{margin-top:10px;}
     .hero-go{gap:0;} .hero-go > * + *{margin-top:4px;}
   }
+
+  /* =====================================================================
+     v193 · 主站界面美化 + 手机小屏顶栏修复（纯 CSS 追加层：零 JS / 零 DOM 改动）
+     原则：只增强、不重构。v164 已确立的「闯关地图 / 徽章 / 进度条 / 磁贴」像素风
+     分区（border-radius:0 + 硬边框 + 实心偏移投影）是刻意设计，此处一律不覆盖，
+     只把它们的投影收敛到同一组 token。所有规则靠「同特异性 + 后置」覆盖旧值。
+     ===================================================================== */
+
+  /* ── A. 设计 token：间距标尺 / 统一阴影阶梯 / 统一圆角 / 收敛色值 ────── */
+  :root{
+    /* A1 间距标尺（8 的倍数）：卡片内边距、卡片间距、区块间距统一取这里 */
+    --s1:8px; --s2:16px; --s3:24px; --s4:32px;
+    /* A2 统一阴影阶梯：同一套 token，避免「有的卡片有影子、有的没有」 */
+    --sh-card:var(--sh-1);                        /* 卡片静止 */
+    --sh-card-h:0 8px 22px rgba(120,80,40,.13);   /* 卡片悬停浮起 */
+    --sh-btn:0 4px 12px rgba(232,116,59,.30);     /* 主按钮静止 */
+    --sh-btn-h:0 10px 22px rgba(232,116,59,.32);  /* 主按钮悬停 */
+    --sh-pixel:4px 4px 0 rgba(58,43,34,.20);      /* 像素卡片族实心投影（沿用原观感，仅收敛到一处） */
+    --sh-pixel-sm:2px 2px 0 rgba(58,43,34,.18);
+    /* A3 卡片描边：比 --line 略深，提升卡片与米白底色的分离度 */
+    --line-strong:#DFC7A4;
+    /* A4 圆角：外层大卡 20px / 内层小卡 16px（像素分区仍为 0，不受影响） */
+    --r-inner:16px;
+    /* A5 收敛散落硬编码色：只给同色系补语义名，不引入新色系 */
+    --violet:#7B5CFF; --violet-d:#5B3ACF; --violet-l:#B79BE8;
+    --violet-s:rgba(123,92,255,.12); --violet-line:rgba(123,92,255,.22);
+    --ok:#36C46B; --ok-d:#1CA64A; --ok-s:rgba(54,196,107,.14);
+    --err:#D93A3A; --warn:#FFB400;
+    --brand-s:rgba(232,116,59,.14);
+    /* A6 统一过渡时长（120~200ms，不引入拖慢性能的长动画） */
+    --t-fast:.14s var(--ease-out);
+    --t-card:.18s var(--ease-out);
+  }
+  /* 暗色 / 护眼主题必须同步新 token，否则会串回浅色值 */
+  body.theme-dark{
+    --line-strong:#5C4838;
+    --sh-card:0 2px 6px rgba(0,0,0,.34); --sh-card-h:0 10px 26px rgba(0,0,0,.52);
+    --sh-pixel:4px 4px 0 rgba(0,0,0,.42); --sh-pixel-sm:2px 2px 0 rgba(0,0,0,.38);
+    --violet:#9A80FF; --violet-d:#BBA8FF; --violet-l:#C9BAFF;
+    --violet-s:rgba(148,120,255,.18); --violet-line:rgba(148,120,255,.30);
+    --ok:#4FD07E; --ok-d:#7FE0A2; --ok-s:rgba(79,208,126,.16);
+    --warn:#FFC93C;
+  }
+  body.theme-sepia{--line-strong:#DCC9A0;}
+
+  /* ── B. 手机小屏顶栏修复（要求 #6）────────────────────────────────────
+     病因：顶栏是单行 flex，.brand 为默认 flex:0 1 auto，390px 下被左右元素挤到
+     138px；标题「五年级英语小探险家」(9 字 ≈144px) 与副标题各自折成两行，
+     顶栏从 67px 涨到 77px，副标题尾字「闯关」被挤到胶囊按钮下方 = 视觉压叠。
+     处方：.brand 吃掉行内剩余空间并可收缩到 0；副标题强制单行 + 省略号；
+     窄屏同步收窄品牌字号与胶囊/齿轮尺寸 —— 标题始终单行，绝不与右侧重叠。 */
+  .brand{flex:1 1 auto; min-width:0;}
+  .brand small{display:block; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  /* 让「品牌名」独占可收缩的空间，其它顶栏元素保持自然尺寸：
+     否则 ⭐/🔥 胶囊会被一起压缩，内部文字折成上下两行（原 390px 下就是这样）。
+     挤压只发生在 .brand 上，由省略号吸收，观感与可点区域都不受影响。 */
+  .stats{flex:0 0 auto;}
+  .pill{white-space:nowrap; flex:0 0 auto;}
+  .gear{flex:0 0 auto;}
+  .mwrap{flex:0 0 auto;}
+  @media (max-width:480px){
+    .brand{font-size:15px;}
+    .brand small{font-size:10.5px;}
+    .pill{font-size:11.5px; padding:4px 9px;}
+    .gear{width:36px; height:36px;}
+    .gear .svg-ic{width:20px; height:20px;}
+  }
+  @media (max-width:380px){
+    .brand{font-size:14px;}
+    .pill{font-size:11px; padding:4px 8px;}
+    .gear{width:34px; height:34px;}
+  }
+  @media (max-width:360px){
+    .brand{font-size:13px;}
+    .brand small{font-size:10px;}
+    .gear{width:32px; height:32px; margin-left:6px;}
+  }
+  @media (max-width:320px){
+    .brand{font-size:12px;}
+    .pill{font-size:10px; padding:3px 7px;}
+    .gear{width:30px; height:30px; margin-left:6px;}
+    .gear .svg-ic{width:18px; height:18px;}
+  }
+
+  /* ── C. hero 卡「今日目标环」窄屏溢出卡片（顺带修复）──────────────────
+     病因：.book-foot 里 .rank-chip 为 width:fit-content 且内部文字 nowrap，
+     无法收缩；390px 下 296+10+52=358 > 内容宽 334 → 圆环被顶出卡片右边框 6~8px。
+     处方：rank-chip 允许收缩 + 文字省略号；≤480px 允许换行，圆环独占第二行右对齐，
+     保证不裁字也不越界。 */
+  .book-foot{min-width:0;}
+  .book-foot > *{min-width:0;}
+  .rank-chip{max-width:100%; min-width:0;}
+  .rk-t{overflow:hidden; text-overflow:ellipsis;}
+  .rk-nx{min-width:0;}
+  @media (max-width:480px){
+    .book-foot{flex-wrap:wrap; row-gap:10px;}
+    .rank-chip{flex:1 1 auto;}
+    .hero-go{flex-direction:row; gap:8px; width:100%; justify-content:flex-end;}
+  }
+
+  /* ── D. 间距网格统一：全部落在 8 的倍数上 ───────────────────────────── */
+  .app{padding:var(--s2) calc(var(--s2) + env(safe-area-inset-right,0px)) calc(88px + env(safe-area-inset-bottom,0px)) calc(var(--s2) + env(safe-area-inset-left,0px));}
+  .topbar{padding:var(--s1) var(--s2); margin-bottom:var(--s2); gap:var(--s1);}
+  .grid{gap:var(--s2);}
+  .panel{padding:var(--s2); margin-bottom:var(--s2);}
+  .group-title{margin:var(--s2) 4px var(--s1);}
+  h2.sec{margin:0 0 var(--s1);}
+  /* 例外：.tile / .isle 属于 v164「像素风分区」，其内边距是刻意压缩过的
+     （磁贴与闯关卡文字刚好不折行），改到 8 网格会让闯关卡「20 词 · 5 句型」折行，
+     故这两处内边距 / 间距保持原值不动，只统一它们的投影 token 与触摸反馈。 */
+  .speech{padding:12px var(--s2); margin-bottom:var(--s2);}
+  .book-body{padding:var(--s2);}
+  .book-title{margin-bottom:12px;}
+  .flash{padding:var(--s4) var(--s3);}
+  .opts{gap:var(--s2);}
+  .row{gap:var(--s1);}
+  .chips{padding:4px 2px var(--s1);}
+  .chip{padding:var(--s1) var(--s2);}
+  .codex-top{margin:0 2px var(--s2);}
+  .codex-unit{margin-bottom:var(--s2);}
+  .wcard{padding:var(--s1);}
+  .map{gap:var(--s1);}
+  .mole{padding:var(--s2) var(--s1);}
+  .moles,.find-grid,.match-grid,.mem-grid,.ach-grid,.heat-grid,.letter-pool,.mastery-list,.rank-list,.wk-words{gap:var(--s1);}
+  .mem-grid,.ach-grid,.heat-grid{margin-top:var(--s1);}
+  .choice-grid{gap:var(--s1); margin-top:var(--s2);}
+  .letter-pool{margin:var(--s2) 0;}
+  .mastery-list{margin:var(--s2) 0;}
+  .basket{gap:var(--s1); padding:12px var(--s2); min-height:56px;}
+  .pool{gap:var(--s1); margin-top:var(--s2);}
+  .build-slot{gap:var(--s1); padding:14px var(--s2);}
+  .stat-card{padding:var(--s2);}
+  .rpt{padding:var(--s2);}
+  .rpt-grid{gap:var(--s1);}
+  .wk-u{padding:12px var(--s2); margin:var(--s1) 0;}
+  .wk-sec{margin:var(--s2) 0 var(--s1);}
+  .gram-card{padding:var(--s2); margin-bottom:var(--s2);}
+  .lexi-entry{margin:var(--s2) 2px 0; padding:var(--s2);}
+  .resume-card{margin:var(--s2) 2px 0; padding:12px var(--s2);}
+  .review-callout{margin-top:var(--s2); padding:12px var(--s2);}
+  .modal{padding:var(--s3);}
+  .test-modal{padding:var(--s2) var(--s2) 12px;}
+  .coach{padding:var(--s2) var(--s3);}
+  .level-card{padding:var(--s3);}
+  .vdone{padding:var(--s3);}
+  .toast{padding:var(--s2) var(--s3);}
+  .set-row{margin:var(--s2) 0 4px;}
+  .weak-type .wt-row{margin:var(--s1) 0;}
+  .tts-warn{margin:0 0 var(--s2); padding:12px;}
+  .sk-unit{margin:var(--s2) 0;}
+  .tech-exit{margin-top:var(--s3); padding-top:var(--s2);}
+  #tech .tech-hero{padding:var(--s2); margin-bottom:var(--s2);}
+  #tech .tsec{margin:var(--s2) 0 var(--s1);}
+  #tech .arch{gap:var(--s1);}
+  #tech .arch .layer{padding:12px var(--s2);}
+  #tech .grid2{gap:var(--s1);}
+  #tech .tcard{padding:12px;}
+  #tech .metrics{gap:var(--s1);}
+  #tech .mcard{padding:12px var(--s1);}
+  @media (max-width:480px){
+    /* 窄屏只收窄外侧留白，卡片内边距/间距保持同一套 8 倍数标尺 */
+    .app{padding:var(--s1) calc(var(--s1) + env(safe-area-inset-right,0px)) calc(88px + env(safe-area-inset-bottom,0px)) calc(var(--s1) + env(safe-area-inset-left,0px));}
+    .flash{padding:var(--s3) var(--s2);}
+  }
+
+  /* ── E. 卡片质感：统一圆角 / 统一阴影 token / 描边对比度 ─────────────── */
+  .panel{border:1px solid var(--line-strong); border-radius:var(--r); box-shadow:var(--sh-card);}
+  .stat-card{border:1px solid var(--line-strong); border-radius:var(--r); box-shadow:var(--sh-card);}
+  .rpt{border-color:var(--line-strong); box-shadow:var(--sh-card);}
+  .flash{border-radius:var(--r); box-shadow:var(--sh-card); border-color:var(--sky);}
+  .modal{border-radius:var(--r); box-shadow:0 16px 40px rgba(80,50,20,.28);}
+  .level-card{border-radius:var(--r);}
+  .coach{border-radius:var(--r);}
+  .rpt-card,.wk-stat,.wk-u,.mem-card,.speech,.gram-card,.choice-opt,.opt,.wcard,.match-card,.find-card,.mole,.token,.basket,.build-slot,.tts-warn{border-radius:var(--r-inner);}
+  .rpt-card,.wk-stat,.mem-card,.wcard,.match-card,.find-card,.mole,.basket,.build-slot,.gram-card{box-shadow:var(--sh-card);}
+  .wk-u,.wk-chip{border-color:var(--line-strong);}
+  /* 像素风分区的实心投影收敛到同一 token（观感不变，只是不再是 3 处手写值） */
+  .tile{box-shadow:var(--sh-pixel);}
+  .isle{box-shadow:var(--sh-pixel);}
+  .ach{box-shadow:3px 3px 0 rgba(58,43,34,.20);}
+  /* 卡片过渡（120~200ms）+ 桌面端轻浮起 */
+  .panel,.stat-card,.rpt,.rpt-card,.wk-stat,.wk-u,.mem-card,.wcard,.match-card,.find-card,.mole,.gram-card,.choice-opt,.opt,.speech,.basket,.build-slot,.tile,.isle,.resume-card,.review-callout,.recent-chip,.chip,.back{
+    transition:transform var(--t-card), box-shadow var(--t-card), border-color var(--t-fast), background-color var(--t-fast);
+  }
+  @media (hover:hover){
+    .stat-card:hover,.rpt-card:hover,.wk-stat:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.mole:hover,.gram-card:hover,.speech:hover,.basket:hover,.build-slot:hover{transform:translateY(-2px); box-shadow:var(--sh-card-h);}
+    .chip:hover{border-color:var(--line-strong); box-shadow:var(--sh-card);}
+  }
+  .tile:active{box-shadow:2px 2px 0 rgba(58,43,34,.24);}
+  .isle:active{transform:translateY(1px); box-shadow:var(--sh-pixel-sm);}
+
+  /* ── F. 按钮主次分明 + 触摸态（:active）反馈 ─────────────────────────── */
+  .btn{
+    background:linear-gradient(135deg,var(--brand),var(--brand-d));
+    border-radius:var(--r-inner); box-shadow:var(--sh-btn);
+    transition:transform var(--t-fast), box-shadow var(--t-fast), filter var(--t-fast), background var(--t-fast);
+  }
+  @media (hover:hover){
+    .btn:hover{transform:translateY(-2px); box-shadow:var(--sh-btn-h); filter:brightness(1.04);}
+  }
+  .btn:active{transform:translateY(1px) scale(.99); box-shadow:var(--sh-1); filter:brightness(.97);}
+  .btn:focus-visible{outline:3px solid var(--grape); outline-offset:2px;}
+  /* 彩色变体：平涂 → 同色系微渐变（只换背景，不改任何布局） */
+  .btn.sky{background:linear-gradient(135deg,var(--sky),var(--sky-d));}
+  .btn.grass{background:linear-gradient(135deg,var(--forest),var(--forest-d));}
+  .btn.coral{background:linear-gradient(135deg,var(--berry),var(--berry-d));}
+  .btn.grape{background:linear-gradient(135deg,var(--grape),var(--grape-d));}
+  .btn.sun{background:linear-gradient(135deg,var(--sun),var(--amber));}
+  /* 次操作：描边幽灵按钮，视觉明显收敛，不抢主按钮 */
+  .btn.ghost{background:var(--card); color:var(--ink); border:2px solid var(--line-strong); box-shadow:none; font-weight:700;}
+  @media (hover:hover){ .btn.ghost:hover{background:var(--soft); border-color:var(--brand); color:var(--brand-d); box-shadow:var(--sh-1); filter:none;} }
+  .btn.ghost:active{background:var(--soft); box-shadow:none; filter:none;}
+  /* 收藏态必须压回幽灵按钮的覆盖（否则「已收藏」高亮会被吃掉） */
+  .btn.ghost.fav-btn.on{background:var(--sun); border-color:rgba(58,43,34,.35); color:#6b4e00; box-shadow:var(--sh-pixel-sm);}
+  /* 主 CTA：「去学习 →」由纯文字升级为主按钮胶囊（原本与次操作无区分） */
+  /* 注意：必须写成 .resume-card .rs-go，才能压过原有同权重规则里的 color:var(--brand-d)，
+     否则深橙字落在橙色胶囊上对比度不足。 */
+  .resume-card .rs-go{padding:6px 12px; border-radius:999px; background:linear-gradient(135deg,var(--brand),var(--brand-d));
+    color:#fff; box-shadow:var(--sh-btn); transition:transform var(--t-fast), box-shadow var(--t-fast);}
+  .resume-card:active .rs-go{transform:translateY(1px); box-shadow:var(--sh-1);}
+  /* hero 卡「今日目标」环：原为白底上的白字（不可见）+ 近白轨道，几乎看不出是进度环。
+     这里补齐对比度：轨道用 --line、进度用 --amber、文字用 --ink，与 .ring 的写法对齐。 */
+  .hero-ring{background:conic-gradient(var(--amber) calc(var(--p,0)*1%), var(--line) 0); box-shadow:var(--sh-card);}
+  .hero-ring span{color:var(--ink); text-shadow:none; font-weight:800;}
+  .hero-ring-lb{color:var(--muted);}
+  /* 底部导航选中态：平涂 → 微渐变 */
+  .nav button.on{background:linear-gradient(135deg,var(--brand),var(--brand-d));}
+  .nav button:active{transform:scale(.94);}
+  .nav button.on:active{transform:translateY(-3px) scale(.96);}
+  /* 其余可点元素补触摸态 */
+  .chip:active{transform:scale(.96);}
+  .back:active{transform:scale(.96);}
+  .seg button{transition:transform var(--t-fast), background var(--t-fast), border-color var(--t-fast), color var(--t-fast);}
+  .seg button:active{transform:scale(.97);}
+  .match-card:active{transform:scale(.96);}
+  .mem-card:active{transform:scale(.96);}
+  .cal-d:active{transform:scale(.94);}
+  .link-btn{transition:opacity var(--t-fast), color var(--t-fast);}
+  .link-btn:hover{color:var(--forest);}
+  .link-btn:active{opacity:.6;}
+
+  /* ── G. 配色收敛：散落硬编码色 → 主题变量（同色系，不引入新色系）─────── */
+  .chips .chip.on{background:linear-gradient(135deg,var(--grape),var(--grape-d)); border-color:var(--grape-d);}
+  .seg button.on{background:linear-gradient(135deg,var(--grape),var(--grape-d)); border-color:var(--grape-d);}
+  .tl-chip{background:var(--violet-s); color:var(--violet-d); border:1px solid var(--violet-line);}
+  .tl-chip .zh{color:var(--violet-l);}
+  .weekly-card .wk-cell{background:var(--violet-s);}
+  .weekly-card .wk-num{color:var(--violet);}
+  .wb-pip{background:var(--soft);}
+  .wb-pip.on{background:var(--violet); box-shadow:0 0 0 2px var(--violet-s);}
+  .ach .prog{background:var(--soft); border-color:var(--line-strong);}
+  .ach .prog i{background:linear-gradient(90deg,var(--violet-l),var(--violet));}
+  .isle.passed::after{background:var(--ok);}
+  .mole.hit,.find-card.found,.match-card.matched{background:var(--ok-s); border-color:var(--ok);}
+  .mem-card.matched{border-color:var(--ok-d);}
+  .wk-u-bar.h3 i{background:var(--grass);}
+  .basket.wrong,.build-slot.wrong,.match-card.wrong{border-color:var(--err);}
+  .choice-opt.wrong{border-color:var(--err); color:var(--err);}
+  .eval-3d .star{color:var(--line-strong);}
+  .eval-3d .star.on{color:var(--warn);}
+  .isle .stars .st.on{color:var(--warn);}
+  .path-ok{color:var(--ok-d);}
+  .link-btn{color:var(--forest-d);}
+  .review-callout.due{background:linear-gradient(135deg,var(--brand-s),rgba(232,116,59,.06)); border-color:rgba(232,116,59,.32);}
+  .heat-cell .c,.rpt-wt-row b,.weak-type .wt-pct{color:var(--amber-d);}
+  .rank-row{border-color:var(--line-strong);}
+  .wcard .w-en{color:var(--ink);}
+  .wcard .w-zh,.wcard .w-ex{color:var(--muted);}
+  .wcard{border-color:var(--line-strong);}
+  .w-ex{background:var(--soft); color:var(--muted);}
+  .rank-row{background:var(--soft);}
+
+  /* ── H. 动效：视图切换淡入（180ms）+ 统一的 reduced-motion 守卫 ───────── */
+  .screen{animation:screenFade .18s var(--ease-out);}
+  @keyframes screenFade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){
+    .screen{animation:none !important;}
+    .panel,.stat-card,.rpt,.rpt-card,.wk-stat,.wk-u,.mem-card,.wcard,.match-card,.find-card,.mole,.gram-card,.choice-opt,.opt,.speech,.basket,.build-slot,.tile,.isle,.resume-card,.review-callout,.recent-chip,.chip,.back,.btn,.seg button{transition:none !important;}
+    .stat-card:hover,.rpt-card:hover,.wk-stat:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.mole:hover,.gram-card:hover,.speech:hover,.basket:hover,.build-slot:hover,.btn:hover{transform:none !important;}
+  }
 </style>
 <script src="audio-map.js"></script>
 </head>
