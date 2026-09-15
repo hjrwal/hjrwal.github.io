@@ -4,7 +4,7 @@
 
 // 发布新版本时，只需把 CACHE 名称的版本号 +1，SW 会自动刷新缓存
 
-const CACHE = 'eng5-v253';
+const CACHE = 'eng5-v254';
 
 const ASSETS = [
 
@@ -48,7 +48,7 @@ const ASSETS = [
 
   './game.html',
 
-  './assets/game/game-B-XHzhDy.js',
+  './assets/game/game-Dl1SwRng.js',
 
   './assets/game/phaser-CUdU0QcG.js',
 
@@ -81,6 +81,16 @@ self.addEventListener('install', event => {
 self.addEventListener('message', event => {
 
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+
+  // v193：离线预取——页面把某单元的词/句音频 URL 列表发来，SW 批量缓存（命中即跳过，失败静默）
+  else if (event.data && event.data.type === 'PREFETCH' && Array.isArray(event.data.urls)) {
+    event.waitUntil((async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(event.data.urls.map(u =>
+        cache.match(u).then(c => c ? null : fetch(u).then(r => (r && r.ok) ? cache.put(u, r.clone()) : null).catch(() => null))
+      ));
+    })());
+  }
 
 });
 

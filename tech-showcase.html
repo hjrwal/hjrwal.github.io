@@ -24,23 +24,23 @@
 
   const META = {
 
-    version: 192,       // 与 english5-helper.html 的 APP_VERSION 保持一致
+    version: 193,       // 与 index.html 的 APP_VERSION 保持一致
 
-    cache:   'eng5-v249',// 与 sw.js 的 CACHE 保持一致（v192：补齐 377 条预录音频 + 游戏接入主站音频，摆脱设备 TTS）
+    cache:   'eng5-v254',// 与 sw.js 的 CACHE 保持一致（v193：SRS 难度系数 + 进单元离线预取 + 周报趋势图改每日新掌握 + 游戏怪兽童趣改名）
 
     words:   523,       // 核心词数（四册全量）
 
-    audio:   1455,      // 预录音频数
+    audio:   1814,      // 预录音频数（v192 补齐 377 条后内容寻址总数，window.AUDIO_MAP 实测 1814 条）
 
-    audioMB: 21,        // 音频总体积(MB)
+    audioMB: 23,        // 音频总体积(MB)（1832 个 mp3 实测约 22.6MB）
 
     deps:    0,         // 第三方依赖数
 
     offline: 100,       // 离线可用比例(%)
 
-    iter:    188,       // 迭代版本数
+    iter:    189,       // 迭代版本数
 
-    updated: '2026-09-11'
+    updated: '2026-09-15'
 
   };
 

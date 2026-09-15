@@ -1075,6 +1075,10 @@
   .choice-opt.wrong{border-color:#d33; background:#fff0f0; color:#d33;}
   .trend-box{display:flex; align-items:flex-end; gap:4px; height:72px; padding:6px 2px; overflow-x:auto;}
   .trend-bar{flex:1 0 10px; min-width:10px; background:linear-gradient(var(--grape),var(--grape-d)); border-radius:6px 6px 0 0; min-height:3px;}
+  .week-card{display:flex; gap:12px; flex-wrap:wrap;}
+  .week-card .wc{flex:1 1 120px; background:linear-gradient(135deg,#f6f1ff,#ffffff); border:1px solid #ece4ff; border-radius:14px; padding:12px 14px; text-align:center;}
+  .week-card .wc .v{font-size:24px; font-weight:800; color:var(--grape); line-height:1.1;}
+  .week-card .wc .l{font-size:12px; color:var(--muted); margin-top:4px;}
   .build-slot.wrong .lt.in{background:#ffd9d9; border-color:#d33; color:#a00;}
   /* v78 连词成句/拼词：空槽提示 + 放对反馈 */
   .build-slot:empty::before{content:"👆 点上面的词，按顺序排好句子"; color:var(--muted); font-size:13px; font-weight:600; align-self:center;}
@@ -2189,9 +2193,13 @@ update → controllerchange
       <p class="muted" style="margin:6px 0 0">格子颜色越深 = 当天学得越久；今天有描边，点格子看当天时长</p>
     </div>
     <div class="panel">
-      <h2 class="sec">学习趋势（近 14 天）</h2>
+      <h2 class="sec">学习趋势（近 14 天 · 每日新掌握）</h2>
       <div id="trendBox" class="trend-box"></div>
-      <p class="muted" style="margin:6px 0 0">柱高 = 当日累计掌握单词数，越往后越高说明在进步 ✨</p>
+      <p class="muted" style="margin:6px 0 0">柱高 = 当日新掌握的单词数，连续有柱子说明每天都在进步 ✨</p>
+    </div>
+    <div class="panel">
+      <h2 class="sec">本周学习周报</h2>
+      <div id="weekCard" class="week-card"></div>
     </div>
     <div class="panel">
       <h2 class="sec">单元掌握度</h2>
@@ -3410,7 +3418,14 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 192;
+const APP_VERSION = 193;
+// v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
+const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
+function easeIdx(stage, ease){
+  const base = Math.min(stage||0, REVIEW_INTERVALS.length-1);
+  const off = Math.round((ease - EASE_DEF) * 2); // 每 ±0.5 偏移一格
+  return Math.max(0, Math.min(REVIEW_INTERVALS.length-1, base + off));
+}
 /* v190：生词本「闪卡过一遍」模式开关。声明位置与 APP_VERSION 同级（顶层最早执行处）——TDZ 铁律：
    cardList()/showCard() 可能在启动早期就被调用，必须保证该 let 已初始化，否则踩暂时性死区报错。 */
 let favOnly=false;
@@ -3560,6 +3575,7 @@ function migrateState(s){
   // v167：导入容错——把关键数组/对象字段强制规整为正确类型并剔除非法条目，
   // 杜绝损坏或被篡改的备份导致后续渲染异常/崩溃（配合 importProgress 的 try+catch 回滚，导入更稳健）
   if(!Array.isArray(s.wrong)) s.wrong=[]; else s.wrong=s.wrong.filter(x=>x&&typeof x==='object'&&typeof x.en==='string');
+  s.wrong=s.wrong.map(x=>{ if(typeof x.ease!=='number'||!isFinite(x.ease)) x.ease=EASE_DEF; return x; }); // v193：旧档错词补难度系数默认
   if(!Array.isArray(s.trend)) s.trend=[];
   if(!Array.isArray(s.codex)) s.codex={};
   if(!s.settings || typeof s.settings!=='object') s.settings={};
@@ -4321,8 +4337,22 @@ function cardList(){
 }
 function syncWeakChip(){ const c=document.getElementById('weakOnlyChip'); if(c) c.classList.toggle('on', cardOnlyWeak); }
 function curUnit(){ const u=UNITS.find(u=>u.id===curUnitId); if(!u&&UNITS.length){ curUnitId=UNITS[0].id; return UNITS[0]; } return u; } // v151：兜底——curUnitId 失效时自动跳第一个单元，绝不返回 undefined（13 处调用仅 1 处判空，原先靠 setGrade/setBook 重置撑着）
+// v193：进单元时离线预取该单元音频——反查 AUDIO_MAP 取每个词的 mp3，批量交给 SW 缓存（同单元只预取一次防抖）
+let _prefetchedUnits={};
+function prefetchUnitAudio(uid){
+  try{
+    if(_prefetchedUnits[uid]) return; _prefetchedUnits[uid]=true; // 已预取过则跳过
+    if(!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return; // SW 尚未接管本页时不预取
+    const u=UNITS.find(x=>x.id===uid); if(!u||!u.words||!u.words.length) return;
+    const urls=[];
+    u.words.forEach(w=>{ const t=w&&w.en; if(!t) return; const fn=window.AUDIO_MAP&&(window.AUDIO_MAP[t]||window.AUDIO_MAP[normWord(t)]); if(fn) urls.push('audio/'+fn); });
+    if(!urls.length) return;
+    navigator.serviceWorker.controller.postMessage({type:'PREFETCH', urls});
+  }catch(_){}
+}
 function showCard(){
   const u=curUnit();
+  prefetchUnitAudio(u.id); // v193：进入单词卡即预取本单元音频（离线可用）
   const list=cardList();                       // v177：按「只练不熟」开关决定过哪批词
   if(!list.length){ curWord=null; return; }    // 空表兜底：绝不让 curWord 变成 undefined 后续抛错
   if(cardIdx>=list.length) cardIdx=0;
@@ -6947,14 +6977,24 @@ function renderProgress(){
   const tb=document.getElementById('trendBox');
   if(tb){
     tb.innerHTML=''; const trend=STATE.trend||[];
-    const maxM=Math.max(1,...trend.map(d=>d.mastered));
+    const maxM=Math.max(1,...trend.map(d=>(d.newMastered||0)));
     trend.slice(-14).forEach(d=>{
       const bar=document.createElement('div'); bar.className='trend-bar';
-      bar.style.height=Math.max(4, Math.round(d.mastered/maxM*64))+'px';
-      bar.title=d.date+' · 掌握 '+d.mastered+' 词 · 正确率 '+d.acc+'%';
+      bar.style.height=Math.max(4, Math.round((d.newMastered||0)/maxM*64))+'px';
+      bar.title=d.date+' · 当日新掌握 '+d.newMastered+' 词 · 累计 '+d.mastered+' · 正确率 '+d.acc+'%';
       tb.appendChild(bar);
     });
     if(trend.length===0) tb.innerHTML='<p class="muted">开始学习几天后，这里会显示你的进步曲线～</p>';
+  }
+  // v193：本周学习周报卡片
+  const wc=document.getElementById('weekCard');
+  if(wc){
+    const wn=weekNewCount();
+    const ws=weekStart(todayStr()); let wsec=0; const oh=STATE.onlineHist||{}; for(const d in oh){ if(d>=ws) wsec+=(oh[d]||0); }
+    const lastAcc=(STATE.trend&&STATE.trend.length)?STATE.trend[STATE.trend.length-1].acc:0;
+    wc.innerHTML='<div class="wc"><div class="v">'+wn+'</div><div class="l">本周新掌握词</div></div>'
+      +'<div class="wc"><div class="v">'+fmtDur(wsec)+'</div><div class="l">本周学习时长</div></div>'
+      +'<div class="wc"><div class="v">'+lastAcc+'%</div><div class="l">最近正确率</div></div>';
   }
 }
 /* v153：薄弱类型三维度（sel=意思·听音 / spell=拼写 / sent=句型）聚合——
@@ -7019,7 +7059,8 @@ function recordTrend(){
   const totalCor=Object.values(STATE.units).reduce((a,u)=>a+u.correct,0);
   const acc=totalAtt?Math.round(totalCor/totalAtt*100):0;
   STATE.trend=STATE.trend||[];
-  STATE.trend.push({date:t, mastered, acc});
+  let newMastered=0; const ma=STATE.masteredAt||{}; for(const k in ma){ if(ma[k]===t) newMastered++; } // v193：当日首次掌握词数
+  STATE.trend.push({date:t, mastered, acc, newMastered});
   if(STATE.trend.length>14) STATE.trend=STATE.trend.slice(-14);
   saveState();
 }
@@ -7418,10 +7459,11 @@ function reviewResult(known){
   if(idx>=0){
     if(known){
       w.stage=(w.stage||0)+1; w.reviews=(w.reviews||0)+1; w.okStreak=(w.okStreak||0)+1; // v185：连续答对计数
+      w.ease=Math.min(EASE_MAX,(w.ease||EASE_DEF)+0.15); // v193：答对→难度系数升高，间隔拉远
       if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(idx,1); STATE.gradTotal=(STATE.gradTotal||0)+1; toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握！'); } // v190：累计毕业词数
-      else { w.due=addDays(todayStr(), REVIEW_INTERVALS[Math.min(w.stage,REVIEW_INTERVALS.length-1)]); STATE.wrong[idx]=w; }
+      else { w.due=addDays(todayStr(), REVIEW_INTERVALS[easeIdx(w.stage, w.ease)]); STATE.wrong[idx]=w; } // v193：间隔由难度系数驱动
     } else {
-      w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.okStreak=0; w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183：复习"还不会"也累加 errs；v185：清零连续答对
+      w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.okStreak=0; w.ease=Math.max(EASE_MIN,(w.ease||EASE_DEF)-0.2); w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183/v185/v193：答错→难度系数降、明天再复习
       toast('💪 已安排明天再复习');
     }
     saveState();
