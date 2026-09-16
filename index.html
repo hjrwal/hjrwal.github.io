@@ -1593,6 +1593,14 @@
   .fc-cap{font-size:12px; text-align:center; color:var(--muted); margin:2px 0 6px;}
   .eval-score{text-align:center; margin:8px 0 4px; font-size:15px; color:var(--grape); font-weight:800;}
   .eval-score b{font-size:20px;}
+  /* v197：跟读评分条 + 周报月对比双柱 */
+  .eval-bar{height:10px; border-radius:6px; background:var(--soft); overflow:hidden; margin:6px auto 2px; max-width:300px;}
+  .eval-bar > i{display:block; height:100%; border-radius:6px; background:linear-gradient(90deg,#E26D5C,#F2B705,#7FB069,#8A6FD0); transition:width .3s ease;}
+  .month-cmp{display:flex; gap:18px; justify-content:center; align-items:flex-end; margin:6px 0 2px;}
+  .month-cmp .mc{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; color:var(--muted);}
+  .month-cmp .mc .bar{width:42px; border-radius:8px 8px 0 0; background:var(--grape); transition:height .3s ease;}
+  .month-cmp .mc.cur .bar{background:linear-gradient(180deg,#8A6FD0,#C9B8E8);}
+  .month-cmp .mc .num{font-weight:800; color:var(--grape);}
   @media (prefers-reduced-motion: reduce){
     .stat-card:hover,.rpt-card:hover,.tile:hover,.isle:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.gram-card:hover,.speech:hover,.recent-chip:hover,.opt:hover,.token:hover{transform:none !important;}
   }
@@ -3435,7 +3443,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 196;
+const APP_VERSION = 197;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4849,9 +4857,14 @@ function gradeSentence(){
     if(basket) basket.classList.add('ok');
     setTimeout(()=>{ if(curScreen!=='sentences') return; if(curSent) nextSent(); }, 800); // v128：切屏后丢弃游离的自动下一句
   } else {
-    toast('💡 正确顺序：'+curSent.en);
+    toast('💡 答案已在下方标出，看一眼再换一题～');
     if(btn){ btn.disabled=true; btn.style.opacity='.45'; btn.style.pointerEvents='none'; }
-    if(basket) basket.classList.add('wrong');
+    if(basket){ basket.classList.add('wrong');
+      const _ans=document.createElement('div'); _ans.className='sc-ans';
+      _ans.style.cssText='margin-top:14px;padding:8px 10px;border-radius:8px;background:rgba(127,176,105,.16);border:1px solid #7FB069;font-weight:700;color:#3c7a3c;font-size:14px';
+      _ans.innerHTML='✅ 正确答案：<span style="letter-spacing:1px">'+curSent.en+'</span>';
+      basket.appendChild(_ans);
+    }
   }
 }
 // 句型听写填空：听整句音频，挖空一个内容词，填空判分（听写从单词扩展到句型层级）
@@ -5379,7 +5392,7 @@ function selfEval(){
     '<div class="eval-3d" id="eval3d">'+
       dimRow('flu','流利度')+dimRow('acc','准确度')+dimRow('com','完整度')+
     '</div>'+
-    '<div class="eval-score" id="evalScore">当前评分：<b>—</b> / 100</div>'+
+    '<div class="eval-score" id="evalScore">'+evalScoreHTML()+'</div>'+
 
     '<div class="row" style="justify-content:center;margin-top:8px">'+
       '<button class="btn grass" onclick="selfEvalDone()">完成评分</button>'+
@@ -5396,11 +5409,27 @@ function setDim(key,v){
   const dv=document.getElementById('dv_'+key); if(dv) dv.textContent=v+'★';
   updateEvalScore();
 }
-function updateEvalScore(){
-  const el=document.getElementById('evalScore'); if(!el) return;
+function gradeColor(s){ // v197：跟读总分 -> 颜色（绿好/黄中/红弱）
+  if(s>=80) return '#7FB069'; if(s>=60) return '#F2B705'; return '#E26D5C';
+}
+function evalScoreHTML(){ // v197：评分条 + 数字（替代纯文字）
   const flu=_eval3d.flu||0, acc=_eval3d.acc||0, com=_eval3d.com||0;
   const s=Math.round((flu+acc+com)/15*100);
-  el.innerHTML='当前评分：<b>'+s+'</b> / 100（流利 '+flu+' · 准确 '+acc+' · 完整 '+com+'）';
+  return '当前评分：<b style="color:'+gradeColor(s)+'">'+s+'</b> / 100'+
+    '<div class="eval-bar"><i style="width:'+s+'%"></i></div>'+
+    '<div class="muted" style="font-size:12px;margin:2px 0 4px">流利 '+flu+' · 准确 '+acc+' · 完整 '+com+'</div>';
+}
+function monthCmpHTML(m,lm){ // v197：周报月对比双柱
+  const max=Math.max(1,m,lm);
+  const h=function(v){ return Math.max(6, Math.round(v/max*60)); };
+  return '<div class="month-cmp">'+
+    '<div class="mc cur"><span class="num">'+m+'</span><div class="bar" style="height:'+h(m)+'px"></div><span>本月</span></div>'+
+    '<div class="mc"><span class="num">'+lm+'</span><div class="bar" style="height:'+h(lm)+'px"></div><span>上月</span></div>'+
+    '</div>';
+}
+function updateEvalScore(){
+  const el=document.getElementById('evalScore'); if(!el) return;
+  el.innerHTML=evalScoreHTML();
 }
 let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0,_waveStart=0,_waveBursts=0,_wavePrevActive=false;
 let _rec=null,_recTranscript='',_recFailed=false;
@@ -5517,7 +5546,7 @@ function selfEvalDone(){
   else if(overall>=3){ awardStars(2); bumpGoal(true); foxSay('💪 不错哦，继续加油！'); toast('💪 +2⭐'); }
   else { foxSay('💪 没关系，多听示范跟着读就好！'); toast('💪 再练练，你可以的'); }
   const score100=Math.round((flu+acc+com)/15*100);
-  if(res) res.innerHTML='评分完成：'+score100+' / 100 分（流利度 '+flu+'★ · 准确度 '+acc+'★ · 完整度 '+com+'★）。点「下一句 →」换一句，或「听示范」再读一遍～';
+  if(res) res.innerHTML='评分完成：<b style="color:'+gradeColor(score100)+'">'+score100+'</b> / 100 分（流利度 '+flu+'★ · 准确度 '+acc+'★ · 完整度 '+com+'★）。<div class="eval-bar"><i style="width:'+score100+'%;background:'+gradeColor(score100)+'"></i></div>点「下一句 →」换一句，或「听示范」再读一遍～';
 }
 
 /* =========================================================
@@ -7258,7 +7287,7 @@ function showReport(){
     </div>
     <div class="rpt-line">本周新增掌握 <b>${d.weekNew}</b> 词 · 待巩固错题 <b>${d.wrongWords.length}</b> 个${d.bestTest!=null?(' · 测验最佳 <b>'+d.bestTest+'</b> 分'):''}</div>
     <div class="rpt-line">本月新增掌握 <b>${d.monthNew}</b> 词 · 近 30 天共 <b>${d.trend30.length}</b> 天有学习记录 📅</div>
-    ${d.monthNew||d.lastMonthNew?`<div class="rpt-line">📆 月对比：本月 <b>${d.monthNew}</b> 词 vs 上月 <b>${d.lastMonthNew}</b> 词 ${d.monthNew>d.lastMonthNew?'📈 比上月多 '+(d.monthNew-d.lastMonthNew)+' 词':(d.monthNew<d.lastMonthNew?'📉 比上月少 '+(d.lastMonthNew-d.monthNew)+' 词，加油':'与上月持平')}</div>`:''}
+    ${d.monthNew||d.lastMonthNew?`<div class="rpt-line">📆 月对比：本月 vs 上月</div>${monthCmpHTML(d.monthNew,d.lastMonthNew)}<div class="muted" style="text-align:center;font-size:12px;margin:2px 0 4px">${d.monthNew>d.lastMonthNew?'📈 比上月多 '+(d.monthNew-d.lastMonthNew)+' 词':(d.monthNew<d.lastMonthNew?'📉 比上月少 '+(d.lastMonthNew-d.monthNew)+' 词，加油':'与上月持平')}</div>`:''}
     ${trendBars?`<div class="rpt-sec">📈 近况（掌握单词趋势）</div><div class="rpt-trend">${trendBars}</div>`:''}
     ${trend30Bars?`<div class="rpt-sec">📊 近 30 天掌握趋势</div><div class="rpt-trend">${trend30Bars}</div>`:''}
     ${d.newMastered.length?`<div class="rpt-sec">🌟 本周新掌握的词</div><div class="rpt-words">${d.newMastered.map(w=>`<span class="rpt-chip">${w.en}<small class="muted">${w.zh||''}</small></span>`).join('')}</div>`:`<div class="rpt-sec">🌟 本周新掌握的词</div><p class="rpt-empty">本周还没新掌握的单词，加油哦 💪</p>`}
@@ -7540,14 +7569,19 @@ function forgettingCurveSVG(stage, ease){
   let dots='';
   REVIEW_INTERVALS.forEach(function(x){ if(x<maxDays){ const r=Math.exp(-x/S); dots+='<circle cx="'+xOf(x).toFixed(1)+'" cy="'+yOf(r).toFixed(1)+'" r="2.5" fill="#C9B8E8"/>'; } });
   let svg='<svg class="fc-svg" viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:320px;display:block;margin:8px auto" role="img" aria-label="记忆遗忘曲线">';
+  svg+='<defs><linearGradient id="fcGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A6FD0" stop-opacity="0.30"/><stop offset="1" stop-color="#8A6FD0" stop-opacity="0.02"/></linearGradient></defs>';
   svg+='<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="10" fill="var(--soft,#f3e6c8)"/>';
+  svg+='<path d="'+path+' L'+xOf(maxDays).toFixed(1)+' '+yOf(0).toFixed(1)+' L'+xOf(0).toFixed(1)+' '+yOf(0).toFixed(1)+' Z" fill="url(#fcGrad)"/>';
   svg+='<path d="'+path+'" fill="none" stroke="#8A6FD0" stroke-width="2.5" stroke-linejoin="round"/>';
+  svg+='<circle cx="'+padL+'" cy="'+yOf(1).toFixed(1)+'" r="3.5" fill="#7FB069" stroke="#fff" stroke-width="1.2"/>';
   svg+=dots;
   svg+='<line x1="'+nx.toFixed(1)+'" y1="'+padT+'" x2="'+nx.toFixed(1)+'" y2="'+(padT+plotH)+'" stroke="#E26D5C" stroke-width="1.5" stroke-dasharray="3 3"/>';
   svg+='<circle cx="'+nx.toFixed(1)+'" cy="'+ny.toFixed(1)+'" r="5" fill="#E26D5C" stroke="#fff" stroke-width="1.5"/>';
   svg+='<text x="'+(nx+4>W-70?padL+2:nx+4).toFixed(1)+'" y="'+(padT+10)+'" font-size="10" fill="#E26D5C" font-weight="700">第'+next+'天复习</text>';
   svg+='<text x="'+(padL+2)+'" y="'+(H-6)+'" font-size="9" fill="#9A8B78">现在</text>';
   svg+='<text x="'+(W-padR-22)+'" y="'+(H-6)+'" font-size="9" fill="#9A8B78">30天后</text>';
+  svg+='<circle cx="'+(W-58)+'" cy="'+(padT+6)+'" r="3" fill="#7FB069"/><text x="'+(W-52)+'" y="'+(padT+9)+'" font-size="8" fill="#9A8B78">今天</text>';
+  svg+='<circle cx="'+(W-58)+'" cy="'+(padT+16)+'" r="3" fill="#E26D5C"/><text x="'+(W-52)+'" y="'+(padT+19)+'" font-size="8" fill="#9A8B78">复习点</text>';
   svg+='</svg>';
   return svg;
 }
