@@ -1579,6 +1579,23 @@
     .panel,.stat-card,.rpt,.rpt-card,.wk-stat,.wk-u,.mem-card,.wcard,.match-card,.find-card,.mole,.gram-card,.choice-opt,.opt,.speech,.basket,.build-slot,.tile,.isle,.resume-card,.review-callout,.recent-chip,.chip,.back,.btn,.seg button{transition:none !important;}
     .stat-card:hover,.rpt-card:hover,.wk-stat:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.mole:hover,.gram-card:hover,.speech:hover,.basket:hover,.build-slot:hover,.btn:hover{transform:none !important;}
   }
+  /* v196：界面美化 —— 卡片/选项 hover 微上浮 + 输入框/全局 focus 描边 */
+  .stat-card,.rpt-card,.tile,.isle,.mem-card,.wcard,.match-card,.find-card,.gram-card,.speech,.opt,.token,.recent-chip{
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  @media (hover:hover){
+    .stat-card:hover,.rpt-card:hover,.tile:hover,.isle:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.gram-card:hover,.speech:hover,.recent-chip:hover{transform:translateY(-3px); box-shadow:var(--sh-btn-h,0 10px 24px rgba(17,17,30,.14));}
+    .opt:hover,.token:hover{border-color:var(--grape); transform:translateY(-2px);}
+  }
+  input:focus,textarea:focus,.type:focus,select:focus{outline:none; border-color:var(--grape); box-shadow:0 0 0 3px rgba(138,111,208,.25);}
+  :focus-visible{outline:3px solid var(--grape); outline-offset:2px; border-radius:6px;}
+  .fc-svg{background:var(--soft); border-radius:10px;}
+  .fc-cap{font-size:12px; text-align:center; color:var(--muted); margin:2px 0 6px;}
+  .eval-score{text-align:center; margin:8px 0 4px; font-size:15px; color:var(--grape); font-weight:800;}
+  .eval-score b{font-size:20px;}
+  @media (prefers-reduced-motion: reduce){
+    .stat-card:hover,.rpt-card:hover,.tile:hover,.isle:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.gram-card:hover,.speech:hover,.recent-chip:hover,.opt:hover,.token:hover{transform:none !important;}
+  }
 </style>
 <script src="audio-map.js"></script>
 </head>
@@ -3418,7 +3435,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 195;
+const APP_VERSION = 196;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4786,13 +4803,18 @@ function buildSentence(){
   if(!curSent) return;
   hideSentEnForQuiz();
   const words=curSent.en.split(/\s+/);
-  // v195：连词成句干扰词优化——从本单元其它句型里挑 1~2 个不在本句的词混入，提升辨析难度
+  // v196：连词成句干扰词增强——句型内词 + 本单元单词（按词长±3、相似度筛选），最多 3 个干扰，避免过易
   const _u=curUnit();
   const _extra=new Set();
-  if(_u && _u.sentences){ const _cand=[];
-    _u.sentences.forEach(function(s){ if(s!==curSent){ s.en.split(/\s+/).forEach(function(w){ if(words.indexOf(w)<0 && !_extra.has(w)) _cand.push(w); }); } });
-    shuffle(_cand).slice(0, Math.min(2, _cand.length)).forEach(function(w){ _extra.add(w); });
-  }
+  const _cs=new Set();
+  const _push=function(w){ if(words.indexOf(w)<0 && !_extra.has(w) && !_cs.has(w)) _cs.add(w); };
+  if(_u && _u.sentences){ _u.sentences.forEach(function(s){ if(s!==curSent){ s.en.split(/\s+/).forEach(function(w){ _push(w); }); } }); }
+  if(_u && _u.words){ const _cur=curSent.en.replace(/[^A-Za-z' ]/g,'').toLowerCase().split(/\s+/).filter(Boolean);
+    const _lenPool=_cur.map(function(w){return w.length;});
+    _u.words.forEach(function(it){ const e=(it.en||'').toLowerCase(); if(!e) return;
+      const L=e.replace(/[^a-z]/g,'').length; const near=_lenPool.some(function(n){return Math.abs(n-L)<=3;}); const sim=_cur.some(function(c){return simRatio(c,e)>=0.5;});
+      if(near||sim) _push(it.en); }); }
+  shuffle([].slice.call(_cs)).slice(0, Math.min(3, _cs.size)).forEach(function(w){ _extra.add(w); });
   const pool=shuffle(words.concat([].slice.call(_extra)));
   const basket=document.getElementById('scBasket'); basket.innerHTML=''; basket.classList.remove('wrong','ok');
   const poolEl=document.getElementById('scPool'); poolEl.innerHTML='';
@@ -5357,6 +5379,8 @@ function selfEval(){
     '<div class="eval-3d" id="eval3d">'+
       dimRow('flu','流利度')+dimRow('acc','准确度')+dimRow('com','完整度')+
     '</div>'+
+    '<div class="eval-score" id="evalScore">当前评分：<b>—</b> / 100</div>'+
+
     '<div class="row" style="justify-content:center;margin-top:8px">'+
       '<button class="btn grass" onclick="selfEvalDone()">完成评分</button>'+
     '</div></div>';
@@ -5370,6 +5394,13 @@ function setDim(key,v){
   const wrap=document.getElementById('ds_'+key); if(!wrap) return;
   [...wrap.children].forEach((c,i)=>{ c.classList.toggle('on', i<v); });
   const dv=document.getElementById('dv_'+key); if(dv) dv.textContent=v+'★';
+  updateEvalScore();
+}
+function updateEvalScore(){
+  const el=document.getElementById('evalScore'); if(!el) return;
+  const flu=_eval3d.flu||0, acc=_eval3d.acc||0, com=_eval3d.com||0;
+  const s=Math.round((flu+acc+com)/15*100);
+  el.innerHTML='当前评分：<b>'+s+'</b> / 100（流利 '+flu+' · 准确 '+acc+' · 完整 '+com+'）';
 }
 let _waveRAF=null,_waveStream=null,_waveAC=null,_waveActive=0,_waveSamples=0,_waveStart=0,_waveBursts=0,_wavePrevActive=false;
 let _rec=null,_recTranscript='',_recFailed=false;
@@ -5485,7 +5516,8 @@ function selfEvalDone(){
   if(overall>=4){ awardStars(overall); bumpGoal(true); foxSay('👏 读得真棒，多读就会更溜！'); toast('👏 +'+overall+'⭐'); }
   else if(overall>=3){ awardStars(2); bumpGoal(true); foxSay('💪 不错哦，继续加油！'); toast('💪 +2⭐'); }
   else { foxSay('💪 没关系，多听示范跟着读就好！'); toast('💪 再练练，你可以的'); }
-  if(res) res.innerHTML='评分完成：流利度 '+flu+'★ · 准确度 '+acc+'★ · 完整度 '+com+'★。点「下一句 →」换一句，或「听示范」再读一遍～';
+  const score100=Math.round((flu+acc+com)/15*100);
+  if(res) res.innerHTML='评分完成：'+score100+' / 100 分（流利度 '+flu+'★ · 准确度 '+acc+'★ · 完整度 '+com+'★）。点「下一句 →」换一句，或「听示范」再读一遍～';
 }
 
 /* =========================================================
@@ -7114,6 +7146,9 @@ function buildReportData(){
   // v195：本月新增掌握（按自然月）+ 近 30 天趋势（周月对比）
   const _md=todayStr().slice(0,7);
   const monthNew=Object.keys(nma).filter(function(k){ const d=nma[k]; return d && d.slice(0,7)===_md; }).length;
+  // v196：上月新增掌握（自然月对比）
+  const _lm=(function(){ const d=new Date(todayStr()+'T00:00:00'); d.setDate(1); d.setMonth(d.getMonth()-1); return d.toISOString().slice(0,7); })();
+  const lastMonthNew=Object.keys(nma).filter(function(k){ const d=nma[k]; return d && d.slice(0,7)===_lm; }).length;
   const _t30=addDays(todayStr(),-30);
   const trend30=(trend||[]).filter(function(e){ return e && e.date>=_t30; });
   const wt=weakTypeTotals();
@@ -7123,7 +7158,7 @@ function buildReportData(){
   const calDays=35, cal=[], t0=new Date(todayStr());
   for(let i=calDays-1;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); const ds=d.toISOString().slice(0,10); cal.push({date:ds, active:!!activeMap[ds]}); }
   return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
-    weekNew,monthNew,weakUnits,wrongWords,topErrs,newMastered,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),trend30,cal,date:todayStr()};
+    weekNew,monthNew,lastMonthNew,weakUnits,wrongWords,topErrs,newMastered,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),trend30,cal,date:todayStr()};
 }
 function buildAdvice(d){
   const a=[];
@@ -7150,6 +7185,7 @@ function exportWeekly(){
   L.push('✅ 答题正确率：'+d.acc+'%');
   L.push('📅 本周新增掌握：'+d.weekNew+' 词');
   L.push('📆 本月新增掌握：'+d.monthNew+' 词');
+  L.push('📆 上月新增掌握：'+d.lastMonthNew+' 词');
   L.push('📒 待巩固错题：'+d.wrongWords.length+' 个');
   if(d.bestTest!=null) L.push('🏆 单元测试最佳：'+d.bestTest+' 分'+(d.avgTest!=null?'（平均 '+d.avgTest+' 分）':''));
   L.push(''); L.push('【薄弱单元】');
@@ -7222,6 +7258,7 @@ function showReport(){
     </div>
     <div class="rpt-line">本周新增掌握 <b>${d.weekNew}</b> 词 · 待巩固错题 <b>${d.wrongWords.length}</b> 个${d.bestTest!=null?(' · 测验最佳 <b>'+d.bestTest+'</b> 分'):''}</div>
     <div class="rpt-line">本月新增掌握 <b>${d.monthNew}</b> 词 · 近 30 天共 <b>${d.trend30.length}</b> 天有学习记录 📅</div>
+    ${d.monthNew||d.lastMonthNew?`<div class="rpt-line">📆 月对比：本月 <b>${d.monthNew}</b> 词 vs 上月 <b>${d.lastMonthNew}</b> 词 ${d.monthNew>d.lastMonthNew?'📈 比上月多 '+(d.monthNew-d.lastMonthNew)+' 词':(d.monthNew<d.lastMonthNew?'📉 比上月少 '+(d.lastMonthNew-d.monthNew)+' 词，加油':'与上月持平')}</div>`:''}
     ${trendBars?`<div class="rpt-sec">📈 近况（掌握单词趋势）</div><div class="rpt-trend">${trendBars}</div>`:''}
     ${trend30Bars?`<div class="rpt-sec">📊 近 30 天掌握趋势</div><div class="rpt-trend">${trend30Bars}</div>`:''}
     ${d.newMastered.length?`<div class="rpt-sec">🌟 本周新掌握的词</div><div class="rpt-words">${d.newMastered.map(w=>`<span class="rpt-chip">${w.en}<small class="muted">${w.zh||''}</small></span>`).join('')}</div>`:`<div class="rpt-sec">🌟 本周新掌握的词</div><p class="rpt-empty">本周还没新掌握的单词，加油哦 💪</p>`}
@@ -7288,7 +7325,7 @@ function saveReportImage(){
     // 一行摘要
     ctx.fillStyle='#6E54BD'; roundRect(ctx,pad,y,W-pad*2,lineH,12); ctx.fill();
     ctx.fillStyle='#fff'; ctx.font='600 15px sans-serif';
-    ctx.fillText('本周 +'+d.weekNew+' 词 · 本月 +'+d.monthNew+' 词 · 待巩固 '+d.wrongWords.length+' 个'+(d.bestTest!=null?(' · 测验 '+d.bestTest+'分'):''), pad+16, y+28);
+    ctx.fillText('本周 +'+d.weekNew+' 词 · 本月 +'+d.monthNew+' 词（上月 '+d.lastMonthNew+'）· 待巩固 '+d.wrongWords.length+' 个'+(d.bestTest!=null?(' · 测验 '+d.bestTest+'分'):''), pad+16, y+28);
     y+=lineH+12;
     // 连续打卡日历（v156）：近 35 天，点亮的格子=当天有学习记录
     {
@@ -7489,6 +7526,31 @@ function srsDots(stage){
   for(let k=0;k<6;k++){ h+='<span class="srs-dot'+(k<n?' on':'')+(k===n?' cur':'')+'"></span>'; }
   return h+'</div>';
 }
+function forgettingCurveSVG(stage, ease){
+  const W=300,H=96,padL=10,padR=10,padT=12,padB=20;
+  const plotW=W-padL-padR, plotH=H-padT-padB, maxDays=30;
+  const ni=Math.max(0,Math.min(REVIEW_INTERVALS.length-1, easeIdx(stage||0, ease)));
+  const next=REVIEW_INTERVALS[ni];
+  const S=Math.max(1, next);
+  const xOf=function(d){ return padL + (d/maxDays)*plotW; };
+  const yOf=function(r){ return padT + (1-r)*plotH; };
+  let path='';
+  for(let i=0;i<=60;i++){ const d=maxDays*i/60; const r=Math.exp(-d/S); const x=xOf(d).toFixed(1), y=yOf(r).toFixed(1); path+=(i?' L':'M')+x+' '+y; }
+  const nx=xOf(next), ny=yOf(Math.exp(-1));
+  let dots='';
+  REVIEW_INTERVALS.forEach(function(x){ if(x<maxDays){ const r=Math.exp(-x/S); dots+='<circle cx="'+xOf(x).toFixed(1)+'" cy="'+yOf(r).toFixed(1)+'" r="2.5" fill="#C9B8E8"/>'; } });
+  let svg='<svg class="fc-svg" viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:320px;display:block;margin:8px auto" role="img" aria-label="记忆遗忘曲线">';
+  svg+='<rect x="0" y="0" width="'+W+'" height="'+H+'" rx="10" fill="var(--soft,#f3e6c8)"/>';
+  svg+='<path d="'+path+'" fill="none" stroke="#8A6FD0" stroke-width="2.5" stroke-linejoin="round"/>';
+  svg+=dots;
+  svg+='<line x1="'+nx.toFixed(1)+'" y1="'+padT+'" x2="'+nx.toFixed(1)+'" y2="'+(padT+plotH)+'" stroke="#E26D5C" stroke-width="1.5" stroke-dasharray="3 3"/>';
+  svg+='<circle cx="'+nx.toFixed(1)+'" cy="'+ny.toFixed(1)+'" r="5" fill="#E26D5C" stroke="#fff" stroke-width="1.5"/>';
+  svg+='<text x="'+(nx+4>W-70?padL+2:nx+4).toFixed(1)+'" y="'+(padT+10)+'" font-size="10" fill="#E26D5C" font-weight="700">第'+next+'天复习</text>';
+  svg+='<text x="'+(padL+2)+'" y="'+(H-6)+'" font-size="9" fill="#9A8B78">现在</text>';
+  svg+='<text x="'+(W-padR-22)+'" y="'+(H-6)+'" font-size="9" fill="#9A8B78">30天后</text>';
+  svg+='</svg>';
+  return svg;
+}
 function renderReview(){
   const body=document.getElementById('reviewBody');
   if(reviewIdx>=reviewList.length){
@@ -7505,6 +7567,7 @@ function renderReview(){
   const _uEmoji=[..._units].map(u=>(ALL_UNITS.find(x=>x.id===u)||{}).emoji||'📘').join('');
   const stage=Math.min(w.stage||0,6);
   const leftStage=6-stage;
+  const _next=REVIEW_INTERVALS[Math.max(0,Math.min(REVIEW_INTERVALS.length-1, easeIdx(w.stage||0, w.ease)))];
   body.innerHTML=`<div class="center">
     <p class="muted">第 ${reviewIdx+1} / ${reviewList.length} 个 · 已复习 ${w.reviews||0} 次</p>
     <p class="muted rpt-pack">🧠 智能复习包 · 覆盖 ${_units.size} 个单元 · 按遗忘曲线+错频排序</p>
@@ -7513,6 +7576,8 @@ function renderReview(){
     <button class="btn sky lg" style="margin:6px 0 10px" onclick="speak('${w.en.replace(/'/g,"\\'")}')">听发音</button>
     <button class="btn grape lg" style="margin:6px 0 10px" onclick="startFollowRead('${w.en.replace(/'/g,"\\'")}')">🎤 跟读评测</button>
     ${srsDots(w.stage)}
+    ${forgettingCurveSVG(w.stage, w.ease)}
+    <p class="muted fc-cap">记忆会随时间慢慢变淡，第 <b>${_next}</b> 天复习一次，就又能牢牢记住啦 💡</p>
     <p class="muted srs-cap">连续答对 <b>${(w.okStreak||0)}</b>/${GRAD_STREAK}${(w.okStreak||0)<GRAD_STREAK?' · 再对 '+(GRAD_STREAK-(w.okStreak||0))+' 次就毕业 🎓':' · 可以毕业啦 🎉'}</p>
     <div class="row" style="justify-content:center">
       <button class="btn coral" style="flex:1" onclick="reviewResult(false)">还不会</button>
