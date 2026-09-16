@@ -3418,7 +3418,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 194;
+const APP_VERSION = 195;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4786,7 +4786,14 @@ function buildSentence(){
   if(!curSent) return;
   hideSentEnForQuiz();
   const words=curSent.en.split(/\s+/);
-  const pool=shuffle(words.slice());
+  // v195：连词成句干扰词优化——从本单元其它句型里挑 1~2 个不在本句的词混入，提升辨析难度
+  const _u=curUnit();
+  const _extra=new Set();
+  if(_u && _u.sentences){ const _cand=[];
+    _u.sentences.forEach(function(s){ if(s!==curSent){ s.en.split(/\s+/).forEach(function(w){ if(words.indexOf(w)<0 && !_extra.has(w)) _cand.push(w); }); } });
+    shuffle(_cand).slice(0, Math.min(2, _cand.length)).forEach(function(w){ _extra.add(w); });
+  }
+  const pool=shuffle(words.concat([].slice.call(_extra)));
   const basket=document.getElementById('scBasket'); basket.innerHTML=''; basket.classList.remove('wrong','ok');
   const poolEl=document.getElementById('scPool'); poolEl.innerHTML='';
   pool.forEach((w,i)=>{
@@ -4881,6 +4888,7 @@ function renderSkillHome(){
     <div class="tile c-sky" onclick="startSkill('listen')"><span class="ic"></span><h3>听</h3><p>听音选义</p></div>
     <div class="tile c-grass" onclick="startSkill('speak')"><span class="ic"></span><h3>说</h3><p>跟读评分</p></div>
     <div class="tile c-sun" onclick="startSkill('write')"><span class="ic"></span><h3>写</h3><p>听写拼写</p></div>
+    <div class="tile c-grape" onclick="go('sentences')"><span class="ic"></span><h3>连</h3><p>连词成句</p></div>
   </div>`;
 }
 let skillQuiz=null; // v160：听说读写——听音选义/听写拼写 多题连续测验状态（含进度+计分+结果）
@@ -4951,6 +4959,7 @@ function renderSpeak(area, back, q){
   const en=q.en.replace(/'/g,"\\'");
   const html=q.en.split(/\s+/).map(w=>`<span class="w">${w}</span>`).join(' ');
   area.innerHTML=back+`<h2 class="sec">跟读练习</h2>
+    <div class="big-word" style="font-size:20px;color:var(--ink)">${q.en}</div>
     <div class="word-read" id="readHL">${html}</div>
     <div class="big-word" style="color:var(--coral-d);font-size:18px">${q.zh}</div>
     <div class="row" style="margin-top:10px">
@@ -7102,6 +7111,11 @@ function buildReportData(){
   const bestTest=testVals.length?Math.max.apply(null,testVals):null;
   const avgTest=testVals.length?Math.round(testVals.reduce((a,b)=>a+b,0)/testVals.length):null;
   const advice=buildAdvice({masPct,acc,weekNew,weakUnits,wrongWords,streak:STATE.streak});
+  // v195：本月新增掌握（按自然月）+ 近 30 天趋势（周月对比）
+  const _md=todayStr().slice(0,7);
+  const monthNew=Object.keys(nma).filter(function(k){ const d=nma[k]; return d && d.slice(0,7)===_md; }).length;
+  const _t30=addDays(todayStr(),-30);
+  const trend30=(trend||[]).filter(function(e){ return e && e.date>=_t30; });
   const wt=weakTypeTotals();
   const weakTypes=[{label:'意思·听音',n:wt.sel},{label:'拼写',n:wt.spell},{label:'句型',n:wt.sent}];
   // v156：连续打卡日历——近 35 天，按 trend 里“当天有学习记录”的日期点亮格子
@@ -7109,7 +7123,7 @@ function buildReportData(){
   const calDays=35, cal=[], t0=new Date(todayStr());
   for(let i=calDays-1;i>=0;i--){ const d=new Date(t0); d.setDate(d.getDate()-i); const ds=d.toISOString().slice(0,10); cal.push({date:ds, active:!!activeMap[ds]}); }
   return {grade,mastered,totalW,masPct,acc,stars:STATE.stars,streak:STATE.streak,rank:rk,
-    weekNew,weakUnits,wrongWords,topErrs,newMastered,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),cal,date:todayStr()};
+    weekNew,monthNew,weakUnits,wrongWords,topErrs,newMastered,bestTest,avgTest,advice,weakTypes,trend:trend.slice(-14),trend30,cal,date:todayStr()};
 }
 function buildAdvice(d){
   const a=[];
@@ -7135,6 +7149,7 @@ function exportWeekly(){
   L.push('📚 掌握单词：'+d.mastered+' / '+d.totalW+'（'+d.masPct+'%）');
   L.push('✅ 答题正确率：'+d.acc+'%');
   L.push('📅 本周新增掌握：'+d.weekNew+' 词');
+  L.push('📆 本月新增掌握：'+d.monthNew+' 词');
   L.push('📒 待巩固错题：'+d.wrongWords.length+' 个');
   if(d.bestTest!=null) L.push('🏆 单元测试最佳：'+d.bestTest+' 分'+(d.avgTest!=null?'（平均 '+d.avgTest+' 分）':''));
   L.push(''); L.push('【薄弱单元】');
@@ -7177,6 +7192,20 @@ function showReport(){
       return `<div class="rpt-tcol" title="${tip}"><div class="rpt-tbar${cls}" style="height:${h}px"><span class="rpt-tnum${cls}">${numTxt}</span></div><div class="rpt-tdate">${day||''}</div></div>`;
     }).join('');
   })();
+  const trend30Bars=(()=>{
+    const arr=(d.trend30||[]);
+    if(!arr.length) return '';
+    const maxM=Math.max(1,...arr.map(x=>x.mastered));
+    const avg=arr.reduce((a,x)=>a+x.mastered,0)/arr.length;
+    return arr.map(e=>{
+      const h=Math.max(4,Math.round(e.mastered/maxM*56));
+      const cls=e.mastered===0?' zero':(avg>0 && e.mastered>avg?' hi':'');
+      const day=parseInt((e.date||'').split('-')[2],10);
+      const numTxt=e.mastered>0?'+'+e.mastered:'0';
+      const tip=e.date+' · 掌握 '+e.mastered+' 词';
+      return `<div class="rpt-tcol" title="${tip}"><div class="rpt-tbar${cls}" style="height:${h}px"><span class="rpt-tnum${cls}">${numTxt}</span></div><div class="rpt-tdate">${day||''}</div></div>`;
+    }).join('');
+  })();
   box.innerHTML=`<div class="rpt">
     <div class="rpt-head">
       <div>
@@ -7192,7 +7221,9 @@ function showReport(){
       <div class="rpt-card"><div class="n">${d.acc}%</div><div class="l">✅ 正确率</div></div>
     </div>
     <div class="rpt-line">本周新增掌握 <b>${d.weekNew}</b> 词 · 待巩固错题 <b>${d.wrongWords.length}</b> 个${d.bestTest!=null?(' · 测验最佳 <b>'+d.bestTest+'</b> 分'):''}</div>
+    <div class="rpt-line">本月新增掌握 <b>${d.monthNew}</b> 词 · 近 30 天共 <b>${d.trend30.length}</b> 天有学习记录 📅</div>
     ${trendBars?`<div class="rpt-sec">📈 近况（掌握单词趋势）</div><div class="rpt-trend">${trendBars}</div>`:''}
+    ${trend30Bars?`<div class="rpt-sec">📊 近 30 天掌握趋势</div><div class="rpt-trend">${trend30Bars}</div>`:''}
     ${d.newMastered.length?`<div class="rpt-sec">🌟 本周新掌握的词</div><div class="rpt-words">${d.newMastered.map(w=>`<span class="rpt-chip">${w.en}<small class="muted">${w.zh||''}</small></span>`).join('')}</div>`:`<div class="rpt-sec">🌟 本周新掌握的词</div><p class="rpt-empty">本周还没新掌握的单词，加油哦 💪</p>`}
     <div class="rpt-sec">🔥 薄弱单元</div>
     ${weakHtml}
@@ -7215,6 +7246,7 @@ function saveReportImage(){
     const W=720, pad=28, scale=Math.min(3,(window.devicePixelRatio||1)*2);
     const headerH=92, cardsH=96, lineH=46;
     const trendH=d.trend.length?126:0;
+    const trend30H=(d.trend30&&d.trend30.length)?140:0; // v195：近 30 天趋势区块
     const calH=160; // v156：连续打卡日历（近 35 天 7x5 网格）
     const weakH=d.weakUnits.length?d.weakUnits.length*56:40;
     const wtTotal=(d.weakTypes||[]).reduce((a,t)=>a+t.n,0);
@@ -7223,7 +7255,7 @@ function saveReportImage(){
     const topErrsH=d.topErrs.length?40+d.topErrs.length*26:40; // v183：最常错的词区块高度
     const newMasteredH=d.newMastered.length?24+14+d.newMastered.length*26:40; // v186：本周新掌握的词区块高度
     const adviceH=30+d.advice.length*72;
-    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+24+newMasteredH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+topErrsH+12+24+adviceH+40;
+    const H=pad*2+headerH+16+cardsH+12+lineH+12+calH+12+trendH+12+trend30H+12+24+newMasteredH+12+24+weakH+12+24+weakTypeH+12+24+wordsH+12+24+topErrsH+12+24+adviceH+40;
     const cv=document.createElement('canvas'); cv.width=Math.round(W*scale); cv.height=Math.round(H*scale);
     const ctx=cv.getContext('2d'); ctx.scale(scale,scale); ctx.textBaseline='alphabetic';
     const cs=getComputedStyle(document.body);
@@ -7256,7 +7288,7 @@ function saveReportImage(){
     // 一行摘要
     ctx.fillStyle='#6E54BD'; roundRect(ctx,pad,y,W-pad*2,lineH,12); ctx.fill();
     ctx.fillStyle='#fff'; ctx.font='600 15px sans-serif';
-    ctx.fillText('本周 +'+d.weekNew+' 词 · 待巩固 '+d.wrongWords.length+' 个'+(d.bestTest!=null?(' · 测验 '+d.bestTest+'分'):''), pad+16, y+28);
+    ctx.fillText('本周 +'+d.weekNew+' 词 · 本月 +'+d.monthNew+' 词 · 待巩固 '+d.wrongWords.length+' 个'+(d.bestTest!=null?(' · 测验 '+d.bestTest+'分'):''), pad+16, y+28);
     y+=lineH+12;
     // 连续打卡日历（v156）：近 35 天，点亮的格子=当天有学习记录
     {
@@ -7315,6 +7347,42 @@ function saveReportImage(){
       if(pts.length>1){ ctx.beginPath(); ctx.strokeStyle='rgba(110,84,189,.55)'; ctx.lineWidth=2;
         pts.forEach((p,i)=>{ if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); });
         ctx.stroke(); }
+      ctx.textAlign='left';
+      y+=topReserve+barAreaH+botReserve;
+    }
+    // v195：近 30 天掌握趋势（周月对比）
+    if(d.trend30 && d.trend30.length){
+      ctx.fillStyle=ink; ctx.font='700 16px sans-serif'; ctx.textAlign='left';
+      ctx.fillText('📊 近 30 天掌握趋势', pad, y+16);
+      const maxM=Math.max(1,...d.trend30.map(e=>e.mastered));
+      const avg=d.trend30.reduce((a,x)=>a+x.mastered,0)/d.trend30.length;
+      ctx.fillStyle=muted; ctx.font='500 12px sans-serif'; ctx.textAlign='right';
+      ctx.fillText('峰值 +'+maxM+' · 均值 +'+(Math.round(avg*10)/10), W-pad, y+16);
+      ctx.textAlign='left';
+      y+=24;
+      const bw=(W-pad*2)/d.trend30.length;
+      const topReserve=20, botReserve=24, barAreaH=58;
+      const baseline=y+topReserve+barAreaH;
+      d.trend30.forEach((e,i)=>{
+        const cx=pad+i*bw+bw/2, bx=cx-bw*0.32, bbw=bw*0.64;
+        const isZero=e.mastered===0, isHi=!isZero && e.mastered>avg;
+        const h=isZero?3:Math.max(6,Math.round(e.mastered/maxM*barAreaH));
+        ctx.fillStyle=isZero?muted:(isHi?'#B07000':'#6E54BD');
+        ctx.font='800 11px sans-serif'; ctx.textAlign='center';
+        ctx.fillText(isZero?'0':'+'+e.mastered, cx, baseline-h-4);
+        if(!isZero){
+          const bg=ctx.createLinearGradient(0,baseline-h,0,baseline);
+          if(isHi){ bg.addColorStop(0,'#FFD27A'); bg.addColorStop(1,'#F4A93C'); }
+          else { bg.addColorStop(0,'#B79BE8'); bg.addColorStop(1,'#8A6FD0'); }
+          ctx.fillStyle=bg; roundRect(ctx,bx,baseline-h,bbw,h,4); ctx.fill();
+        } else {
+          ctx.setLineDash([3,3]); ctx.strokeStyle=muted; ctx.lineWidth=1.5;
+          roundRect(ctx,bx,baseline-h,bbw,h,2); ctx.stroke(); ctx.setLineDash([]);
+        }
+        const day=parseInt((e.date||'').split('-')[2],10);
+        ctx.fillStyle=muted; ctx.font='600 11px sans-serif';
+        ctx.fillText(day||'', cx, baseline+16);
+      });
       ctx.textAlign='left';
       y+=topReserve+barAreaH+botReserve;
     }
@@ -7424,6 +7492,7 @@ function srsDots(stage){
 function renderReview(){
   const body=document.getElementById('reviewBody');
   if(reviewIdx>=reviewList.length){
+    confetti(); // v195：复习全部完成撒花庆祝
     const left=STATE.wrong.length;
     body.innerHTML=`<h2 class="sec">复习完成！</h2>
       <p class="muted">本次复习了 ${reviewList.length} 个易错词，坚持就是胜利！</p>
@@ -7460,7 +7529,7 @@ function reviewResult(known){
     if(known){
       w.stage=(w.stage||0)+1; w.reviews=(w.reviews||0)+1; w.okStreak=(w.okStreak||0)+1; // v185：连续答对计数
       w.ease=Math.min(EASE_MAX,(w.ease||EASE_DEF)+0.15); // v193：答对→难度系数升高，间隔拉远
-      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(idx,1); STATE.gradTotal=(STATE.gradTotal||0)+1; toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握！'); } // v190：累计毕业词数
+      if(w.okStreak>=GRAD_STREAK){ STATE.wrong.splice(idx,1); STATE.gradTotal=(STATE.gradTotal||0)+1; toast('🎉 连续答对 '+GRAD_STREAK+' 次，已真正掌握！'); confetti(); } // v190/v195：毕业撒花庆祝
       else { w.due=addDays(todayStr(), REVIEW_INTERVALS[easeIdx(w.stage, w.ease)]); STATE.wrong[idx]=w; } // v193：间隔由难度系数驱动
     } else {
       w.stage=0; w.reviews=(w.reviews||0)+1; w.errs=(w.errs||0)+1; w.okStreak=0; w.ease=Math.max(EASE_MIN,(w.ease||EASE_DEF)-0.2); w.due=addDays(todayStr(),1); STATE.wrong[idx]=w; // v183/v185/v193：答错→难度系数降、明天再复习
@@ -7983,6 +8052,8 @@ function renderWrongbook(){
         const pips=Array.from({length:grad},(_,i)=>'<i class="wb-pip'+(i<ok?' on':'')+'"></i>').join('');
         const isDue=!w.due||w.due<=todayStr();
         const st=isDue?'<span class="wb-status due">🔴 待复习</span>':'<span class="wb-status wait">⏳ '+esc(w.due)+' 到期</span>';
+        const _nr=addDays(todayStr(), REVIEW_INTERVALS[Math.max(0,Math.min(REVIEW_INTERVALS.length-1, easeIdx(w.stage||0, w.ease)))]);
+        const nextRevHtml='<span class="wb-next" style="color:var(--muted);font-size:12px;margin-left:6px">📅 下次复习：'+esc(_nr)+'</span>';
         const progTxt= ok>=grad?'已毕业 🎓' : (ok>0?('连续答对 '+ok+'/'+grad+' · 再对 '+(grad-ok)+' 次就毕业 🎓') : '答对 1 次开始计数');
         const tip= ok>=grad?'已毕业 🎓':('还差 '+(grad-ok)+' 次就毕业 🎓');
         const enq=(w.en||'').replace(/'/g,"\\'"), unitq=(w.unit||'').replace(/'/g,"\\'");
@@ -7991,7 +8062,7 @@ function renderWrongbook(){
           +'<button class="btn grape" style="padding:5px 9px;font-size:13px" onclick="startFollowRead(\''+enq+'\')">跟读</button>'
           +'<span class="wb-en">'+en+'</span>'
           +(zh?'<span class="wb-zh">'+zh+'</span>':'')
-          +'<span class="wb-tag">'+tag+'</span>'+st
+          +'<span class="wb-tag">'+tag+'</span>'+st+nextRevHtml
           +'<span class="wb-times">练'+(w.reviews||0)+'次</span>'
           +'<div class="wb-prog"><div class="wb-pips" data-tip="'+esc(tip)+'">'+pips+'</div><div class="wb-prog-txt">'+progTxt+'</div><span class="wb-times">错 '+(w.errs||0)+' 次</span></div>'+'<div class="wb-actions"><button class="btn ghost fav-btn'+(isFav(w.en,w.unit)?' on':'')+'" title="收藏到生词本" onclick="favToggleWB(this,\''+enq+'\',\''+unitq+'\')"><svg class="svg-ic" viewBox="0 0 24 24"><use href="#i-star"/></svg></button><button class="btn coral" style="padding:5px 9px;font-size:13px" onclick="removeWrong(\''+enq+'\',\''+unitq+'\')">移出</button></div>'
           +'</div>';

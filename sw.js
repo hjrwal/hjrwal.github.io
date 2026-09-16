@@ -4,7 +4,7 @@
 
 // 发布新版本时，只需把 CACHE 名称的版本号 +1，SW 会自动刷新缓存
 
-const CACHE = 'eng5-v255';
+const CACHE = 'eng5-v256';
 
 const ASSETS = [
 
@@ -48,7 +48,7 @@ const ASSETS = [
 
   './game.html',
 
-  './assets/game/game-Dl1SwRng.js',
+  './assets/game/game-zE6FEiZ8.js',
 
   './assets/game/phaser-CUdU0QcG.js',
 
