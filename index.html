@@ -187,14 +187,44 @@
     background:rgba(255,255,255,.62); border:1.5px solid rgba(122,90,58,.18); border-radius:12px;
     padding:5px 9px; text-align:right; white-space:nowrap;}
   /* v168 首页天空加云朵插画：纯内联 SVG、零新资源，悬于大猫与太阳之下 */
+  /* v202 云朵改造成"看得见"：①原来是纯白压浅蓝、几乎隐形 → 改成整朵轮廓路径 + 淡蓝描边；②加极缓慢漂移；③宽屏补第三朵（窄屏空隙仅 31px，没地方放） */
   .scene-clouds{position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;}
-  .scene-cloud{position:absolute; opacity:.92; filter:drop-shadow(0 2px 3px rgba(120,150,170,.25)); animation:floaty 5s ease-in-out infinite;}
-  .scene-cloud.c1{top:16px; left:14px; width:62px;}
-  .scene-cloud.c2{top:54px; right:104px; width:44px; animation-duration:6.5s; animation-delay:-2s;}
+  .scene-cloud{position:absolute; display:block; opacity:.96; filter:drop-shadow(0 1px 2px rgba(120,150,170,.20));}
+  .scene-cloud.c1{top:16px; left:14px; width:62px; animation:cloudDriftA 12s ease-in-out infinite;}
+  .scene-cloud.c2{top:54px; left:auto; right:104px; width:46px; animation:cloudDriftB 14.5s ease-in-out infinite;}
+  .scene-cloud.c3{display:none;}
+  @keyframes cloudDriftA{0%,100%{transform:translate(0,0)}50%{transform:translate(13px,-5px)}}
+  @keyframes cloudDriftB{0%,100%{transform:translate(0,0)}50%{transform:translate(-15px,-4px)}}
+  /* v202 绘本底景：远山 + 草地（纯内联 SVG 拉伸铺满，零新资源；夹在天空渐变之上、大猫/云之下） */
+  .scene-ground{position:absolute; left:0; right:0; bottom:0; width:100%; height:76px; z-index:0; pointer-events:none; display:block;}
+  /* v202 今日单词气泡：作为 .book-scene 的"中间 flex 项"，靠 space-between 自动落进猫与太阳之间那道空隙，无需 JS 定位；
+     窄屏（空隙 <200px）不显示，避免挤压布局 */
+  .scene-word{position:relative; z-index:3; align-self:center; flex:0 0 auto; display:none;
+    align-items:center; gap:7px; padding:7px 12px; margin:0 6px; max-width:232px; overflow:hidden;
+    background:rgba(255,255,255,.95); border:2px solid #B9D7E4; border-radius:16px;
+    box-shadow:0 4px 12px rgba(90,130,150,.20); cursor:pointer; font-family:inherit;
+    animation:floaty 5.2s ease-in-out infinite;}
+  /* 宽度上限 232px + 文本省略号：词库里有超长释义（如 Ms 带词典式长注解），不设上限会把右侧"太阳+加油"挤出卡片外被裁掉 */
+  .scene-word .sw-tag{flex:0 0 auto; font-size:10px; font-weight:800; color:#57798A; letter-spacing:.3px;
+    background:#E8F4F8; border-radius:999px; padding:2px 7px; line-height:1.6;}
+  .scene-word .sw-en{flex:0 1 auto; min-width:0; font-size:18px; font-weight:900; color:#2F4858; letter-spacing:.3px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .scene-word .sw-zh{flex:0 1 auto; min-width:0; font-size:12px; font-weight:700; color:#7A8C96;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .scene-word .sw-ic{flex:0 0 auto; width:17px; height:17px; color:#7FA9BC;}
+  .scene-word.tap .sw-ic{animation:swPulse .52s ease;}
+  @keyframes swPulse{0%{transform:scale(1)}45%{transform:scale(1.4)}100%{transform:scale(1)}}
+  @media (min-width:660px){
+    .scene-word{display:flex;}
+    .scene-cloud.c1{left:40%; right:auto; top:16px; width:66px;}
+    .scene-cloud.c2{left:56%; right:auto; top:62px; width:48px;}
+    .scene-cloud.c3{display:block; left:74%; top:28px; width:54px; animation:cloudDriftA 16s ease-in-out infinite; animation-delay:-5s;}
+  }
   @media (prefers-reduced-motion: reduce){
     .scene-blink.run{animation:none !important;}
     .hero-cat.peek{animation:none !important;}
-    .scene-cloud{animation:none !important;}
+    .scene-cloud,.scene-word{animation:none !important;}
+    .scene-word.tap .sw-ic{animation:none !important;}
     .scene-deco .deco-sun{animation:none !important;}
   }
   /* v125 顶栏白喵点头 + 被戳抖动：叠加在 .mwrap 的 wob 轻晃之上（不同元素，transform 不冲突），零新图 */
@@ -1752,16 +1782,27 @@
       <button class="btn" onclick="copyLink()">复制链接</button>
     </div>
     <div class="hero storybook" onclick="go('progress')">
-    <div class="book-scene" aria-hidden="true">
+    <div class="book-scene">
+          <svg class="scene-ground" viewBox="0 0 800 74" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 40 Q120 6 262 34 T566 30 T800 46 L800 74 L0 74 Z" fill="#D5EBC8"/>
+            <path d="M0 58 Q170 28 350 56 T800 54 L800 74 L0 74 Z" fill="#BFDFAF"/>
+          </svg>
           <div class="scene-clouds" aria-hidden="true">
-            <svg class="scene-cloud c1" viewBox="0 0 70 36" fill="#FFFFFF" aria-hidden="true"><circle cx="22" cy="22" r="11"/><circle cx="36" cy="16" r="14"/><circle cx="50" cy="22" r="10"/><rect x="14" y="22" width="42" height="12" rx="6"/></svg>
-            <svg class="scene-cloud c2" viewBox="0 0 70 36" fill="#FFFFFF" aria-hidden="true"><circle cx="22" cy="22" r="11"/><circle cx="36" cy="16" r="14"/><circle cx="50" cy="22" r="10"/><rect x="14" y="22" width="42" height="12" rx="6"/></svg>
+            <svg class="scene-cloud c1" viewBox="0 0 70 36" aria-hidden="true"><path d="M16 31 Q8.5 31 8.5 24 Q8.5 17.5 16 17 Q18 9 26.5 9 Q34.5 9 37 16 Q40.5 12.5 46 14 Q52.5 15.5 53.5 22 Q61.5 22 61.5 26.5 Q61.5 31 55 31 Z" fill="#FFFFFF" stroke="#BBD9E6" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <svg class="scene-cloud c2" viewBox="0 0 70 36" aria-hidden="true"><path d="M16 31 Q8.5 31 8.5 24 Q8.5 17.5 16 17 Q18 9 26.5 9 Q34.5 9 37 16 Q40.5 12.5 46 14 Q52.5 15.5 53.5 22 Q61.5 22 61.5 26.5 Q61.5 31 55 31 Z" fill="#FFFFFF" stroke="#BBD9E6" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <svg class="scene-cloud c3" viewBox="0 0 70 36" aria-hidden="true"><path d="M16 31 Q8.5 31 8.5 24 Q8.5 17.5 16 17 Q18 9 26.5 9 Q34.5 9 37 16 Q40.5 12.5 46 14 Q52.5 15.5 53.5 22 Q61.5 22 61.5 26.5 Q61.5 31 55 31 Z" fill="#FFFFFF" stroke="#BBD9E6" stroke-width="1.6" stroke-linejoin="round"/></svg>
           </div>
-          <div class="hero-cat peek" id="heroCat">
+          <div class="hero-cat peek" id="heroCat" aria-hidden="true">
             <img class="scene-png" id="heroMascot" src="assets/mascot/hero_default.png" alt="" loading="eager" decoding="async">
             <img class="scene-swap" id="heroSwapLayer" src="assets/mascot/hero_default.png" alt="" aria-hidden="true" loading="eager" decoding="async">
             <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
           </div>
+          <button class="scene-word" id="sceneWord" type="button" title="点一下听发音">
+            <span class="sw-tag">今日单词</span>
+            <span class="sw-en" id="sceneWordEn">—</span>
+            <span class="sw-zh" id="sceneWordZh"></span>
+            <svg class="sw-ic svg-ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-headphones"/></svg>
+          </button>
           <div class="scene-deco" aria-hidden="true">
             <svg class="deco-sun" viewBox="0 0 48 48" fill="none">
               <circle cx="24" cy="24" r="10" fill="#FFD23F" stroke="#E8A93A" stroke-width="1.5"/>
@@ -3515,7 +3556,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 201;
+const APP_VERSION = 202;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -8088,6 +8129,39 @@ function renderRecent(){
   });
 }
 function resumeLastUnit(){ go('vocab'); }
+// v202 首页天空「今日单词」：从当前单元词库按"一年中的第几天"取一个词 → 每天固定一个、次日自动换，无需定时器
+// 优先挑"短小干净"的词（英文 ≤10 字母且释义 ≤5 字），避免 `Ms` 这类带词典式长注解的词把气泡撑开
+function sceneWordPick(){
+  try{
+    const ws=(typeof curUnit==='function' && curUnit() && curUnit().words) ? curUnit().words : null;
+    if(!ws || !ws.length) return null;
+    const nice=ws.filter(w=>w && w.en && w.en.length<=10 && (!w.zh || String(w.zh).length<=5));
+    const pool=nice.length ? nice : ws.filter(w=>w && w.en);
+    if(!pool.length) return null;
+    const d=new Date();
+    const doy=Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000);
+    return pool[Math.abs(doy) % pool.length];
+  }catch(e){ return null; }
+}
+function renderSceneWord(){
+  const box=document.getElementById('sceneWord'); if(!box) return;
+  const w=sceneWordPick();
+  const en=document.getElementById('sceneWordEn'), zh=document.getElementById('sceneWordZh');
+  if(!w){ box.style.display='none'; return; }
+  box.style.display='';               // 交回 CSS 媒体查询决定显隐（窄屏隐藏）
+  if(en) en.textContent=w.en||'—';
+  if(zh) zh.textContent=w.zh||'';
+  if(!box.dataset.bound){
+    box.dataset.bound='1';
+    box.addEventListener('click', (e)=>{
+      e.stopPropagation();            // 不冒泡到卡片 onclick=go('progress')，点朗读不跳页
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const t=(en && en.textContent && en.textContent!=='—') ? en.textContent : '';
+      if(t && typeof speak==='function') speak(t);
+      box.classList.remove('tap'); void box.offsetWidth; box.classList.add('tap'); // 图标脉冲反馈（无定时器：animationend 后类留着即可，下次 remove→reflow→add 重触发）
+    });
+  }
+}
 function renderHero(){
   const hi=document.getElementById('heroHi'); if(hi) hi.textContent=heroGreeting();
   const sub=document.getElementById('heroSub');
@@ -8103,6 +8177,7 @@ function renderHero(){
   const p=Math.min(100, Math.round(Math.min(d.count,G)/G*100));
   const ring=document.getElementById('heroGoalRing');
   if(ring){ ring.style.setProperty('--p', p); const sp=document.getElementById('heroGoalPct'); if(sp) sp.textContent=p+'%'; }
+  renderSceneWord(); // v202 同步天空「今日单词」（随单元/教材切换自动换词）
 }
 // 今日目标可编辑（v40）：弹窗设目标题数，存 STATE.settings.dailyGoal
 function openGoal(){
