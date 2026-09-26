@@ -137,16 +137,19 @@
   .group-title .ln{flex:1; height:3px; background:linear-gradient(90deg,var(--fox),transparent); border-radius:3px; opacity:.55;}
   /* 首页 Hero 欢迎卡 */
   /* 故事书封面式 HERO */
+  /* v203 整体像素风：外框由"手绘不规则圆角 + 柔光阴影"改为"直角 + 3px 硬描边 + 硬投影 + 内圈硬边线"，
+     与场景里的云/太阳/气泡/相框用同一套描边语言（背景与内圈仍用变量，保持明暗主题自适应） */
   .hero.storybook{position:relative; overflow:hidden; cursor:pointer; margin-bottom:16px; padding:0;
-    background:linear-gradient(180deg,#FFF7E8 0%, var(--paper) 44%);
-    border:2px solid var(--line);
-    border-radius:26px 24px 22px 26px/24px 26px 24px 22px;
-    box-shadow:var(--sh-3), inset 0 0 0 6px rgba(255,250,238,.55), inset 0 0 0 7.5px rgba(200,150,90,.16);}
+    background:linear-gradient(180deg,#FFF7E8 0%,#FFF7E8 46%, var(--paper) 46%, var(--paper) 100%);
+    border:3px solid #C9A98A;
+    border-radius:0;
+    box-shadow:6px 6px 0 rgba(120,80,40,.14), inset 0 0 0 4px var(--soft);}
   /* v125 首页 Hero 修裁剪：scene 加高(120→210)+猫完整显示(object-fit:contain)+右侧 sun+加油 平衡布局 */
   .book-scene{position:relative; height:210px; overflow:hidden;
     display:flex; align-items:flex-end; justify-content:space-between;
     padding:10px 16px 0;
-    background:linear-gradient(180deg,#CFEAF1 0%, #EAF6E6 100%);}
+    /* v203 像素天空：把平滑渐变换成"硬色阶"三段（0~30% / 30~52% / 52~100%），色块边界清晰，像像素画的天空分层 */
+    background:linear-gradient(180deg,#CFEAF1 0%,#CFEAF1 30%,#D7EDF0 30%,#D7EDF0 52%,#E4F3E8 52%,#E4F3E8 100%);}
   .scene-png{display:block; height:100%; width:auto; max-width:none;
     object-fit:contain; object-position:center bottom;}
   /* v122 丝滑眨眼：睁眼底层 + 闭眼上层交叉淡入（替代原硬切换 default→blink→default） */
@@ -182,31 +185,45 @@
   /* v125 右侧装饰：太阳 + 一句加油，平衡猫在左布局 */
   .scene-deco{flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:6px;
     padding-bottom:14px; max-width:60%; position:relative; z-index:2;}
-  .scene-deco .deco-sun{width:44px; height:44px; filter:drop-shadow(0 2px 4px rgba(255,180,80,.45)); animation:floaty 3.6s ease-in-out infinite;}
+  /* v203 像素风：去掉柔光投影/圆角 → 改方块直角 + 硬边投影（像素画的"硬阴影"语言） */
+  .scene-deco .deco-sun{width:44px; height:44px; shape-rendering:crispEdges; animation:floaty 3.6s ease-in-out infinite;}
   .scene-deco .deco-text{font-size:13px; font-weight:800; color:#7a5a3a; line-height:1.4;
-    background:rgba(255,255,255,.62); border:1.5px solid rgba(122,90,58,.18); border-radius:12px;
-    padding:5px 9px; text-align:right; white-space:nowrap;}
+    background:#FFFDF6; border:3px solid #B99A72; border-radius:0;
+    padding:5px 9px; text-align:right; white-space:nowrap; box-shadow:4px 4px 0 rgba(122,90,58,.16);}
   /* v168 首页天空加云朵插画：纯内联 SVG、零新资源，悬于大猫与太阳之下 */
-  /* v202 云朵改造成"看得见"：①原来是纯白压浅蓝、几乎隐形 → 改成整朵轮廓路径 + 淡蓝描边；②加极缓慢漂移；③宽屏补第三朵（窄屏空隙仅 31px，没地方放） */
+  /* v203 改像素：云朵由"曲线路径"换成"方块矩形堆叠 + 底部浅蓝阴影块"，shape-rendering:crispEdges 保证不被抗锯齿糊掉 */
   .scene-clouds{position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;}
-  .scene-cloud{position:absolute; display:block; opacity:.96; filter:drop-shadow(0 1px 2px rgba(120,150,170,.20));}
+  .scene-cloud,.scene-prop{position:absolute; display:block; shape-rendering:crispEdges;}
   .scene-cloud.c1{top:16px; left:14px; width:62px; animation:cloudDriftA 12s ease-in-out infinite;}
   .scene-cloud.c2{top:54px; left:auto; right:104px; width:46px; animation:cloudDriftB 14.5s ease-in-out infinite;}
   .scene-cloud.c3{display:none;}
+  /* v203 像素小物件：小鸟 + 蝴蝶（同属 z-index:1 天空层 → 万一位置压到大猫也只是被挡住，不会穿帮） */
+  /* 小树：独立摆一棵（不进平铺图案，否则每 160px 重复一次会有"壁纸感"）；锚在猫右缘外 28px，只有 ≥660px 才显示（窄屏那点空隙放不下） */
+  .scene-prop.tree{width:34px; height:40px; left:262px; bottom:14px; display:none;}
+  .scene-prop.bird{width:26px; top:26px; left:64%; animation:propGlideA 19s ease-in-out infinite;}
+  .scene-prop.butterfly{width:24px; top:104px; left:22%; animation:propGlideB 13s ease-in-out infinite;}
   @keyframes cloudDriftA{0%,100%{transform:translate(0,0)}50%{transform:translate(13px,-5px)}}
   @keyframes cloudDriftB{0%,100%{transform:translate(0,0)}50%{transform:translate(-15px,-4px)}}
-  /* v202 绘本底景：远山 + 草地（纯内联 SVG 拉伸铺满，零新资源；夹在天空渐变之上、大猫/云之下） */
-  .scene-ground{position:absolute; left:0; right:0; bottom:0; width:100%; height:76px; z-index:0; pointer-events:none; display:block;}
+  @keyframes propGlideA{0%,100%{transform:translate(0,0)}50%{transform:translate(-36px,-9px)}}
+  @keyframes propGlideB{0%,100%{transform:translate(0,0)}50%{transform:translate(26px,-11px)}}
+  /* v203 像素底景：远山(20px 阶梯) + 草地 + 小花/蘑菇/小树，用 <pattern> 平铺 → 任意宽度都不拉伸变形、像素始终是方的 */
+  .scene-ground{position:absolute; left:0; right:0; bottom:0; width:100%; height:76px; z-index:0; pointer-events:none; display:block; shape-rendering:crispEdges;}
+  /* v203 前景草地：z-index:4 盖在大猫面板之前 → 草"长到"猫前面，猫才真正站在草地上，不再是浮空方块（这是"贴合"的关键）
+     宽度固定 240px（大猫面板右缘约 216~234px），所以窄屏也只压到猫和那点空隙，绝不会碰到右侧装饰 */
+  .scene-fore{position:absolute; left:0; bottom:0; width:240px; height:20px; z-index:4; pointer-events:none; display:block; shape-rendering:crispEdges;}
+  /* v203 大猫像素相框：把 512x512 米色底板变成一张"像素拍立得"，与场景用同一套 3px 棕色描边 + 硬投影 */
+  .hero-cat::after{content:''; position:absolute; inset:0; z-index:6; pointer-events:none;
+    border:3px solid #B99A72; box-shadow:4px 4px 0 rgba(122,90,58,.15);}
   /* v202 今日单词气泡：作为 .book-scene 的"中间 flex 项"，靠 space-between 自动落进猫与太阳之间那道空隙，无需 JS 定位；
      窄屏（空隙 <200px）不显示，避免挤压布局 */
   .scene-word{position:relative; z-index:3; align-self:center; flex:0 0 auto; display:none;
-    align-items:center; gap:7px; padding:7px 12px; margin:0 6px; max-width:232px; overflow:hidden;
-    background:rgba(255,255,255,.95); border:2px solid #B9D7E4; border-radius:16px;
-    box-shadow:0 4px 12px rgba(90,130,150,.20); cursor:pointer; font-family:inherit;
+    align-items:center; gap:7px; padding:6px 11px; margin:0 6px; max-width:232px; overflow:hidden;
+    background:#FFFDF6; border:3px solid #7FA9BC; border-radius:0;
+    box-shadow:4px 4px 0 rgba(90,130,150,.22); cursor:pointer; font-family:inherit;
     animation:floaty 5.2s ease-in-out infinite;}
   /* 宽度上限 232px + 文本省略号：词库里有超长释义（如 Ms 带词典式长注解），不设上限会把右侧"太阳+加油"挤出卡片外被裁掉 */
-  .scene-word .sw-tag{flex:0 0 auto; font-size:10px; font-weight:800; color:#57798A; letter-spacing:.3px;
-    background:#E8F4F8; border-radius:999px; padding:2px 7px; line-height:1.6;}
+  .scene-word .sw-tag{flex:0 0 auto; font-size:10px; font-weight:800; color:#4C6E7E; letter-spacing:.3px;
+    background:#DCEEF6; border:2px solid #9FC6D6; border-radius:0; padding:1px 6px; line-height:1.6;}
   .scene-word .sw-en{flex:0 1 auto; min-width:0; font-size:18px; font-weight:900; color:#2F4858; letter-spacing:.3px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .scene-word .sw-zh{flex:0 1 auto; min-width:0; font-size:12px; font-weight:700; color:#7A8C96;
@@ -219,11 +236,12 @@
     .scene-cloud.c1{left:40%; right:auto; top:16px; width:66px;}
     .scene-cloud.c2{left:56%; right:auto; top:62px; width:48px;}
     .scene-cloud.c3{display:block; left:74%; top:28px; width:54px; animation:cloudDriftA 16s ease-in-out infinite; animation-delay:-5s;}
+    .scene-prop.tree{display:block;}
   }
   @media (prefers-reduced-motion: reduce){
     .scene-blink.run{animation:none !important;}
     .hero-cat.peek{animation:none !important;}
-    .scene-cloud,.scene-word{animation:none !important;}
+    .scene-cloud,.scene-prop,.scene-word{animation:none !important;}
     .scene-word.tap .sw-ic{animation:none !important;}
     .scene-deco .deco-sun{animation:none !important;}
   }
@@ -1783,14 +1801,95 @@
     </div>
     <div class="hero storybook" onclick="go('progress')">
     <div class="book-scene">
-          <svg class="scene-ground" viewBox="0 0 800 74" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 40 Q120 6 262 34 T566 30 T800 46 L800 74 L0 74 Z" fill="#D5EBC8"/>
-            <path d="M0 58 Q170 28 350 56 T800 54 L800 74 L0 74 Z" fill="#BFDFAF"/>
+          <svg class="scene-ground" aria-hidden="true">
+            <defs>
+              <pattern id="pxGround" width="160" height="76" patternUnits="userSpaceOnUse">
+                <rect x="0" y="42" width="20" height="34" fill="#C6E3B4"/><rect x="0" y="42" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="20" y="34" width="20" height="42" fill="#C6E3B4"/><rect x="20" y="34" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="40" y="30" width="20" height="46" fill="#C6E3B4"/><rect x="40" y="30" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="60" y="34" width="20" height="42" fill="#C6E3B4"/><rect x="60" y="34" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="80" y="38" width="20" height="38" fill="#C6E3B4"/><rect x="80" y="38" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="100" y="31" width="20" height="45" fill="#C6E3B4"/><rect x="100" y="31" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="120" y="36" width="20" height="40" fill="#C6E3B4"/><rect x="120" y="36" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="140" y="43" width="20" height="33" fill="#C6E3B4"/><rect x="140" y="43" width="20" height="2" fill="#DDF0D0"/>
+                <rect x="0" y="56" width="160" height="20" fill="#A9D693"/>
+                <rect x="0" y="56" width="160" height="2" fill="#C8E8B4"/>
+                <rect x="88" y="52" width="3" height="4" fill="#8EBF74"/><rect x="92" y="50" width="3" height="6" fill="#7FB86A"/><rect x="96" y="53" width="3" height="3" fill="#8EBF74"/>
+                <rect x="15" y="50" width="6" height="6" fill="#F5E7CE"/><rect x="12" y="45" width="12" height="5" fill="#E8736B"/>
+                <rect x="14" y="46" width="3" height="2" fill="#FFF3E6"/><rect x="19" y="46" width="3" height="2" fill="#FFF3E6"/>
+                <rect x="55" y="51" width="3" height="5" fill="#7FB86A"/>
+                <rect x="51" y="47" width="4" height="4" fill="#F5A9C0"/><rect x="58" y="47" width="4" height="4" fill="#F5A9C0"/>
+                <rect x="51" y="52" width="4" height="4" fill="#F5A9C0"/><rect x="58" y="52" width="4" height="4" fill="#F5A9C0"/>
+                <rect x="55" y="50" width="3" height="3" fill="#FFD23F"/>
+                <rect x="115" y="51" width="3" height="5" fill="#7FB86A"/>
+                <rect x="111" y="47" width="4" height="4" fill="#FFE066"/><rect x="118" y="47" width="4" height="4" fill="#FFE066"/>
+                <rect x="111" y="52" width="4" height="4" fill="#FFE066"/><rect x="118" y="52" width="4" height="4" fill="#FFE066"/>
+                <rect x="115" y="50" width="3" height="3" fill="#F0932B"/>
+                <rect x="136" y="52" width="3" height="4" fill="#8EBF74"/><rect x="140" y="50" width="3" height="6" fill="#7FB86A"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#pxGround)"/>
+          </svg>
+          <svg class="scene-fore" viewBox="0 0 240 20" preserveAspectRatio="none" aria-hidden="true">
+            <rect x="0" y="8" width="240" height="12" fill="#A9D693"/>
+            <rect x="0" y="8" width="240" height="2" fill="#C8E8B4"/>
+            <rect x="6" y="3" width="3" height="7" fill="#8EBF74"/><rect x="18" y="5" width="3" height="5" fill="#7FB86A"/>
+            <rect x="30" y="2" width="3" height="8" fill="#8EBF74"/><rect x="44" y="4" width="3" height="6" fill="#7FB86A"/>
+            <rect x="58" y="6" width="3" height="4" fill="#8EBF74"/><rect x="70" y="3" width="3" height="7" fill="#7FB86A"/>
+            <rect x="84" y="5" width="3" height="5" fill="#8EBF74"/><rect x="98" y="2" width="3" height="8" fill="#7FB86A"/>
+            <rect x="112" y="4" width="3" height="6" fill="#8EBF74"/><rect x="126" y="6" width="3" height="4" fill="#7FB86A"/>
+            <rect x="140" y="3" width="3" height="7" fill="#8EBF74"/><rect x="154" y="5" width="3" height="5" fill="#7FB86A"/>
+            <rect x="168" y="2" width="3" height="8" fill="#8EBF74"/><rect x="182" y="4" width="3" height="6" fill="#7FB86A"/>
+            <rect x="196" y="6" width="3" height="4" fill="#8EBF74"/><rect x="210" y="3" width="3" height="7" fill="#7FB86A"/>
+            <rect x="224" y="5" width="3" height="5" fill="#8EBF74"/>
+            <rect x="37" y="2" width="3" height="6" fill="#7FB86A"/>
+            <rect x="33" y="0" width="4" height="4" fill="#FFE066"/><rect x="40" y="0" width="4" height="4" fill="#FFE066"/><rect x="36" y="1" width="3" height="3" fill="#F0932B"/>
+            <rect x="150" y="2" width="3" height="6" fill="#7FB86A"/>
+            <rect x="146" y="0" width="4" height="4" fill="#F5A9C0"/><rect x="153" y="0" width="4" height="4" fill="#F5A9C0"/><rect x="149" y="1" width="3" height="3" fill="#FFD23F"/>
           </svg>
           <div class="scene-clouds" aria-hidden="true">
-            <svg class="scene-cloud c1" viewBox="0 0 70 36" aria-hidden="true"><path d="M16 31 Q8.5 31 8.5 24 Q8.5 17.5 16 17 Q18 9 26.5 9 Q34.5 9 37 16 Q40.5 12.5 46 14 Q52.5 15.5 53.5 22 Q61.5 22 61.5 26.5 Q61.5 31 55 31 Z" fill="#FFFFFF" stroke="#BBD9E6" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <svg class="scene-cloud c2" viewBox="0 0 70 36" aria-hidden="true"><path d="M16 31 Q8.5 31 8.5 24 Q8.5 17.5 16 17 Q18 9 26.5 9 Q34.5 9 37 16 Q40.5 12.5 46 14 Q52.5 15.5 53.5 22 Q61.5 22 61.5 26.5 Q61.5 31 55 31 Z" fill="#FFFFFF" stroke="#BBD9E6" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <svg class="scene-cloud c3" viewBox="0 0 70 36" aria-hidden="true"><path d="M16 31 Q8.5 31 8.5 24 Q8.5 17.5 16 17 Q18 9 26.5 9 Q34.5 9 37 16 Q40.5 12.5 46 14 Q52.5 15.5 53.5 22 Q61.5 22 61.5 26.5 Q61.5 31 55 31 Z" fill="#FFFFFF" stroke="#BBD9E6" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <svg class="scene-cloud c1" viewBox="0 0 32 16" aria-hidden="true">
+              <rect x="4" y="10" width="24" height="5" fill="#FFFFFF"/>
+              <rect x="7" y="6" width="19" height="5" fill="#FFFFFF"/>
+              <rect x="10" y="2" width="12" height="5" fill="#FFFFFF"/>
+              <rect x="6" y="4" width="5" height="4" fill="#FFFFFF"/>
+              <rect x="19" y="4" width="6" height="4" fill="#FFFFFF"/>
+              <rect x="4" y="13" width="24" height="3" fill="#DCEEF6"/>
+            </svg>
+            <svg class="scene-cloud c2" viewBox="0 0 32 16" aria-hidden="true">
+              <rect x="4" y="10" width="24" height="5" fill="#FFFFFF"/>
+              <rect x="7" y="6" width="19" height="5" fill="#FFFFFF"/>
+              <rect x="10" y="2" width="12" height="5" fill="#FFFFFF"/>
+              <rect x="6" y="4" width="5" height="4" fill="#FFFFFF"/>
+              <rect x="19" y="4" width="6" height="4" fill="#FFFFFF"/>
+              <rect x="4" y="13" width="24" height="3" fill="#DCEEF6"/>
+            </svg>
+            <svg class="scene-cloud c3" viewBox="0 0 32 16" aria-hidden="true">
+              <rect x="4" y="10" width="24" height="5" fill="#FFFFFF"/>
+              <rect x="7" y="6" width="19" height="5" fill="#FFFFFF"/>
+              <rect x="10" y="2" width="12" height="5" fill="#FFFFFF"/>
+              <rect x="6" y="4" width="5" height="4" fill="#FFFFFF"/>
+              <rect x="19" y="4" width="6" height="4" fill="#FFFFFF"/>
+              <rect x="4" y="13" width="24" height="3" fill="#DCEEF6"/>
+            </svg>
+            <svg class="scene-prop tree" viewBox="0 0 34 40" aria-hidden="true">
+              <rect x="15" y="26" width="5" height="14" fill="#B08155"/>
+              <rect x="8" y="16" width="19" height="10" fill="#7FB86A"/>
+              <rect x="10" y="9" width="15" height="7" fill="#8ECB79"/>
+              <rect x="13" y="4" width="9" height="5" fill="#9BD588"/>
+            </svg>
+            <svg class="scene-prop bird" viewBox="0 0 16 12" aria-hidden="true">
+              <rect x="2" y="4" width="5" height="2" fill="#5B7A88"/>
+              <rect x="9" y="4" width="5" height="2" fill="#5B7A88"/>
+              <rect x="7" y="5" width="2" height="3" fill="#4A6672"/>
+            </svg>
+            <svg class="scene-prop butterfly" viewBox="0 0 16 14" aria-hidden="true">
+              <rect x="2" y="3" width="5" height="4" fill="#F5A9C0"/>
+              <rect x="9" y="3" width="5" height="4" fill="#F5A9C0"/>
+              <rect x="2" y="8" width="5" height="3" fill="#EE93B1"/>
+              <rect x="9" y="8" width="5" height="3" fill="#EE93B1"/>
+              <rect x="7" y="2" width="2" height="9" fill="#6B4A3A"/>
+            </svg>
           </div>
           <div class="hero-cat peek" id="heroCat" aria-hidden="true">
             <img class="scene-png" id="heroMascot" src="assets/mascot/hero_default.png" alt="" loading="eager" decoding="async">
@@ -1804,18 +1903,17 @@
             <svg class="sw-ic svg-ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-headphones"/></svg>
           </button>
           <div class="scene-deco" aria-hidden="true">
-            <svg class="deco-sun" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="10" fill="#FFD23F" stroke="#E8A93A" stroke-width="1.5"/>
-              <g stroke="#E8A93A" stroke-width="2.2" stroke-linecap="round">
-                <line x1="24" y1="6" x2="24" y2="11"/>
-                <line x1="24" y1="37" x2="24" y2="42"/>
-                <line x1="6" y1="24" x2="11" y2="24"/>
-                <line x1="37" y1="24" x2="42" y2="24"/>
-                <line x1="11" y1="11" x2="14.5" y2="14.5"/>
-                <line x1="33.5" y1="33.5" x2="37" y2="37"/>
-                <line x1="11" y1="37" x2="14.5" y2="33.5"/>
-                <line x1="33.5" y1="14.5" x2="37" y2="11"/>
-              </g>
+            <svg class="deco-sun" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="11" y="1" width="2" height="4" fill="#FFD23F"/>
+              <rect x="11" y="19" width="2" height="4" fill="#FFD23F"/>
+              <rect x="1" y="11" width="4" height="2" fill="#FFD23F"/>
+              <rect x="19" y="11" width="4" height="2" fill="#FFD23F"/>
+              <rect x="8" y="6" width="8" height="2" fill="#FFD23F"/>
+              <rect x="6" y="8" width="12" height="4" fill="#FFD23F"/>
+              <rect x="6" y="12" width="12" height="4" fill="#FFD23F"/>
+              <rect x="8" y="16" width="8" height="2" fill="#FFD23F"/>
+              <rect x="14" y="12" width="4" height="4" fill="#E8A93A"/>
+              <rect x="8" y="16" width="8" height="2" fill="#E8A93A"/>
             </svg>
             <div class="deco-text">今天也闪闪 ✨<br>一起加油吧</div>
           </div>
@@ -3556,7 +3654,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 202;
+const APP_VERSION = 203;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
