@@ -53,7 +53,10 @@
     background-attachment:fixed;
     overflow-x:hidden;
   }
-  .app{max-width:980px; margin:0 auto; padding:14px calc(14px + env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px)); min-height:100%;}
+  /* 整页流动背景层（暖色流体），固定在最底层、不挡点击 */
+  #fluidBg{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; display:block;}
+  #wipeCanvas{position:fixed; inset:0; width:100%; height:100%; z-index:10001; pointer-events:none; opacity:0; transition:opacity .15s ease; display:block;}
+  .app{max-width:980px; margin:0 auto; padding:14px calc(14px + env(safe-area-inset-right,0px)) calc(90px + env(safe-area-inset-bottom,0px)) calc(14px + env(safe-area-inset-left,0px)); min-height:100%; position:relative; z-index:1;}
   /* top bar */
   .topbar{
     display:flex; align-items:center; gap:10px;
@@ -1604,10 +1607,42 @@
   @media (prefers-reduced-motion: reduce){
     .stat-card:hover,.rpt-card:hover,.tile:hover,.isle:hover,.mem-card:hover,.wcard:hover,.match-card:hover,.find-card:hover,.gram-card:hover,.speech:hover,.recent-chip:hover,.opt:hover,.token:hover{transform:none !important;}
   }
+
+  /* v261：开场流体界面（漩涡吸入）——覆盖全屏，z 高于内容但低于液体幕布(10001)，便于点开始后用幕布擦除过渡 */
+  #startScreen{position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:manipulation;
+    background:radial-gradient(circle at 50% 42%, #1c0b33 0%, #0a0612 70%); /* WebGL 不可用时的兜底背景 */}
+  #startCanvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  .start-overlay{position:relative; z-index:2; text-align:center; padding:24px calc(16px + env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px)); padding-top:calc(24px + env(safe-area-inset-top,0px)); transform:translateY(-2vh);}
+  .start-title{margin:0; font-size:clamp(34px,9vw,68px); font-weight:900; letter-spacing:2px; color:#fff; line-height:1.12;
+    text-shadow:0 2px 24px rgba(120,80,255,.6), 0 0 42px rgba(80,200,255,.35);}
+  .start-btn{margin-top:34px; min-height:60px; padding:0 44px; font-size:22px; font-weight:800; color:#1a0b2e; border:none; border-radius:999px;
+    background:linear-gradient(135deg,#ffd86b,#ff9d6b); cursor:pointer; touch-action:manipulation;
+    box-shadow:0 10px 30px rgba(255,160,80,.45), inset 0 0 0 2px rgba(255,255,255,.4);
+    transition:transform .15s ease; animation:pulseBtn 2.2s ease-in-out infinite;}
+  .start-btn:active{transform:scale(.96);}
+  @keyframes pulseBtn{0%,100%{box-shadow:0 10px 30px rgba(255,160,80,.45), inset 0 0 0 2px rgba(255,255,255,.4);}
+    50%{box-shadow:0 14px 40px rgba(255,160,80,.6), inset 0 0 0 2px rgba(255,255,255,.6);}}
+  #startScreen.start-done{display:none;} /* 点开始后彻底移除，停止渲染省电 */
+
+  @media (max-width:380px){
+    .start-btn{font-size:20px; padding:0 34px; min-height:56px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .start-btn{animation:none;}
+  }
 </style>
 <script src="audio-map.js"></script>
 </head>
 <body>
+<canvas id="fluidBg"></canvas>
+<canvas id="wipeCanvas"></canvas>
+<div id="startScreen">
+  <canvas id="startCanvas"></canvas>
+  <div class="start-overlay">
+    <h1 class="start-title">英语小探险家</h1>
+    <button id="startBtn" class="start-btn" type="button">开始探索 ▶</button>
+  </div>
+</div>
 <div class="app">
   <div class="topbar">
     <span class="mwrap"><img class="mascot" id="mascotImg" src="assets/mascot/default.png" alt="" width="40" height="45" loading="eager" decoding="async" draggable="false"><img class="mtop-blink" id="mascotBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" decoding="async"></span>
@@ -3443,7 +3478,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 197;
+const APP_VERSION = 198;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4204,7 +4239,60 @@ function safeRender(fn){
     if(el) el.innerHTML='<div class="panel center err-panel">这一页出了点小问题<div class="muted" style="font-size:13px;margin:6px 0">数据不会丢，可以重试</div><button class="btn grape" onclick="go(\''+curScreen+'\')">重试</button></div>';
   }
 }
+/* v260：液态幕布擦除转场——切屏时一层暖色流动液体从左侧扫入盖住旧界面，中点换屏，再扫出露出新界面 */
+var wipeBusy=false, wipeArmed=false, wipeRAF=0;
+function drawWipe(phase){
+  var cv=document.getElementById('wipeCanvas'); if(!cv) return;
+  var ctx=cv.getContext('2d'); if(!ctx) return;
+  var W=cv.clientWidth||window.innerWidth, H=cv.clientHeight||window.innerHeight;
+  ctx.clearRect(0,0,W,H);
+  var bp = phase<=1 ? phase : phase-1;
+  var bx = bp*W;
+  var t = performance.now()/1000;
+  ctx.beginPath();
+  if(phase<=1){
+    ctx.moveTo(0,0); ctx.lineTo(bx,0);
+    for(var y=0;y<=H;y+=10){ var wob=Math.sin(y*0.025+t*5)*16+Math.sin(y*0.06-t*3.3)*9; ctx.lineTo(bx+wob,y); }
+    ctx.lineTo(bx,H); ctx.lineTo(0,H);
+  } else {
+    ctx.moveTo(bx,0);
+    for(var y=0;y<=H;y+=10){ var wob=Math.sin(y*0.025+t*5)*16+Math.sin(y*0.06-t*3.3)*9; ctx.lineTo(bx+wob,y); }
+    ctx.lineTo(W,0); ctx.lineTo(W,H); ctx.lineTo(bx,H);
+  }
+  ctx.closePath();
+  var g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#FFE9C8'); g.addColorStop(0.5,'#FFD9A0'); g.addColorStop(1,'#FBC78A');
+  ctx.fillStyle=g; ctx.fill();
+  ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.stroke();
+  ctx.fillStyle='rgba(255,228,184,.5)';
+  for(var i=0;i<3;i++){ var by=H*(0.22+i*0.28)+Math.sin(t*2+i)*22; var br=20+Math.sin(t*3+i)*8; ctx.beginPath(); ctx.arc(bx+(phase<=1?-12:12)+Math.sin(t*2+i)*12, by, Math.abs(br), 0, 6.2832); ctx.fill(); }
+}
+function showWipe(){ var cv=document.getElementById('wipeCanvas'); if(cv) cv.style.opacity='1'; }
+function hideWipe(){ var cv=document.getElementById('wipeCanvas'); if(cv) cv.style.opacity='0'; }
+function fluidWipe(swapFn){
+  var cv=document.getElementById('wipeCanvas');
+  if(!cv){ swapFn(); return; }
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){ swapFn(); return; }
+  if(wipeBusy){ if(wipeRAF) cancelAnimationFrame(wipeRAF); hideWipe(); wipeBusy=false; swapFn(); return; }
+  wipeBusy=true; showWipe();
+  var dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.floor(window.innerWidth*dpr); cv.height=Math.floor(window.innerHeight*dpr);
+  cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+  var dur=760, start=performance.now(), swapped=false;
+  function frame(now){
+    var ph=(now-start)/dur*2; if(ph>2) ph=2;
+    drawWipe(ph);
+    if(ph<1){ wipeRAF=requestAnimationFrame(frame); }
+    else {
+      if(!swapped){ swapped=true; swapFn(); }
+      if(ph<2){ wipeRAF=requestAnimationFrame(frame); }
+      else { hideWipe(); wipeBusy=false; }
+    }
+  }
+  wipeRAF=requestAnimationFrame(frame);
+}
 function go(name){
+  var from=curScreen;
   stopEvalEngine();
   vocabRound=null; // v162：切屏即结束本轮词汇测验统计（防跨屏累计出幽灵小结）
   skillQuiz=null; // v172：切屏/切教材同样结束听说读写连续测验（防残留上一本教材的题目对象造成跨书串数据；各使用点均已有 !skillQuiz 守卫）
@@ -4225,6 +4313,7 @@ function go(name){
   } }catch(_){}
   // v173：记住当前学习单元，下次打开自动定位（切教材后会存成新教材的有效单元）
   try{ if(STATE.settings && STATE.settings.lastUnit!==curUnitId){ STATE.settings.lastUnit=curUnitId; saveState(); } }catch(_){}
+  var doSwap = function(){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(name).classList.add('active');
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.nav===name));
@@ -4255,6 +4344,10 @@ function go(name){
   }
   safeRender(renderGoal);
   maybeGuide(name); // v86 按板块触发：首次点进才弹该板块自己的简短指引
+  };
+  if(from===name){ doSwap(); return; } // 同屏重入：不擦除
+  wipeArmed=true; // 首屏之后，所有异屏切换走液态幕布擦除
+  fluidWipe(doSwap);
 }
 // 全局兜底：捕获未处理的 JS 异常（忽略 img/audio 等资源加载错误），避免静默崩
 window.addEventListener('error', e=>{ if(e.error){ console.error('[global error]', e.error||e.message); try{ toast('出了点小问题，已记录'); }catch(_){} } });
@@ -8534,6 +8627,167 @@ if('serviceWorker' in navigator){
     });
   }catch(_){ }
 }
+</script>
+<script>
+/* 整页暖色流动背景：WebGL 流体着色器，失败自动降级为 2D 渐变，切到后台自动暂停省电 */
+(function(){
+  var canvas = document.getElementById('fluidBg');
+  if(!canvas) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SCALE = 0.6; // 降采样渲染，手机也流畅；流体本就柔和不损画质
+  var gl = null, ctx2d = null, prog, uniT, uniR;
+  function resize(){
+    var w = Math.max(1, Math.floor(window.innerWidth * SCALE));
+    var h = Math.max(1, Math.floor(window.innerHeight * SCALE));
+    canvas.width = w; canvas.height = h;
+    if(gl) gl.viewport(0,0,w,h);
+  }
+  function tryGL(){
+    try{
+      gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if(!gl) return false;
+      var vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}';
+      var fs = 'precision highp float;uniform vec2 u_res;uniform float u_time;'
+        + 'float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}'
+        + 'float noise(vec2 p){vec2 i=floor(p),f=fract(p);float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));vec2 u=f*f*(3.0-2.0*f);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}'
+        + 'float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.0;a*=0.5;}return v;}'
+        + 'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;vec2 p=uv*vec2(u_res.x/u_res.y,1.0)*3.0;float t=u_time*0.06;'
+        + 'vec2 q=vec2(fbm(p+vec2(0.0,t)),fbm(p+vec2(5.2,1.3)-t*0.7));'
+        + 'vec2 r=vec2(fbm(p+4.0*q+vec2(1.7,9.2)+t*0.4),fbm(p+4.0*q+vec2(8.3,2.8)-t*0.3));'
+        + 'float f=fbm(p+4.0*r);'
+        + 'vec3 cream=vec3(0.988,0.953,0.886);vec3 amber=vec3(1.0,0.847,0.627);vec3 fox=vec3(0.937,0.510,0.290);'
+        + 'vec3 col=cream;col=mix(col,amber,smoothstep(0.35,0.75,f)*0.55);col=mix(col,fox,smoothstep(0.62,0.95,f)*0.30);'
+        + 'col*=0.97+0.03*sin(uv.y*3.1416);gl_FragColor=vec4(col,1.0);}';
+      function sh(t,s){var x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))return null;return x;}
+      var vs2=sh(gl.VERTEX_SHADER,vs), fs2=sh(gl.FRAGMENT_SHADER,fs);
+      if(!vs2||!fs2) return false;
+      prog=gl.createProgram();gl.attachShader(prog,vs2);gl.attachShader(prog,fs2);gl.linkProgram(prog);
+      if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) return false;
+      gl.useProgram(prog);
+      var b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+      gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+      var l=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0);
+      uniT=gl.getUniformLocation(prog,'u_time');uniR=gl.getUniformLocation(prog,'u_res');
+      return true;
+    }catch(e){ return false; }
+  }
+  if(!tryGL()){
+    try{
+      var nc=document.createElement('canvas'); nc.id='fluidBg';
+      canvas.parentNode.replaceChild(nc,canvas); canvas=nc;
+      ctx2d=canvas.getContext('2d');
+    }catch(e){ canvas.style.display='none'; }
+  }
+  resize();
+  function draw2D(now){
+    var w=canvas.width,h=canvas.height;
+    ctx2d.fillStyle='#FCF3E2';ctx2d.fillRect(0,0,w,h);
+    var a=0.5+0.5*Math.sin(now*0.0006);
+    var g=ctx2d.createLinearGradient(0,0,w,h);
+    g.addColorStop(0,'rgba(255,231,194,'+(0.45+0.2*a)+')');
+    g.addColorStop(0.5,'rgba(255,217,160,'+(0.35+0.15*a)+')');
+    g.addColorStop(1,'rgba(251,217,182,'+(0.45+0.2*(1-a))+')');
+    ctx2d.fillStyle=g;ctx2d.fillRect(0,0,w,h);
+  }
+  var start=performance.now(), raf=null, running=true;
+  function frame(now){
+    if(!running) return;
+    var t=(now-start)/1000;
+    if(gl && prog){ gl.uniform1f(uniT,t); gl.uniform2f(uniR,canvas.width,canvas.height); gl.drawArrays(gl.TRIANGLES,0,6); }
+    else if(ctx2d){ draw2D(now); }
+    else return;
+    if(!reduce) raf=requestAnimationFrame(frame);
+  }
+  function loop(){ if(reduce){ frame(start); return; } raf=requestAnimationFrame(frame); }
+  loop();
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running=false; if(raf) cancelAnimationFrame(raf); }
+    else { running=true; if(!reduce) loop(); }
+  });
+})();
+</script>
+<script>
+/* v261：开场流体界面——漩涡吸入（深紫星云螺旋吸入中心）。点「开始探索」后用液体幕布擦除过渡到首页。 */
+(function(){
+  var ss = document.getElementById('startScreen');
+  var canvas = document.getElementById('startCanvas');
+  if(!ss || !canvas) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SCALE = 0.7; // 降采样渲染，移动端也流畅
+  var gl=null, prog, uniT, uniR;
+  function resize(){
+    var w=Math.max(1,Math.floor(window.innerWidth*SCALE));
+    var h=Math.max(1,Math.floor(window.innerHeight*SCALE));
+    canvas.width=w; canvas.height=h;
+    if(gl) gl.viewport(0,0,w,h);
+  }
+  function tryGL(){
+    try{
+      gl=canvas.getContext('webgl')||canvas.getContext('experimental-webgl');
+      if(!gl) return false;
+      var vs='attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}';
+      var fs='precision highp float;uniform vec2 u_res;uniform float u_time;'
+        +'float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}'
+        +'float noise(vec2 p){vec2 i=floor(p),f=fract(p);float a=hash(i),b=hash(i+vec2(1.0,0.0)),c=hash(i+vec2(0.0,1.0)),d=hash(i+vec2(1.0,1.0));vec2 u=f*f*(3.0-2.0*f);return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}'
+        +'float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.0;a*=0.5;}return v;}'
+        +'void main(){vec2 uv=gl_FragCoord.xy/u_res.xy;vec2 p=(uv-0.5);p.x*=u_res.x/u_res.y;'
+        +'float r=length(p);float ang=atan(p.y,p.x);float t=u_time*0.5;'
+        +'float swirl=ang+t*(0.9/(r+0.18));'            // 内圈旋得更快 → 螺旋吸入
+        +'vec2 q=vec2(cos(swirl),sin(swirl))*r;'
+        +'vec2 dom=q*3.0+vec2(t*0.25,-t*0.18)-p*1.4;'    // 噪声域向中心漂移，增强吸入感
+        +'float f=fbm(dom);'
+        +'vec3 deep=vec3(0.04,0.02,0.12);vec3 neb=vec3(0.42,0.18,0.85);'
+        +'vec3 col=mix(deep,neb,f);'
+        +'float glow=smoothstep(0.55,0.0,r);'            // 中心高光
+        +'col=mix(col,vec3(0.2,0.9,1.0),glow*0.6);'     // 青色星核
+        +'col+=vec3(1.0,0.7,0.3)*pow(glow,3.0)*0.55;'   // 金色核心
+        +'gl_FragColor=vec4(col,1.0);}';
+      function sh(t,s){var x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))return null;return x;}
+      var vs2=sh(gl.VERTEX_SHADER,vs),fs2=sh(gl.FRAGMENT_SHADER,fs);
+      if(!vs2||!fs2) return false;
+      prog=gl.createProgram();gl.attachShader(prog,vs2);gl.attachShader(prog,fs2);gl.linkProgram(prog);
+      if(!gl.getProgramParameter(prog,gl.LINK_STATUS)) return false;
+      gl.useProgram(prog);
+      var b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+      gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+      var l=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0);
+      uniT=gl.getUniformLocation(prog,'u_time');uniR=gl.getUniformLocation(prog,'u_res');
+      return true;
+    }catch(e){ return false; }
+  }
+  if(!tryGL()){
+    canvas.style.display='none'; // WebGL 不可用：CSS 径向渐变兜底（#startScreen 已有背景）
+  }
+  resize();
+  var start=performance.now(), raf=null, running=true;
+  function frame(now){
+    if(!running) return;
+    if(ss.classList.contains('start-done')){ running=false; return; } // 开场结束即停，省电
+    var t=(now-start)/1000;
+    if(gl && prog){ gl.uniform1f(uniT,t); gl.uniform2f(uniR,canvas.width,canvas.height); gl.drawArrays(gl.TRIANGLES,0,6); }
+    if(!reduce) raf=requestAnimationFrame(frame);
+  }
+  function loop(){ if(reduce){ frame(start); return; } raf=requestAnimationFrame(frame); }
+  loop();
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running=false; if(raf) cancelAnimationFrame(raf); }
+    else if(!ss.classList.contains('start-done')){ running=true; if(!reduce) loop(); }
+  });
+  // 点「开始探索」：用液体幕布擦除过渡到首页
+  var btn=document.getElementById('startBtn');
+  var started=false;
+  function beginApp(){
+    if(started) return; started=true;
+    if(typeof fluidWipe==='function'){
+      fluidWipe(function(){ ss.classList.add('start-done'); });
+    } else {
+      ss.classList.add('start-done');
+    }
+  }
+  if(btn) btn.addEventListener('click', beginApp);
+})();
 </script>
 </body>
 </html>
