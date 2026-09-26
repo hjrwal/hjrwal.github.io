@@ -860,16 +860,33 @@
   body.theme-dark .speech{background:#3a2e24; border-color:var(--line);}
   body.theme-dark .speech::before{background:#3a2e24; border-color:var(--line);}
   /* 暖夜下绘本插画改为黄昏暮色，狐狸依旧在岗（v120 hero 改 AI 生图 PNG，暗色背景下场景贴片自带暖色调，反而像夜里翻到一页彩绘） */
-  body.theme-dark .book-scene{ background:linear-gradient(180deg,#3a3150 0%, #46324a 100%);}
   body.theme-dark .pill{color:#5b3a00;}
   /* 护眼暖纸下插画稍柔 */
-  body.theme-sepia .book-scene{ background:linear-gradient(180deg,#dcebd8 0%, #f0ead0 100%);}
   body.theme-sepia .pill{color:#6b4e00;}
   /* v169 暖夜插画对比度打磨：空状态卡片改暖夜底色、云朵降透明度、加油气泡改暖夜描边 */
   body.theme-dark .wb-empty{background:linear-gradient(135deg,#2c2335,#1f2a22); border-color:#5a4a7a; color:#cbb8e6;}
   body.theme-dark .wb-empty .wb-empty-sub{opacity:.82;}
-  body.theme-dark .scene-cloud{opacity:.62;}
-  body.theme-dark .deco-text{color:#e7cfa6; background:rgba(40,32,24,.6); border-color:rgba(232,116,59,.3);}
+  /* v206 暗色/护眼主题下的"像素场景"补全 —— 修 v203 遗留的真实问题：
+     原来这两个主题各用一条"平滑渐变"盖掉了像素天空（暗色 #3a3150→#46324a 是连续渐变、不是硬色阶），
+     于是暗色下：①天空不是像素风 ②白像素云半透明压在深紫上发灰 ③亮绿草地配深紫夜空色温冲突
+     ④"今日单词"气泡是亮白像素卡、"今天也闪闪"是深色半透明卡 —— 同一场景里两种风格。
+     解法：三个主题都用硬色阶像素天空；暗色把云改夜色、草地/小物整体压暗、太阳灰化成月亮、两个气泡统一成深色像素卡。 */
+  body.theme-dark .book-scene{ background:linear-gradient(180deg,#2A2350 0%,#2A2350 30%,#322A5C 30%,#322A5C 52%,#3A2E64 52%,#3A2E64 100%);}
+  body.theme-sepia .book-scene{ background:linear-gradient(180deg,#DCEBD8 0%,#DCEBD8 30%,#E8EBD4 30%,#E8EBD4 52%,#F0EAD0 52%,#F0EAD0 100%);}
+  body.theme-dark .scene-cloud{opacity:1;}
+  body.theme-dark .scene-cloud rect[fill="#FFFFFF"]{fill:#5B4E8C;}
+  body.theme-dark .scene-cloud rect[fill="#DCEEF6"]{fill:#4E4279;}
+  body.theme-dark .scene-ground,body.theme-dark .scene-fore{filter:brightness(.46) saturate(.62);}
+  body.theme-dark .scene-prop{filter:brightness(.58) saturate(.8);}
+  body.theme-dark .hero-cat{filter:brightness(.9);}
+  body.theme-dark .deco-sun{filter:grayscale(.9) brightness(1.5);}
+  body.theme-dark .deco-text{color:#E7DCF7; background:#2B2444; border-color:#7A6AA8;}
+  body.theme-dark .scene-word{background:#2B2444; border-color:#7A6AA8;}
+  body.theme-dark .scene-word .sw-tag{background:#3B3358; border-color:#7A6AA8; color:#CFC4EE;}
+  body.theme-dark .scene-word .sw-en{color:#F3EEFF;}
+  body.theme-dark .scene-word .sw-zh{color:#BDB2DC;}
+  body.theme-dark .scene-word .sw-ic{color:#9E90C8;}
+  body.theme-dark .hero-cat::after{border-color:#6B5A8C;}
   .gear{margin-left:8px; border:none; background:var(--soft); border-radius:50%; width:42px; height:42px; font-size:20px; cursor:pointer; box-shadow:var(--shadow);}
   .gear:active{transform:scale(.92);}
   /* 弹窗（设置 / 复习） */
@@ -3737,7 +3754,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 205;
+const APP_VERSION = 206;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
