@@ -1630,6 +1630,18 @@
   @media (prefers-reduced-motion: reduce){
     .start-btn{animation:none;}
   }
+
+  /* v198：单元目录——看整个单元单词、点词直接学 */
+  .vocab-catalog{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:8px; margin-top:4px;}
+  .vc-item{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:9px 10px; border:2px solid var(--line); border-radius:12px; background:var(--card); cursor:pointer; text-align:left; transition:transform .12s ease, box-shadow .12s ease;}
+  .vc-item:active{transform:scale(.96);}
+  .vc-en{font-weight:800; font-size:15px; color:var(--ink); line-height:1.15; word-break:break-word;}
+  .vc-zh{font-size:12px; color:var(--muted); line-height:1.2;}
+  .vc-item.known{opacity:.55;}
+  .vc-item.known .vc-en{color:var(--grass-d);}
+  @media (max-width:380px){
+    .vocab-catalog{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));}
+  }
 </style>
 <script src="audio-map.js"></script>
 </head>
@@ -2116,6 +2128,9 @@ update → controllerchange
       <span class="muted">词汇练习</span>
     </div>
     <div class="chips" id="vocabUnits"></div>
+    <div class="row" style="margin:4px 0 12px;">
+      <button class="btn ghost sm" id="vocabCatalogBtn" onclick="toggleVocabCatalog()">📑 单元目录</button>
+    </div>
     <div class="panel" id="flashcardPanel">
       <div class="row spread">
         <h2 class="sec">闪卡</h2>
@@ -2154,7 +2169,7 @@ update → controllerchange
         <button class="btn grass lg" style="flex:1" onclick="cardResult(true)">我会了</button>
       </div>
     </div>
-    <div class="panel">
+    <div class="panel" id="vocabQuizPanel">
       <h2 class="sec">测验模式</h2>
       <div class="row" id="vocabQuizPicker">
         <button class="btn sun" onclick="startVocabQuiz('listen')">听音选词</button>
@@ -2163,6 +2178,14 @@ update → controllerchange
         <button class="btn coral" onclick="startVocabQuiz('dict')">听写填空</button>
       </div>
       <div id="vocabQuiz" class="hidden" style="margin-top:14px;"></div>
+    </div>
+    <div class="panel" id="vocabCatalogPanel" style="display:none">
+      <div class="row spread">
+        <h2 class="sec">单元目录</h2>
+        <button class="btn ghost sm" onclick="toggleVocabCatalog()">收起目录</button>
+      </div>
+      <p class="muted" id="vocabCatalogSub" style="font-size:12px;margin:2px 0 10px;"></p>
+      <div class="vocab-catalog" id="vocabCatalog"></div>
     </div>
   </section>
 
@@ -3478,7 +3501,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 198;
+const APP_VERSION = 199;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4430,11 +4453,13 @@ function initVocab(){
   const _picker=document.getElementById('vocabQuizPicker'); if(_picker) _picker.style.display=''; // v126：进入词汇页时复位题型选择器（防离开测验后选择器残留隐藏，导致再也开不了测验）
   curQuizMode='';
   syncFavChip(); // v190：同步「生词本模式」chip 显隐
+  const _cat=document.getElementById('vocabCatalogPanel'); if(_cat) _cat.style.display='none'; // v198：进词汇屏重置目录为收起
 }
 function onVocabUnitPick(){
   cardIdx=0;
   resetCardSession(); // v179：切单元＝开新的一轮
   syncWeakChip(); // v177：切单元后同步开关高亮
+  if(catalogOpen()){ renderVocabCatalog(); return; } // v198：目录打开时切单元只刷新目录
   const quizBox=document.getElementById('vocabQuiz');
   if(!quizBox.classList.contains('hidden') && curQuizMode){
     startVocabQuiz(curQuizMode);
@@ -4492,6 +4517,61 @@ function showCard(){
   const _pb=document.getElementById('cardPrevBtn'); if(_pb) _pb.disabled=(cardIdx<=0);
   const _nb=document.getElementById('cardNextBtn'); if(_nb) _nb.disabled=(cardIdx>=_total-1);
   syncFavBtn(); // v190：同步收藏星标（生词本模式下按词自带单元判定）
+}
+/* ── v198：单元目录——看整个单元单词、点词直接学 ───────────────────── */
+function catalogOpen(){
+  var cat=document.getElementById('vocabCatalogPanel');
+  return !!cat && cat.style.display!=='none';
+}
+function renderVocabCatalog(){
+  var u=curUnit(); if(!u||!u.words) return;
+  var box=document.getElementById('vocabCatalog'); if(!box) return;
+  var sub=document.getElementById('vocabCatalogSub');
+  var mas=[]; try{ mas=(unitStat(u.id).mastered)||[]; }catch(_){ mas=[]; }
+  var got=new Set(mas);
+  box.innerHTML='';
+  u.words.forEach(function(w){
+    var known=got.has(w.en);
+    var el=document.createElement('button');
+    el.type='button'; el.className='vc-item'+(known?' known':'');
+    var en=document.createElement('span'); en.className='vc-en'; en.textContent=w.en||'';
+    var zh=document.createElement('span'); zh.className='vc-zh'; zh.textContent=w.zh||'';
+    el.appendChild(en); el.appendChild(zh);
+    el.onclick=function(){ studyWord(w.en); };
+    box.appendChild(el);
+  });
+  if(sub) sub.textContent='共 '+u.words.length+' 词 · 已掌握 '+got.size+' 词 · 点任意词开始学习';
+}
+function toggleVocabCatalog(){
+  var cat=document.getElementById('vocabCatalogPanel');
+  var flash=document.getElementById('flashcardPanel');
+  var quiz=document.getElementById('vocabQuizPanel');
+  if(!cat) return;
+  if(catalogOpen()){
+    cat.style.display='none';
+    if(flash) flash.style.display='';
+    if(quiz) quiz.style.display='';
+  } else {
+    renderVocabCatalog();
+    cat.style.display='';
+    if(flash) flash.style.display='none';
+    if(quiz) quiz.style.display='none';
+  }
+}
+function studyWord(en){
+  var u=curUnit(); if(!u) return;
+  favOnly=false; syncFavChip();        // 退出生词本模式，确保能定位任意词
+  cardOnlyWeak=false; syncWeakChip();  // 关掉「只练不熟」，目录里点哪个就学哪个
+  var idx=u.words.findIndex(function(w){ return w.en===en; });
+  if(idx<0) return;
+  cardIdx=idx;
+  var cat=document.getElementById('vocabCatalogPanel');
+  var flash=document.getElementById('flashcardPanel');
+  var quiz=document.getElementById('vocabQuizPanel');
+  if(cat) cat.style.display='none';
+  if(flash) flash.style.display='';
+  if(quiz) quiz.style.display='';
+  showCard();
 }
 /* v176：点击单词卡任意处即可朗读（孩子天然会点大字，不必去找小「听」按钮） */
 function flashTapSpeak(e){
