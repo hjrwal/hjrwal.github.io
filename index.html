@@ -1763,6 +1763,28 @@
   @media (max-width:380px){
     .vocab-catalog{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));}
   }
+  /* ===== v207 窄屏挤压加固：修「底部导航 4 字标签折两行 / 段位文字被截断」 =====
+     病因：444~500 行的窄屏媒体查询排在基础规则（.nav button 在 768 行、.brand 在 80 行）之前，
+     同优先级下被后面的基础规则覆盖 → 窄屏字号实际没生效（实测 320px 导航仍是基础 11px，
+     「听说读写/技术亮点」4 字需 44px 而按钮内容宽只有 42px → 折两行）。
+     处方：把窄屏规则挪到样式表末尾（后到者胜，窄屏字号真正生效），并收窄间距/进度条给文字腾余量。 */
+  @media(max-width:480px){
+    .nav{gap:4px;}
+    .nav button{font-size:10px; white-space:nowrap; padding:6px 2px;}
+    .rk-nx{font-size:9.5px;}
+    .rk-bar{width:34px;}
+  }
+  @media(max-width:380px){
+    .nav{gap:3px;}
+    .nav button{padding:6px 1px;}
+    .rk-bar{width:30px;}
+  }
+  @media(max-width:340px){
+    .nav{gap:2px;}
+    .nav button{font-size:9px;}
+    .rk-nx{font-size:9px;}
+    .rk-bar{width:26px;}
+  }
 </style>
 <script src="audio-map.js"></script>
 </head>
@@ -3754,7 +3776,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 206;
+const APP_VERSION = 207;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
