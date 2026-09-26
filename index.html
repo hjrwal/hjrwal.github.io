@@ -258,6 +258,29 @@
     .scene-prop.house{display:block;}
     .scene-prop.scarecrow{display:block;}
   }
+  /* v205 窄屏（手机）专属布局 —— 用户 2026-09-27 手机端反馈"大猫太大、挤掉别的"后新增：
+     窄屏没有横向空隙可用（320~430px 时猫右缘到太阳只剩 11~121px），所以改成"向上要空间"：
+     ① 大猫 200px → 72%（144px），上方腾出一整条 ~56px 高的天空带；
+     ② "今日单词"气泡改绝对定位放进这条天空带（居中）→ 窄屏也能看到它了（原先 <660px 是隐藏的）；
+     ③ 猫缩小后右下角腾出位置 → 摆小房子/小树；④ 前景草跟着猫变窄，不再盖住右下角的小物。 */
+  @media (max-width:659px){
+    .hero-cat{height:72%;}
+    .scene-fore{width:164px;}
+    /* 注意：绝对定位元素用 left:50% 时"可用宽度"只有容器的 50%，会把气泡里的英文/释义挤成省略号。
+       所以改成 left:0/right:0 + width:fit-content + margin:auto 居中，可用宽度才是整条。 */
+    .scene-word{display:flex; position:absolute; top:4px; left:0; right:0; width:fit-content; margin:0 auto; align-self:auto;}
+    .scene-cloud.c1{left:6px; top:10px; width:44px;}
+  }
+  /* 小物"放得下才摆"：窄屏猫右缘到太阳的空隙 = 视口宽 − 309px（实测）。
+     30px 的小房子要 ≥348px；再加 24px 的小树要 ≥380px。更窄时宁可不摆 ——
+     摆不下会被大猫切掉一半，看起来像故障，不如空着。锚点用 left 固定在猫右缘外 6px，保证不会被猫切。 */
+  @media (min-width:348px) and (max-width:659px){
+    .scene-prop.house{display:block; left:166px; bottom:14px; width:30px; height:28px;}
+  }
+  @media (min-width:380px) and (max-width:659px){
+    .scene-prop.house{left:196px;}
+    .scene-prop.tree{display:block; left:166px; bottom:14px; width:24px; height:30px;}
+  }
   @media (prefers-reduced-motion: reduce){
     .scene-blink.run{animation:none !important;}
     .hero-cat.peek{animation:none !important;}
@@ -3714,7 +3737,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 204;
+const APP_VERSION = 205;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
