@@ -159,17 +159,20 @@
   /* v136 修：点击互动不再对整张方形 PNG 做任何 transform（v134 用 rotate、v135 用 scale 都会让米色方框跟着转/放大）；
      改为只切小猫表情帧(笑)+慢眨眼+喵气泡，方框(img 盒子)尺寸/位置完全不变 */
   #heroMascot{cursor:pointer;}
-  /* v200 点击大猫切换表情：像素安全动效——只做 translateY 位移 + 微旋转，绝不缩放光栅，配合全局 image-rendering:pixelated 保持硬边不糊；硬切观感改为"蹲一下换表情" */
-  #heroMascot.hero-swap{animation:heroSwap .42s cubic-bezier(.3,.9,.3,1.25);}
-  @keyframes heroSwap{
-    0%{transform:translateY(0) rotate(0);}
-    32%{transform:translateY(7px) rotate(-3deg);}
-    66%{transform:translateY(-3px) rotate(2deg);}
-    100%{transform:translateY(0) rotate(0);}
-  }
+  /* v201 点击大猫切换表情：真·融合过渡（替换 v200 的位移/旋转方案——那版会把整张方形 PNG 的米色底板一起带歪）
+     原理：所有表情帧共用同一块不透明米色底板、同为 512x512、同一 object-fit，所以淡化时只有"脸色"在变、底板纹丝不动。
+     做法：底层(旧表情)原地不动，上层 #heroSwapLayer 载入新表情后 opacity 0→1 交叉淡入，动画结束再把新帧落到底层并收起上层。全程零 transform，像素硬边与底板都保持精确。 */
+  .scene-swap{position:absolute; inset:0; width:100%; height:100%;
+    object-fit:contain; object-position:center bottom; opacity:0; pointer-events:none;}
+  .scene-swap.run{animation:heroFaceIn .28s cubic-bezier(.4,.05,.2,1) forwards;}
+  @keyframes heroFaceIn{0%{opacity:0}55%{opacity:.9}100%{opacity:1}}
   /* v124 迎宾探出头：切到首页时大猫从草坡探出 + 淡入（一次性，纯 CSS 不卡、零新图） */
   .hero-cat{position:relative; flex:0 0 auto; height:100%; display:flex; align-items:flex-end;
-    transform-origin:50% 100%; z-index:2;}
+    transform-origin:50% 100%; z-index:2;
+    translate:0 0; transition:translate .34s cubic-bezier(.2,.9,.3,1.35);}
+  /* v201 换表情时整只小猫轻弹一下：用独立 translate 属性（不用 animation，避免覆盖 .hero-cat.peek 的 heroPeek 关键帧）；
+     只做纯位移、不旋转不缩放 → 米色底板不会被带歪；含底板一起上抬，读起来是"猫弹了一下" */
+  .hero-cat.hop{translate:0 -7px;}
   .hero-cat.peek{animation:heroPeek 1.05s cubic-bezier(.18,.9,.32,1.18) both;}
   @keyframes heroPeek{
     0%{transform:translateY(22px); opacity:0;}
@@ -201,7 +204,8 @@
   @keyframes poke{0%{transform:scale(1)}22%{transform:scale(.85) rotate(-7deg)}48%{transform:scale(1.1) rotate(6deg)}74%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1)}}
   @media (prefers-reduced-motion: reduce){
     .mascot.nod,.mascot.poke{animation:none !important;}
-    #heroMascot.hero-swap{animation:none !important;}
+    .scene-swap.run{animation:none !important;}
+    .hero-cat{transition:none !important;}
   }
     transform-box:view-box; transform-origin:center; animation:scIdle 4.2s var(--ease-io) infinite;
     filter:drop-shadow(0 2px 3px rgba(80,50,20,.18));}
@@ -1755,6 +1759,7 @@
           </div>
           <div class="hero-cat peek" id="heroCat">
             <img class="scene-png" id="heroMascot" src="assets/mascot/hero_default.png" alt="" loading="eager" decoding="async">
+            <img class="scene-swap" id="heroSwapLayer" src="assets/mascot/hero_default.png" alt="" aria-hidden="true" loading="eager" decoding="async">
             <img class="scene-blink" id="heroBlink" src="assets/mascot/blink.png" alt="" aria-hidden="true" loading="eager" decoding="async">
           </div>
           <div class="scene-deco" aria-hidden="true">
@@ -3510,7 +3515,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 200;
+const APP_VERSION = 201;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4334,6 +4339,10 @@ function go(name){
   if(_heroAnimT){ clearTimeout(_heroAnimT); _heroAnimT=null; } // v128：切屏停首页吉祥物循环动画（防隐藏屏后台空转）
   heroWelcomeTimers.forEach(t=>clearTimeout(t)); heroWelcomeTimers=[]; // v131：切屏清招手游离定时器（防隐藏屏后台空转挥手）
   if(heroActionT){ clearTimeout(heroActionT); heroActionT=null; } // v167：切屏清大猫点击动作复位定时器（防离开首页后动作回调打在隐藏屏）
+  if(_heroFadeT){ clearTimeout(_heroFadeT); _heroFadeT=null; _heroFadeTarget=null; } // v201：切屏清换表情交叉淡入定时器
+  if(_heroHopT){ clearTimeout(_heroHopT); _heroHopT=null; } // v201：切屏清轻弹类名移除定时器
+  const _heroCatEl=document.getElementById('heroCat'); if(_heroCatEl) _heroCatEl.classList.remove('hop'); // v201：切屏兜底收轻弹位移
+  const _heroSwapEl=document.getElementById('heroSwapLayer'); if(_heroSwapEl) _heroSwapEl.classList.remove('run'); // v201：切屏收上层换表情层
   if(mascotMoodT){ clearTimeout(mascotMoodT); mascotMoodT=null; } // v167：切屏清吉祥物心境复位定时器
   if(_levelCardMask){ _levelCardMask.remove(); _levelCardMask=null; } // v156：切屏清关卡卡片遮罩（防常驻挡屏）
   hideLoading(); // v156：切屏兜底清加载遮罩，杜绝任何路径下 #loading 常驻卡死
@@ -5390,9 +5399,36 @@ let _heroMoodSrc = null;     // 当前 hero "回归" 基础（被心境覆盖时
 let _heroAnimT = null;       // 循环定时器句柄
 let heroWelcomeTimers = [];  // v131：招手游离定时器句柄，go()/重入时统一清理
 let heroActionT = null;        // v138：hero 大猫点击随机动作复位定时器（统一收尾，覆盖 setMascotMood 默认 1.6s）
+let _heroFadeT = null;         // v201：换表情交叉淡入的落底定时器
+let _heroFadeTarget = null;    // v201：本次淡入的目标帧（用于打断时先落底）
+let _heroHopT = null;          // v201：轻弹类名移除定时器
+const _heroReduce = ()=> !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function _heroHop(){
+  const c=document.getElementById('heroCat');
+  if(!c || _heroReduce()) return;
+  c.classList.remove('hop'); void c.offsetWidth; c.classList.add('hop');
+  clearTimeout(_heroHopT);
+  _heroHopT=setTimeout(()=>c.classList.remove('hop'), 140);
+}
+// v201 换表情统一入口：不用 img.src 硬切，改为上层交叉淡入（像素安全、米色底板不动）
 function _heroSetSrc(s){
   const img=document.getElementById('heroMascot');
-  if(img) img.src=s;
+  if(!img) return;
+  const lay=document.getElementById('heroSwapLayer');
+  if(!lay || _heroReduce()){ img.src=s; _heroFadeTarget=null; if(lay) lay.classList.remove('run'); return; } // 减少动效/无层：退回瞬时硬切
+  const cur=img.getAttribute('src');
+  if(cur===s){ clearTimeout(_heroFadeT); _heroFadeT=null; _heroFadeTarget=null; lay.classList.remove('run'); return; } // 目标=当前：只清残留
+  // 上一次淡入尚未落底就被打断：先把旧目标落到底层，避免丢帧
+  if(_heroFadeT){ clearTimeout(_heroFadeT); if(_heroFadeTarget) img.src=_heroFadeTarget; }
+  _heroFadeTarget=s;
+  lay.src=s;
+  lay.classList.remove('run'); void lay.offsetWidth; lay.classList.add('run');
+  _heroFadeT=setTimeout(()=>{
+    img.src=s;                    // 新表情落到底层
+    lay.classList.remove('run');   // 上层收起（此刻两层同图，视觉无跳变）
+    _heroFadeTarget=null; _heroFadeT=null;
+  }, 300);
+  _heroHop();
 }
 function _heroBase(){
   return _heroMoodSrc || HERO_BIG_FRAMES.base;
@@ -5475,38 +5511,35 @@ function mascotNod(){
     if(typeof foxSay==='function') foxSay('喵~ 🐾');
   });
 })();
-// v200 点击大猫切换表情：像素安全"蹲一下换表情"动效——remove→reflow→add 重触发，配合全局 image-rendering:pixelated 保持硬边；减少动效时直接硬切
-function heroPlaySwap(){
-  const h=document.getElementById('heroMascot');
-  if(!h) return;
-  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; // 减少动效：退回瞬时硬切
-  h.classList.remove('hero-swap'); void h.offsetWidth; h.classList.add('hero-swap');
-}
-// v138 hero 大猫点击互动：每次随机做一个动作（笑/眨眼/探头/思考），方框(整张方形 PNG)不动、只换小猫表情帧/眨眼层/探头，各动作配不同气泡；不跳页
+// v138 hero 大猫点击互动：每次随机做一个动作（笑/眨眼/探头/思考/加油），方框不动、只换小猫表情帧/眨眼层/探头，各动作配不同气泡；不跳页
+// v201 重构：表情切换统一走 _heroSetSrc 的交叉淡入；每次点击只触发一次淡入（不再"先复位再切"造成双淡入）
 function heroDoAction(name, dur){
-  // 先复位上一动作残留（帧/眨眼层/探头/心境），再统一定时器收尾，避免游离渲染
+  // 先复位上一动作残留（眨眼层/探头/心境），再统一定时器收尾，避免游离渲染
   clearTimeout(heroActionT);
   const h=document.getElementById('heroMascot');
   const bl=document.getElementById('heroBlink');
   const heroCat=document.getElementById('heroCat');
   document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
   _heroMoodSrc=null;
-  if(h) _heroSetSrc(HERO_BIG_FRAMES.base);
   if(bl) bl.classList.remove('run');
   if(heroCat){ heroCat.classList.remove('peek'); void heroCat.offsetWidth; }
-  if(name==='smile'){ if(h) _heroSetSrc(HERO_FRAMES.happy); if(typeof foxSay==='function') foxSay('喵~ 🐾'); }
+  // 本次动作对应的 hero 表情帧（blink/peek 保持基础帧：眨眼与探头由独立层负责，不换脸）
+  const heroFrame = (name==='smile') ? HERO_FRAMES.happy
+                  : (name==='think') ? HERO_FRAMES.think
+                  : (name==='cheer') ? HERO_FRAMES.encourage
+                  : HERO_BIG_FRAMES.base;
+  if(h) _heroSetSrc(heroFrame);   // 一次交叉淡入到位（含轻弹）
+  if(name==='smile'){ if(typeof foxSay==='function') foxSay('喵~ 🐾'); }
   else if(name==='blink'){ if(bl){ bl.classList.remove('run'); void bl.offsetWidth; bl.classList.add('run'); } if(typeof foxSay==='function') foxSay('眨眨眼 👀'); }
   else if(name==='peek'){ if(heroCat){ heroCat.classList.add('peek'); } if(typeof foxSay==='function') foxSay('喵? 🐾'); }
-  else if(name==='think'){ if(h) _heroSetSrc(HERO_FRAMES.think); if(typeof foxSay==='function') foxSay('让我想想… 🤔'); }
-  else if(name==='cheer'){ if(h) _heroSetSrc(HERO_FRAMES.encourage); if(typeof foxSay==='function') foxSay('加油！💪'); } // v142 加油帧入池
-  heroPlaySwap(); // v200 切入新表情时"蹲一下"，把硬切包进动作里、像素边缘不糊
+  else if(name==='think'){ if(typeof foxSay==='function') foxSay('让我想想… 🤔'); }
+  else if(name==='cheer'){ if(typeof foxSay==='function') foxSay('加油！💪'); } // v142 加油帧入池
   heroActionT=setTimeout(()=>{
     document.querySelectorAll('.mascot').forEach(img=>{ if(img.tagName==='IMG') img.src=HERO_FRAMES.base; });
     _heroMoodSrc=null;
-    if(h) _heroSetSrc(HERO_BIG_FRAMES.base);
+    if(h) _heroSetSrc(HERO_BIG_FRAMES.base);  // 交叉淡入回基础表情（含轻弹）
     if(bl) bl.classList.remove('run');
     if(heroCat) heroCat.classList.remove('peek');
-    heroPlaySwap(); // v200 复位回 base 同样"蹲一下"，过渡更顺滑
   }, dur);
 }
 (function bindHeroPoke(){
