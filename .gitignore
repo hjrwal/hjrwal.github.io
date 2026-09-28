@@ -1,0 +1,6 @@
+# 2026-09-28 新增：屏蔽诊断/备份临时产物，避免误提交进仓库
+.tmp_*/
+_diag*
+_diag/
+*.bak.html
+assets/mascot/_bak_*.png
