@@ -24,9 +24,9 @@
 
   const META = {
 
-    version: 210,       // 与 index.html 的 APP_VERSION 保持一致
+    version: 211,       // 与 index.html 的 APP_VERSION 保持一致
 
-    cache:   'eng5-v273',// 与 sw.js 的 CACHE 保持一致（v210：借鉴 reactbits——CountUp 数字滚动、列表错峰入场、像素拖尾、点击火花）
+    cache:   'eng5-v274',// 与 sw.js 的 CACHE 保持一致（v211：修 v210 误插——countUp/clickSpark 整段 JS 被插进 style 内导致点击必弹错误提示，已搬回 script 区并加固 gate）
 
     words:   523,       // 核心词数（四册全量）
 
@@ -38,7 +38,7 @@
 
     offline: 100,       // 离线可用比例(%)
 
-    iter:    209,       // 迭代版本数
+    iter:    210,       // 迭代版本数
 
     updated: '2026-09-30'
 
@@ -300,7 +300,7 @@
 
       <a class="backlink" href="index.html">← 返回英语助手</a>
 
-      <span class="pill" data-meta="version">v210</span>
+      <span class="pill" data-meta="version">v211</span>
 
       <span class="tag">PWA</span>
 
@@ -521,7 +521,7 @@ master = solved / total <span class="c">// 进度条</span></pre>
 
       <div class="mcard"><div class="n"><span data-meta="offline">100</span><small>%</small></div><div class="l">离线可用</div></div>
 
-      <div class="mcard"><div class="n" data-meta="iter">209</div><div class="l">迭代版本</div></div>
+      <div class="mcard"><div class="n" data-meta="iter">210</div><div class="l">迭代版本</div></div>
 
     </div>
 
@@ -939,7 +939,7 @@ update  → <span class="k">controllerchange</span>
 
     五年级英语小探险家 · 单文件离线 PWA · 数据全部存于本机浏览器，无账号、无联网上报<br>
 
-    版本 <span data-meta="version">v210</span> · 缓存 <span data-meta="cache">eng5-v273</span> · 更新于 <span data-meta="updated">2026-09-30</span><br>
+    版本 <span data-meta="version">v211</span> · 缓存 <span data-meta="cache">eng5-v274</span> · 更新于 <span data-meta="updated">2026-09-30</span><br>
 
     <a class="backlink" style="margin-top:12px;" href="index.html">← 返回英语助手</a>
 
