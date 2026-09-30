@@ -223,7 +223,61 @@
     filter:drop-shadow(0 0 7px rgba(245,194,66,.95)); animation:boltFlash .62s ease-out forwards;}
   @keyframes boltFlash{0%{opacity:0; stroke-width:7;}16%{opacity:1; stroke-width:5;}42%{opacity:.95;}70%{opacity:.55;}100%{opacity:0; stroke-width:1;}}
   body.theme-dark .magic-bolt polyline{stroke:#BBA8FF; filter:drop-shadow(0 0 8px rgba(154,128,255,.95));}
-  /* v208 按钮能量流光：按下时一道流光扫过（一次性，不常驻，避免干扰阅读） */
+  /* v210 CountUp：数字滚动（借鉴 reactbits CountUp）。自限的 rAF —— 700ms 内必结束，
+   同一元素重复调用先 cancel 上一次，绝不叠加循环；reduced-motion 直接落终值 */
+function countUp(el, to, dur){
+  if(!el) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var from = parseInt(String(el.textContent||'').replace(/[^0-9-]/g,''), 10);
+  if(isNaN(from)) from = 0;
+  to = parseInt(to, 10);
+  if(isNaN(to)) return;
+  if(reduce || from === to){ el.textContent = String(to); return; }
+  dur = dur || 700;
+  if(el.__cu) cancelAnimationFrame(el.__cu);
+  var t0 = 0;
+  function step(now){
+    if(!t0) t0 = now;
+    var p = Math.min(1, (now - t0) / dur);
+    var e = 1 - Math.pow(1 - p, 3);
+    el.textContent = String(Math.round(from + (to - from) * e));
+    if(p < 1){ el.__cu = requestAnimationFrame(step); }
+    else { el.__cu = null; el.textContent = String(to); }
+  }
+  el.__cu = requestAnimationFrame(step);
+}
+/* v210 ClickSpark：点击火花。一次性装饰层，640ms 自清理，reduced-motion 静默 */
+function clickSpark(x, y){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var layer = document.createElement('div'); layer.className = 'spark-layer';
+  for(var i = 0; i < 5; i++){
+    var sp = document.createElement('i'); sp.className = 'spark';
+    var ang = Math.PI * 2 * i / 5 + (Math.random() - 0.5) * 0.6;
+    var dist = 16 + Math.random() * 20;
+    sp.style.left = x + 'px'; sp.style.top = y + 'px';
+    sp.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(1) + 'px');
+    sp.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(1) + 'px');
+    layer.appendChild(sp);
+  }
+  document.body.appendChild(layer);
+  setTimeout(function(){ layer.remove(); }, 640);
+}
+/* v210 PixelTrail：像素方块拖尾。70ms 节流控制生成量（约 14 个/秒），
+   手机无 mousemove 自动不触发；passive 监听不阻塞滚动 */
+(function(){
+  var last = 0;
+  window.addEventListener('mousemove', function(e){
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var now = performance.now();
+    if(now - last < 70) return;
+    last = now;
+    var d = document.createElement('i'); d.className = 'px-trail';
+    d.style.left = e.clientX + 'px'; d.style.top = e.clientY + 'px';
+    document.body.appendChild(d);
+    setTimeout(function(){ d.remove(); }, 640);
+  }, {passive: true});
+})();
+/* v208 按钮能量流光：按下时一道流光扫过（一次性，不常驻，避免干扰阅读） */
   .btn{position:relative; overflow:hidden;}
   .btn::after{content:''; position:absolute; top:0; bottom:0; width:45%; left:-55%; pointer-events:none;
     background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,.55) 50%, transparent 100%);
@@ -268,6 +322,38 @@
     body .bar > i::after,body .review-callout .rc-mini i::after,body .weak-type .wt-bar > i::after,
     body .heat-cell .hbar i::after,body .hp-bar i::after{animation:none !important; opacity:.45;}
     body .brand{animation:none !important;}
+  }
+  /* v210 借鉴 reactbits 特效库（210+ 组件）中适配儿童绘本的一批微交互。
+     选入：CountUp 数字滚动 / AnimatedList 错峰入场 / PixelTrail 像素拖尾 / ClickSpark 点击火花。
+     排除：GlitchText·ScrambleText·DecryptedText（黑客故障风，儿童 App 不合适）、
+           3D 组件（ModelViewer/Orb/Ballpit，手机性能）、SplashCursor·BlobCursor（手机无光标）。 */
+  /* 1) AnimatedList：列表项错峰浮现（纯 CSS nth-child 递增 delay，零 JS、零定时器） */
+  @keyframes listIn{from{opacity:0; transform:translateY(9px);}to{opacity:1; transform:none;}}
+  body .wb-row,body .heat-cell,body .ach,body .recent-chip{animation:listIn .34s var(--ease-out) both;}
+  body .wb-row:nth-child(1),body .heat-cell:nth-child(1),body .ach:nth-child(1){animation-delay:.02s}
+  body .wb-row:nth-child(2),body .heat-cell:nth-child(2),body .ach:nth-child(2){animation-delay:.06s}
+  body .wb-row:nth-child(3),body .heat-cell:nth-child(3),body .ach:nth-child(3){animation-delay:.10s}
+  body .wb-row:nth-child(4),body .heat-cell:nth-child(4),body .ach:nth-child(4){animation-delay:.14s}
+  body .wb-row:nth-child(5),body .heat-cell:nth-child(5),body .ach:nth-child(5){animation-delay:.18s}
+  body .wb-row:nth-child(6),body .heat-cell:nth-child(6),body .ach:nth-child(6){animation-delay:.22s}
+  body .wb-row:nth-child(n+7),body .heat-cell:nth-child(n+7),body .ach:nth-child(n+7){animation-delay:.26s}
+  /* 2) PixelTrail：像素方块拖尾（契合像素绘本主线；手机无 mousemove 自动不触发） */
+  .px-trail{position:fixed; width:6px; height:6px; margin:-3px 0 0 -3px; pointer-events:none; z-index:60;
+    background:#F5C242; box-shadow:0 0 6px rgba(245,194,66,.85); animation:pxTrail .62s ease-out forwards;}
+  @keyframes pxTrail{0%{opacity:.85; transform:scale(1);}100%{opacity:0; transform:scale(.25);}}
+  body.theme-dark .px-trail{background:#9A80FF; box-shadow:0 0 7px rgba(154,128,255,.9);}
+  /* 3) ClickSpark：点击火花（非按钮元素点击时迸发暖金粒子） */
+  .spark-layer{position:fixed; inset:0; z-index:65; pointer-events:none; overflow:hidden;}
+  .spark{position:absolute; width:5px; height:5px; margin:-2.5px 0 0 -2.5px; background:#F5C242;
+    box-shadow:0 0 6px rgba(245,194,66,.9); animation:sparkFly .6s ease-out forwards;}
+  @keyframes sparkFly{0%{opacity:1; transform:translate(0,0) scale(1);}100%{opacity:0; transform:translate(var(--dx,10px),var(--dy,-12px)) scale(.3);}}
+  body.theme-dark .spark{background:#BBA8FF; box-shadow:0 0 7px rgba(154,128,255,.9);}
+  /* 4) 修 v209 遗留：暗色主题下磁贴投影写死了亮色值，未跟随 --sh-pixel（暗色应为 rgba(0,0,0,.42)） */
+  body .tile{box-shadow:var(--sh-pixel,4px 4px 0 rgba(58,43,34,.18)), inset 0 0 14px rgba(245,194,66,.07);}
+  body .tile:hover{box-shadow:var(--sh-pixel,4px 4px 0 rgba(58,43,34,.18)), 0 0 0 2px rgba(245,194,66,.55), 0 10px 26px rgba(245,170,60,.20), inset 0 0 14px rgba(245,194,66,.10);}
+  @media (prefers-reduced-motion: reduce){
+    body .wb-row,body .heat-cell,body .ach,body .recent-chip{animation:none !important;}
+    .px-trail,.spark{display:none !important;}
   }
   /* v203 像素小物件：小鸟 + 蝴蝶（同属 z-index:1 天空层 → 万一位置压到大猫也只是被挡住，不会穿帮） */
   /* 小树：独立摆一棵（不进平铺图案，否则每 160px 重复一次会有"壁纸感"）；锚在猫右缘外 28px，只有 ≥660px 才显示（窄屏那点空隙放不下） */
@@ -3858,7 +3944,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 209;
+const APP_VERSION = 210;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -5694,8 +5780,8 @@ function magicBurst(n){
 /* v208 按钮能量流光：全局委托，点任意 .btn 触发一次流光；靠 animationend 摘 class，不留定时器 */
 document.addEventListener('click', function(e){
   var b = (e.target && e.target.closest) ? e.target.closest('.btn') : null;
-  if(!b || b.disabled) return;
-  b.classList.remove('shine'); void b.offsetWidth; b.classList.add('shine');
+  if(b && !b.disabled){ b.classList.remove('shine'); void b.offsetWidth; b.classList.add('shine'); }
+  else if(e.clientX || e.clientY){ clickSpark(e.clientX, e.clientY); }
 }, true);
 document.addEventListener('animationend', function(e){
   if(e.animationName==='btnShine' && e.target && e.target.classList) e.target.classList.remove('shine');
@@ -7583,9 +7669,9 @@ function finish(){
    ========================================================= */
 function renderProgress(){
   recordTrend();
-  document.getElementById('pStars').textContent=STATE.stars;
-  document.getElementById('pStreak').textContent=STATE.streak;
-  document.getElementById('pWords').textContent=Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0);
+  countUp(document.getElementById('pStars'), STATE.stars);
+  countUp(document.getElementById('pStreak'), STATE.streak);
+  countUp(document.getElementById('pWords'), Object.values(STATE.units).reduce((a,u)=>a+u.mastered.length,0));
   document.getElementById('pOnlineTotal').textContent=fmtDur(STATE.onlineSec);
   document.getElementById('pOnlineDay').textContent=fmtDur(STATE.onlineDay);
   if(!_calY) calInit();
