@@ -3873,7 +3873,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 211;
+const APP_VERSION = 212;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4634,55 +4634,46 @@ function safeRender(fn){
     if(el) el.innerHTML='<div class="panel center err-panel">这一页出了点小问题<div class="muted" style="font-size:13px;margin:6px 0">数据不会丢，可以重试</div><button class="btn grape" onclick="go(\''+curScreen+'\')">重试</button></div>';
   }
 }
-/* v260：液态幕布擦除转场——切屏时一层暖色流动液体从左侧扫入盖住旧界面，中点换屏，再扫出露出新界面 */
+/* v212：切屏转场换成像素遮罩擦除——暖色像素方块从左至右拼拢盖住旧界面，中点换屏，再散开露出新界面（替换原液态幕布，时长放慢至 1.2s 更清晰） */
 var wipeBusy=false, wipeArmed=false, wipeRAF=0;
-function drawWipe(phase){
-  var cv=document.getElementById('wipeCanvas'); if(!cv) return;
-  var ctx=cv.getContext('2d'); if(!ctx) return;
-  var W=cv.clientWidth||window.innerWidth, H=cv.clientHeight||window.innerHeight;
-  ctx.clearRect(0,0,W,H);
-  var bp = phase<=1 ? phase : phase-1;
-  var bx = bp*W;
-  var t = performance.now()/1000;
-  ctx.beginPath();
-  if(phase<=1){
-    ctx.moveTo(0,0); ctx.lineTo(bx,0);
-    for(var y=0;y<=H;y+=10){ var wob=Math.sin(y*0.025+t*5)*16+Math.sin(y*0.06-t*3.3)*9; ctx.lineTo(bx+wob,y); }
-    ctx.lineTo(bx,H); ctx.lineTo(0,H);
-  } else {
-    ctx.moveTo(bx,0);
-    for(var y=0;y<=H;y+=10){ var wob=Math.sin(y*0.025+t*5)*16+Math.sin(y*0.06-t*3.3)*9; ctx.lineTo(bx+wob,y); }
-    ctx.lineTo(W,0); ctx.lineTo(W,H); ctx.lineTo(bx,H);
-  }
-  ctx.closePath();
-  var g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#FFE9C8'); g.addColorStop(0.5,'#FFD9A0'); g.addColorStop(1,'#FBC78A');
-  ctx.fillStyle=g; ctx.fill();
-  ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.stroke();
-  ctx.fillStyle='rgba(255,228,184,.5)';
-  for(var i=0;i<3;i++){ var by=H*(0.22+i*0.28)+Math.sin(t*2+i)*22; var br=20+Math.sin(t*3+i)*8; ctx.beginPath(); ctx.arc(bx+(phase<=1?-12:12)+Math.sin(t*2+i)*12, by, Math.abs(br), 0, 6.2832); ctx.fill(); }
-}
 function showWipe(){ var cv=document.getElementById('wipeCanvas'); if(cv) cv.style.opacity='1'; }
 function hideWipe(){ var cv=document.getElementById('wipeCanvas'); if(cv) cv.style.opacity='0'; }
-function fluidWipe(swapFn){
+function pixelWipe(swapFn){
   var cv=document.getElementById('wipeCanvas');
   if(!cv){ swapFn(); return; }
   if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){ swapFn(); return; }
   if(wipeBusy){ if(wipeRAF) cancelAnimationFrame(wipeRAF); hideWipe(); wipeBusy=false; swapFn(); return; }
   wipeBusy=true; showWipe();
   var dpr=Math.min(2,window.devicePixelRatio||1);
-  cv.width=Math.floor(window.innerWidth*dpr); cv.height=Math.floor(window.innerHeight*dpr);
-  cv.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
-  var dur=760, start=performance.now(), swapped=false;
+  var W=cv.clientWidth||window.innerWidth, H=cv.clientHeight||window.innerHeight;
+  cv.width=Math.floor(W*dpr); cv.height=Math.floor(H*dpr);
+  var ctx=cv.getContext('2d'); if(!ctx){ swapFn(); return; } ctx.setTransform(dpr,0,0,dpr,0,0);
+  var cols=14, rows=24, cw=W/cols, ch=H/rows;
+  var palette=['#FFE9C8','#FFD9A0','#FBC78A','#F4A261','#E9C46A','#E76F51','#fff7ea'];
+  var cells=[];
+  for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+    cells.push({c:c,r:r,th:(c+(Math.random()*2-1)*1.6)/cols,col:palette[(c*3+r)%palette.length]});
+  }
+  var dur=1200, start=performance.now(), swapped=false;
   function frame(now){
-    var ph=(now-start)/dur*2; if(ph>2) ph=2;
-    drawWipe(ph);
-    if(ph<1){ wipeRAF=requestAnimationFrame(frame); }
-    else {
-      if(!swapped){ swapped=true; swapFn(); }
-      if(ph<2){ wipeRAF=requestAnimationFrame(frame); }
-      else { hideWipe(); wipeBusy=false; }
+    var p=(now-start)/dur; if(p>1) p=1;
+    var cover = p<0.5 ? p*2 : 1;
+    var reveal = p>=0.5 ? (p-0.5)*2 : 0;
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<cells.length;i++){
+      var cell=cells[i];
+      var fa = cover*2.4 - cell.th;
+      if(fa>0){
+        var a=Math.min(1,fa);
+        if(reveal>0) a=a*(1-reveal);
+        ctx.globalAlpha=a; ctx.fillStyle=cell.col;
+        ctx.fillRect(cell.c*cw,cell.r*ch,cw+0.6,ch+0.6);
+      }
     }
+    ctx.globalAlpha=1;
+    if(p>=0.5 && !swapped){ swapped=true; swapFn(); }
+    if(p<1){ wipeRAF=requestAnimationFrame(frame); }
+    else { hideWipe(); wipeBusy=false; }
   }
   wipeRAF=requestAnimationFrame(frame);
 }
@@ -4745,8 +4736,8 @@ function go(name){
   maybeGuide(name); // v86 按板块触发：首次点进才弹该板块自己的简短指引
   };
   if(from===name){ doSwap(); return; } // 同屏重入：不擦除
-  wipeArmed=true; // 首屏之后，所有异屏切换走液态幕布擦除
-  fluidWipe(doSwap);
+  wipeArmed=true; // 首屏之后，所有异屏切换走像素遮罩擦除
+  pixelWipe(doSwap);
 }
 // 全局兜底：捕获未处理的 JS 异常（忽略 img/audio 等资源加载错误），避免静默崩
 window.addEventListener('error', e=>{ if(e.error){ console.error('[global error]', e.error||e.message); try{ toast('出了点小问题，已记录'); }catch(_){} } });
@@ -9328,7 +9319,7 @@ if('serviceWorker' in navigator){
 })();
 </script>
 <script>
-/* v261：开场流体界面——漩涡吸入（深紫星云螺旋吸入中心）。点「开始探索」后用液体幕布擦除过渡到首页。 */
+/* v261：开场流体界面——漩涡吸入（深紫星云螺旋吸入中心）。点「开始探索」后用像素遮罩擦除过渡到首页。 */
 (function(){
   var ss = document.getElementById('startScreen');
   var canvas = document.getElementById('startCanvas');
@@ -9395,13 +9386,13 @@ if('serviceWorker' in navigator){
     if(document.hidden){ running=false; if(raf) cancelAnimationFrame(raf); }
     else if(!ss.classList.contains('start-done')){ running=true; if(!reduce) loop(); }
   });
-  // 点「开始探索」：用液体幕布擦除过渡到首页
+  // 点「开始探索」：用像素遮罩擦除过渡到首页
   var btn=document.getElementById('startBtn');
   var started=false;
   function beginApp(){
     if(started) return; started=true;
-    if(typeof fluidWipe==='function'){
-      fluidWipe(function(){ ss.classList.add('start-done'); });
+    if(typeof pixelWipe==='function'){
+      pixelWipe(function(){ ss.classList.add('start-done'); });
     } else {
       ss.classList.add('start-done');
     }
