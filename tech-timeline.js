@@ -372,7 +372,8 @@ window.TECH_ITEMS = [
   {v:211, h:'<b>v211 · 修 v210 引入的「出了点小问题」弹窗：整段 JS 被误插进 CSS</b><span><b>症状</b>：进入 App 点任何非按钮处（含开场「开始探索」）必弹「出了点小问题，已记录」。<b>根因</b>：v210 插入 countUp/clickSpark/PixelTrail 时锚点写成了「v208 按钮能量流光」的 CSS 注释（与 JS 注释同前缀文字），唯一性校验 count==1 未拦截，整段 JS 被插进 <code>&lt;style&gt;</code> 内——CSS 解析器把 JS 当无效规则吞掉，函数从未定义；点击委托调用 <code>clickSpark</code> 抛 ReferenceError，被全局 error 监听接住弹 toast。<b>修法</b>：整段从 CSS 搬回 JS 区正确位置。<b>加固</b>：gate 新增三条断言——①新增 JS 函数必须落在 <code>&lt;script&gt;</code> 块内（禁止出现在 style 内）②style 内出现 <code>function</code> 关键字即 FAIL ③发版前用无头浏览器真实点击「开始探索」冒烟，pageerror 必须为 0（本次语法门/规则门全绿但只有真实点击才暴露）。</span>'}
 
 ,
-  {v:212, h:'<b>v212 · 切屏转场换成像素遮罩（替换液态幕布）</b><span>把沿用多版的「液态幕布擦除」切屏换成<b>暖色像素方块遮罩</b>：一片暖色像素块从左至右拼拢盖住旧界面，中点换屏，再散开露出新界面，与像素绘本主线同一套语言；时长从 0.76s 放慢到 1.2s 让小朋友看得清。开场点「开始探索」同样改用像素遮罩过渡。三处版本号 +1（APP_VERSION 212 / sw CACHE eng5-v275 / tech META），发版过四道 gate。</span>'}];
+  {v:212, h:'<b>v212 · 切屏转场换成像素遮罩（替换液态幕布）</b><span>把沿用多版的「液态幕布擦除」切屏换成<b>暖色像素方块遮罩</b>：一片暖色像素块从左至右拼拢盖住旧界面，中点换屏，再散开露出新界面，与像素绘本主线同一套语言；时长从 0.76s 放慢到 1.2s 让小朋友看得清。开场点「开始探索」同样改用像素遮罩过渡。三处版本号 +1（APP_VERSION 212 / sw CACHE eng5-v275 / tech META），发版过四道 gate。</span>'},
+  {v:213, h:'<b>v213 · 像素遮罩转场对齐预览版配色</b><span>手机端反馈切屏特效与确认过的预览版不一致——上线时误把调色板换成了偏暖的橙红色系。本版把 pixelWipe 改回预览版原样：<b>橙/黄/绿/粉/蓝/米白六色</b>、(c+r) 对角循环排布、格子密度 12×20；时长保持 1.2s 不变。三处版本号 +1（APP_VERSION 213 / sw CACHE eng5-v276 / tech META），发版过 gate。</span>'}];
 
 window.renderTimeline = function(container, order, expanded){
 

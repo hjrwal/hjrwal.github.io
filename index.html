@@ -3873,7 +3873,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 212;
+const APP_VERSION = 213;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -4648,11 +4648,11 @@ function pixelWipe(swapFn){
   var W=cv.clientWidth||window.innerWidth, H=cv.clientHeight||window.innerHeight;
   cv.width=Math.floor(W*dpr); cv.height=Math.floor(H*dpr);
   var ctx=cv.getContext('2d'); if(!ctx){ swapFn(); return; } ctx.setTransform(dpr,0,0,dpr,0,0);
-  var cols=14, rows=24, cw=W/cols, ch=H/rows;
-  var palette=['#FFE9C8','#FFD9A0','#FBC78A','#F4A261','#E9C46A','#E76F51','#fff7ea'];
+  var cols=12, rows=20, cw=W/cols, ch=H/rows;
+  var palette=['#e8915b','#f2c14e','#6aa84f','#e88aa8','#6fb3d6','#fff7ea'];
   var cells=[];
   for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
-    cells.push({c:c,r:r,th:(c+(Math.random()*2-1)*1.6)/cols,col:palette[(c*3+r)%palette.length]});
+    cells.push({c:c,r:r,th:(c+(Math.random()*2-1)*1.6)/cols,col:palette[(c+r)%palette.length]});
   }
   var dur=1200, start=performance.now(), swapped=false;
   function frame(now){
