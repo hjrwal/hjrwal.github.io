@@ -2794,6 +2794,7 @@ update → controllerchange
       <div class="seg" id="bookSeg">
         <button data-b="shang" onclick="setBook('shang')">上册</button>
         <button data-b="xia" onclick="setBook('xia')">下册</button>
+         <button data-b="zx" onclick="setBook('zx')">专项</button>
       </div>
     </div>
     <div class="set-row"><b>主题</b>
@@ -3749,10 +3750,87 @@ const BOOK6_XIA = [
   }
 ];
 
-/* 当前教材（上册/下册），可切换 */
+/* 专项册：日常对话高频词（v214） */
+const BOOK_ZX = [
+  {
+    id:'c1', title:'Daily Talk 日常对话高频词', emoji:'💬', color:'var(--sun)',
+    words:[
+      {en:'hello', zh:'你好；喂（问候语）', ph:'həˈləʊ', pos:'int.', ex:'Hello! Nice to see you.'},
+      {en:'hi', zh:'嗨；你好（非正式）', ph:'haɪ', pos:'int.', ex:'Hi, Tom! How are you?'},
+      {en:'goodbye', zh:'再见', ph:'ˌɡʊdˈbaɪ', pos:'int.', ex:'Goodbye! See you tomorrow.'},
+      {en:'good morning', zh:'早上好', ph:'ɡʊd ˈmɔːnɪŋ', pos:'phr.', ex:'Good morning, Miss Li.'},
+      {en:'good afternoon', zh:'下午好', ph:'ɡʊd ˌɑːftəˈnuːn', pos:'phr.', ex:'Good afternoon, everyone.'},
+      {en:'good evening', zh:'晚上好', ph:'ɡʊd ˈiːvnɪŋ', pos:'phr.', ex:'Good evening, Mr Wang.'},
+      {en:'good night', zh:'晚安', ph:'ɡʊd naɪt', pos:'phr.', ex:'Good night, Mum. Sweet dreams.'},
+      {en:'nice to meet you', zh:'很高兴见到你', ph:'naɪs tə miːt juː', pos:'phr.', ex:'Nice to meet you, Amy.'},
+      {en:'how are you', zh:'你好吗；你怎么样', ph:'haʊ ɑː juː', pos:'phr.', ex:'How are you? I am fine, thank you.'},
+      {en:'welcome', zh:'欢迎', ph:'ˈwelkəm', pos:'v.', ex:'Welcome to our school.'},
+      {en:'please', zh:'请', ph:'pliːz', pos:'adv.', ex:'Please open the window.'},
+      {en:'thank you', zh:'谢谢你', ph:'ˈθæŋk juː', pos:'phr.', ex:'Thank you for your help.'},
+      {en:'thanks', zh:'谢谢（非正式）', ph:'θæŋks', pos:'int.', ex:'Thanks a lot!'},
+      {en:'sorry', zh:'对不起；抱歉的', ph:'ˈsɒri', pos:'adj.', ex:'Sorry, I am late.'},
+      {en:'excuse me', zh:'打扰一下；劳驾', ph:'ɪkˈskjuːz miː', pos:'phr.', ex:'Excuse me, where is the library?'},
+      {en:'no problem', zh:'没问题', ph:'nəʊ ˈprɒbləm', pos:'phr.', ex:'No problem. I can help you.'},
+      {en:'you are welcome', zh:'不客气', ph:'juː ɑː ˈwelkəm', pos:'phr.', ex:'You are welcome. That is all right.'},
+      {en:'of course', zh:'当然', ph:'əv ˈkɔːs', pos:'phr.', ex:'Of course you can join us.'},
+      {en:'sure', zh:'当然；确信的', ph:'ʃʊə', pos:'adv.', ex:'Sure, let us go together.'},
+      {en:'okay', zh:'好的；可以', ph:'ˌəʊˈkeɪ', pos:'adj.', ex:'Okay, see you at six.'},
+      {en:'really', zh:'真的吗；确实', ph:'ˈrɪəli', pos:'adv.', ex:'Really? That is wonderful!'},
+      {en:'guess', zh:'猜；猜测', ph:'ɡes', pos:'v.', ex:'Guess what! We have a new teacher.'},
+      {en:'I see', zh:'我明白了', ph:'aɪ siː', pos:'phr.', ex:'I see. Thank you for telling me.'},
+      {en:'let me see', zh:'让我想想；让我看看', ph:'let miː siː', pos:'phr.', ex:'Let me see. It is on the desk.'},
+      {en:'wait a minute', zh:'等一下', ph:'weɪt ə ˈmɪnɪt', pos:'phr.', ex:'Wait a minute. I forgot my bag.'},
+      {en:'by the way', zh:'顺便说一下', ph:'baɪ ðə weɪ', pos:'phr.', ex:'By the way, where is your brother?'},
+      {en:'in fact', zh:'事实上', ph:'ɪn fækt', pos:'phr.', ex:'In fact, I like music too.'},
+      {en:'for example', zh:'例如', ph:'fər ɪɡˈzɑːmpl', pos:'phr.', ex:'For example, I often read books.'},
+      {en:'at least', zh:'至少', ph:'ət liːst', pos:'phr.', ex:'At least we can try again.'},
+      {en:'no wonder', zh:'难怪', ph:'nəʊ ˈwʌndə', pos:'phr.', ex:'No wonder you are tired.'},
+      {en:'tired', zh:'疲倦的', ph:'ˈtaɪəd', pos:'adj.', ex:'I am tired after the long walk.'},
+      {en:'thirsty', zh:'口渴的', ph:'ˈθɜːsti', pos:'adj.', ex:'I am thirsty. I want some water.'},
+      {en:'bored', zh:'无聊的；厌烦的', ph:'bɔːd', pos:'adj.', ex:'The boy feels bored at home.'},
+      {en:'busy', zh:'忙碌的', ph:'ˈbɪzi', pos:'adj.', ex:'My father is busy today.'},
+      {en:'ready', zh:'准备好的', ph:'ˈredi', pos:'adj.', ex:'Are you ready for the trip?'},
+      {en:'great', zh:'很好的；很棒的', ph:'ɡreɪt', pos:'adj.', ex:'That is a great idea!'},
+      {en:'terrible', zh:'糟糕的；可怕的', ph:'ˈterəbl', pos:'adj.', ex:'The weather is terrible today.'},
+      {en:'lonely', zh:'孤独的', ph:'ˈləʊnli', pos:'adj.', ex:'The little dog feels lonely.'},
+      {en:'nervous', zh:'紧张的', ph:'ˈnɜːvəs', pos:'adj.', ex:'I feel nervous before the test.'},
+      {en:'proud', zh:'自豪的；骄傲的', ph:'praʊd', pos:'adj.', ex:'My parents are proud of me.'},
+      {en:'help', zh:'帮助', ph:'help', pos:'v.', ex:'Can you help me, please?'},
+      {en:'want', zh:'想要', ph:'wɒnt', pos:'v.', ex:'I want to drink some tea.'},
+      {en:'need', zh:'需要', ph:'niːd', pos:'v.', ex:'We need more time.'},
+      {en:'think', zh:'想；认为', ph:'θɪŋk', pos:'v.', ex:'I think you are right.'},
+      {en:'hope', zh:'希望', ph:'həʊp', pos:'v.', ex:'I hope you have a good day.'},
+      {en:'try', zh:'尝试；努力', ph:'traɪ', pos:'v.', ex:'Try again, and you can do it.'},
+      {en:'say', zh:'说', ph:'seɪ', pos:'v.', ex:'What did you say?'},
+      {en:'speak', zh:'说；讲（语言）', ph:'spiːk', pos:'v.', ex:'Can you speak English?'},
+      {en:'listen', zh:'听', ph:'ˈlɪsn', pos:'v.', ex:'Listen to the teacher carefully.'},
+      {en:'repeat', zh:'重复；再说一遍', ph:'rɪˈpiːt', pos:'v.', ex:'Please repeat the sentence.'},
+      {en:'understand', zh:'理解；明白', ph:'ˌʌndəˈstænd', pos:'v.', ex:'I understand the question now.'},
+      {en:'mean', zh:'意思是；意味着', ph:'miːn', pos:'v.', ex:'What does this word mean?'},
+      {en:'now', zh:'现在', ph:'naʊ', pos:'adv.', ex:'Let us go now.'},
+      {en:'later', zh:'后来；稍后', ph:'ˈleɪtə', pos:'adv.', ex:'See you later.'},
+      {en:'soon', zh:'很快；不久', ph:'suːn', pos:'adv.', ex:'The bus will come soon.'},
+      {en:'already', zh:'已经', ph:'ɔːlˈredi', pos:'adv.', ex:'I have already finished my homework.'},
+      {en:'still', zh:'仍然；还', ph:'stɪl', pos:'adv.', ex:'He is still in the classroom.'},
+      {en:'again', zh:'再一次', ph:'əˈɡen', pos:'adv.', ex:'Please say it again.'},
+      {en:'often', zh:'经常', ph:'ˈɒfn', pos:'adv.', ex:'I often play football after school.'},
+      {en:'never', zh:'从不', ph:'ˈnevə', pos:'adv.', ex:'I never go to bed late.'},
+    ],
+    sentences:[
+      {en:'How are you? I am fine, thank you.', zh:'你好吗？我很好，谢谢你。'},
+      {en:'Nice to meet you. Nice to meet you, too.', zh:'很高兴见到你。我也很高兴见到你。'},
+      {en:'Excuse me, can you help me?', zh:'打扰一下，你能帮我吗？'},
+      {en:'Thank you for your help. You are welcome.', zh:'谢谢你的帮助。不客气。'},
+      {en:'Sorry, I do not understand. Please say it again.', zh:'对不起，我不明白。请再说一遍。'},
+      {en:'See you tomorrow. Have a nice day!', zh:'明天见。祝你今天愉快！'},
+    ]
+  }
+];
+
+/* 当前教材（上册/下册/专项），可切换 */
 let UNITS = BOOK_SHANG;
 /* 全部单元（上下册合并），用于跨书单词归因与全局统计 */
-const ALL_UNITS = [...BOOK_SHANG, ...BOOK_XIA, ...BOOK6_SHANG, ...BOOK6_XIA];
+const ALL_UNITS = [...BOOK_SHANG, ...BOOK_XIA, ...BOOK6_SHANG, ...BOOK6_XIA, ...BOOK_ZX];
 
 /* =========================================================
    语法小课堂（五年级核心语法点 + 练习）
@@ -3873,7 +3951,7 @@ const RECENT_META={
   progress:{t:'我的进度', ic:'i-chart'}, codex:{t:'单词图鉴', ic:'i-library'},
   fav:{t:'生词本', ic:'i-star'}
 };
-const APP_VERSION = 213;
+const APP_VERSION = 214;
 // v193：SRS 难度系数（手写 SM-2 风格；单文件 PWA 不引 npm）——越难的词复习间隔跳得越慢，越简单的跳得越快
 const EASE_MIN=1.3, EASE_MAX=2.8, EASE_DEF=2.5;
 function easeIdx(stage, ease){
@@ -3918,14 +3996,15 @@ function applyTheme(t){
 function pickBook(){
   const g=(STATE&&STATE.settings)?STATE.settings.grade:'5';
   const b=(STATE&&STATE.settings)?STATE.settings.book:'shang';
+  if(b==='zx') return BOOK_ZX;
   if(g==='6') return (b==='xia')?BOOK6_XIA:BOOK6_SHANG;
   return (b==='xia')?BOOK_XIA:BOOK_SHANG;
 }
 function updateBookUI(){
   const g=STATE.settings.grade, b=STATE.settings.book;
   const gLabel=(g==='6')?'六年级':'五年级';
-  const bEmoji=(g==='6')?((b==='xia')?'📗':'📙'):((b==='xia')?'📘':'📗');
-  const bLabel=(b==='xia')?'下册':'上册';
+  const bEmoji=(b==='zx')?'💬':((g==='6')?((b==='xia')?'📗':'📙'):((b==='xia')?'📘':'📗'));
+  const bLabel=(b==='zx')?'专项':((b==='xia')?'下册':'上册');
   const sub=document.getElementById('brandSub');
   if(sub) sub.textContent = bEmoji+' '+gLabel+bLabel+' · 听说读写闯关';
   const bg=document.getElementById('brandGrade'); if(bg) bg.textContent=gLabel;
@@ -3941,7 +4020,7 @@ function setBook(b){
   // 切书后清掉单元内索引/闯关/测试临时态，避免在词数不同的单元下越界
   cardIdx=0; sentIdx=0; testIdx=0; testQs=[]; levelCorrect=0; curQuizMode='';
   updateBookUI(); saveState(); syncSeg('bookSeg','b',b);
-  toast('已切换到'+(b==='xia'?'下册':'上册')); // v102：教材切换成功提示
+  toast('已切换到'+((b==='zx')?'专项':(b==='xia'?'下册':'上册'))); // v102：教材切换成功提示
   // 设置中切换：立即关闭设置（所见即所得），关设后由 closeSettings 走统一重渲染当前屏，
   // 避免每次点击都在遮罩下重渲染被遮住的背景屏造成卡顿感；且结果立刻可见
   if(document.getElementById('settingsModal') && document.getElementById('settingsModal').classList.contains('show')){
@@ -4853,7 +4932,7 @@ function prefetchUnitAudio(uid){
   try{
     if(_prefetchedUnits[uid]) return; _prefetchedUnits[uid]=true; // 已预取过则跳过
     if(!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return; // SW 尚未接管本页时不预取
-    const u=UNITS.find(x=>x.id===uid); if(!u||!u.words||!u.words.length) return;
+    const u=ALL_UNITS.find(x=>x.id===uid); if(!u||!u.words||!u.words.length) return;
     const urls=[];
     u.words.forEach(w=>{ const t=w&&w.en; if(!t) return; const fn=window.AUDIO_MAP&&(window.AUDIO_MAP[t]||window.AUDIO_MAP[normWord(t)]); if(fn) urls.push('audio/'+fn); });
     if(!urls.length) return;
@@ -6239,6 +6318,7 @@ function unitGradeBook(uid){ // v151：从单元 id 首字母推所属教材（u
   if(c==='v') return ['5','xia'];
   if(c==='a') return ['6','shang'];
   if(c==='b') return ['6','xia'];
+  if(c==='c') return ['5','zx'];
   return null;
 }
 function jumpToUnitGrade(uid){ // v151：跨年级薄弱单元「去练习」——确认后切换教材并选中该单元，拒绝则不动作
@@ -7410,7 +7490,12 @@ const BOSSES={
     intro:'时光错乱怪把过去和现在搅成一团！🔄 用英语说出「以前…现在…」，把时间理顺！',
     weak:'连词成句：说出过去与现在的变化 (before / now)',
     tr:'哎哟，被你分得清清楚楚！', tw:'嘻嘻，这句没说明白，更混了～',
-    win:'呜，年代被你理顺，我晕啦！🔄💨', lose:'下次我把钟表倒着转！'}
+    win:'呜，年代被你理顺，我晕啦！🔄💨', lose:'下次我把钟表倒着转！'},
+  c1:{emoji:'🦜',name:'话痨小鹦鹉',title:'日常对话大师',color:'var(--sun)',
+    intro:'小鹦鹉一天到晚叽叽喳喳，可它总把日常用语说错！🦜 用正确的英语对话把它教会吧！',
+    weak:'连词成句：说出日常对话的句子',
+    tr:'嘎！这句说得真地道！', tw:'嘎嘎？这句我没听懂～',
+    win:'嘎！我学会啦，谢谢你！🎉', lose:'嘎嘎，下次我继续练口语！'}
 };
 function getBoss(u){
   return BOSSES[u.id] || {emoji:'👹',name:'捣蛋小怪',title:'关卡 BOSS',color:'var(--grape)',
